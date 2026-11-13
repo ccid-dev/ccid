@@ -1,0 +1,33 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalDependencies": [
+    ".env*",
+    "next.config.base.mjs",
+    "tsconfig.base.json",
+    "eslint.config.mjs"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"],
+      "env": [
+        "SUPABASE_SECRET_KEY",
+        "R2_*",
+        "GOOGLE_SITE_VERIFICATION",
+        "NAVER_SITE_VERIFICATION"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

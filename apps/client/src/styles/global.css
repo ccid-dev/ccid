@@ -1,0 +1,5 @@
+@import "@repo/styles/global.css";
+
+@source "..";
+@source "../../../../packages/common/src";
+@source "../../../../packages/blocks/src";
