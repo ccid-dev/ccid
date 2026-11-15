@@ -1,5 +1,7 @@
+import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { APP_INFO } from "@/config";
+import { ADOBE_FONTS_URL } from "@repo/styles";
 import { colors, fontVariables } from "@/theme";
 import "@/styles/global.css";
 import { Layout } from "@/components";
@@ -12,8 +14,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang={APP_INFO.lang} suppressHydrationWarning>
-      <body className={fontVariables}>
+    <html
+      lang={APP_INFO.lang}
+      className={classNames(fontVariables)}
+      suppressHydrationWarning
+    >
+      <head>
+        <link
+          rel="preconnect"
+          href="https://use.typekit.net"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href={ADOBE_FONTS_URL} />
+      </head>
+      <body>
         <Layout>{children}</Layout>
       </body>
     </html>
@@ -73,7 +87,7 @@ export const metadata: Metadata = {
     other: {
       rel: "mask-icon",
       url: "/icons/safari-pinned-tab.svg",
-      color: colors.ink,
+      color: colors.textMain,
     },
   },
 };
@@ -82,7 +96,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   minimumScale: 1,
-  themeColor: colors.canvas,
+  themeColor: colors.background,
   userScalable: false,
   viewportFit: "cover",
 };

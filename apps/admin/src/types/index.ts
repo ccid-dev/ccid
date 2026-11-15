@@ -1,5 +1,18 @@
-export type { ApiError, MediaUploadRequest, MediaUploadResponse } from "./api";
-export type { Database, Json } from "./database";
+export type {
+  Database,
+  Json,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "./database";
+export type {
+  Person,
+  PersonCategory,
+  Project,
+  ProjectTheme,
+  Theme,
+} from "./content";
+export { PERSON_CATEGORIES, PERSON_CATEGORY_LABEL } from "./content";
 export type {
   ContentBlock,
   ContentDocument,
@@ -7,3 +20,5 @@ export type {
   ParagraphBlock,
   TitleBlock,
 } from "@repo/blocks";
+export type { AdminRole, AdminStatus, AdminUser } from "./auth";
+export { ADMIN_ROLE_LABEL, ADMIN_STATUS_LABEL } from "./auth";

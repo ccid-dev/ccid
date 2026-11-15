@@ -48,11 +48,6 @@ const svgrRule = {
   as: "*.js",
 };
 
-/** Cloudflare R2 공개 버킷(또는 커스텀 도메인)의 이미지를 next/image로 최적화합니다. */
-// NEXT_PUBLIC_* 는 각 앱에서 turbo 가 Next.js 프레임워크 변수로 자동 인식합니다.
-// eslint-disable-next-line turbo/no-undeclared-env-vars
-const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL?.replace(/\/+$/, "");
-
 /**
  * @param {{ frameOptions: "DENY" | "SAMEORIGIN" }} options
  *   frameOptions: 다른 사이트가 iframe 으로 넣는 것을 막는 수준 (admin 은 DENY)
@@ -81,10 +76,6 @@ export function createNextConfig({ frameOptions }) {
       rules: {
         "*.svg": svgrRule,
       },
-    },
-    images: {
-      formats: ["image/avif", "image/webp"],
-      remotePatterns: r2PublicUrl ? [new URL(`${r2PublicUrl}/**`)] : [],
     },
   };
 }

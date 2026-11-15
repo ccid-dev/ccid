@@ -1,7 +1,7 @@
 {
-  "name": "CMS Boilerplate",
-  "short_name": "CMS",
-  "description": "Next.js · Supabase · Cloudflare R2 기반 CMS 보일러플레이트입니다.",
+  "name": "cciD — Center for Creative Intelligence Design",
+  "short_name": "cciD",
+  "description": "컴퓨테이셔널 디자인과 생성형 AI를 바탕으로 사용자 경험을 연구하고 디자인하는 인간 중심의 디자인 센터입니다.",
   "lang": "ko",
   "start_url": "/",
   "scope": "/",

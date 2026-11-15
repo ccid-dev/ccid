@@ -1,4 +1,4 @@
-export { fontVariables, geistMono, geistSans } from "./fonts";
+export { fontVariables, pretendard } from "./fonts";
 
-/** 색상 토큰의 원본은 packages/styles 입니다. (TS: colors.ts, Tailwind: global.css) */
+/** 색 체계의 원본은 packages/styles/src/global.css 입니다. (TS 에서 쓸 값만 colors.ts) */
 export { colors } from "@repo/styles";

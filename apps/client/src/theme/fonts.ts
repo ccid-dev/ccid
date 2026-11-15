@@ -1,16 +1,12 @@
 import localFont from "next/font/local";
 
-export const geistSans = localFont({
-  src: "../../public/fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
+/** 한글 본문 폰트 (가변 폰트, weight 45–920). Tailwind: font-pretendard (기본 폰트) */
+export const pretendard = localFont({
+  src: "../../public/fonts/PretendardVariable.woff2",
+  variable: "--font-pretendard-variable",
+  weight: "45 920",
   display: "swap",
 });
 
-export const geistMono = localFont({
-  src: "../../public/fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  display: "swap",
-});
-
-/** <body className={fontVariables}> 에 적용해 Tailwind 테마(--font-sans/--font-mono)와 연결합니다. */
-export const fontVariables = `${geistSans.variable} ${geistMono.variable}`;
+/** <html className={fontVariables}> 에 적용해 Tailwind 테마(packages/styles/src/global.css)와 연결합니다. */
+export const fontVariables = pretendard.variable;

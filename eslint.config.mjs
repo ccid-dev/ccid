@@ -78,6 +78,8 @@ export default [
     rules: {
       ...pluginNext.configs.recommended.rules,
       ...pluginNext.configs["core-web-vitals"].rules,
+      // 이미지는 admin 업로드 때 미리 최적화(WebP · 크기 축소)하므로 next/image 대신 <img> 를 씁니다.
+      "@next/next/no-img-element": "off",
     },
   },
 ];

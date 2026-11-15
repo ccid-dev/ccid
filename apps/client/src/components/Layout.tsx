@@ -1,25 +1,36 @@
+import classNames from "classnames";
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { Footer, Header } from "@repo/common";
-import { APP_INFO } from "@/config";
-import { ROUTES } from "@/constants";
+import { getDictionary, getLocale } from "@/i18n/server";
+import { websiteJsonLd } from "@/libs/seo";
+import { Footer } from "./Footer";
+import { Header } from "./Header";
+import { JsonLd } from "./JsonLd";
 
-/** 공개 사이트 공통 레이아웃: 헤더 · 본문(main) · 푸터 */
-export function Layout({ children }: { children: ReactNode }) {
+/** 공개 사이트 공통 레이아웃: 사이트 구조화 데이터 · 헤더 · 본문(main) · 푸터 */
+export async function Layout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header>
-        <Link
-          href={ROUTES.home}
-          className="text-sm font-semibold tracking-[0.16em] uppercase"
-        >
-          {APP_INFO.name}
-        </Link>
-      </Header>
-
-      <main className="flex-1">{children}</main>
-
-      <Footer name={APP_INFO.name} />
+    <div className={classNames("min-h-screen", "flex flex-col")}>
+      {/* 사이트 이름 · 설명 · 운영 주체 (schema.org WebSite) — 모든 페이지 공통 */}
+      <JsonLd data={websiteJsonLd(locale, dict)} />
+      <a
+        href="#main"
+        className={classNames(
+          "sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50",
+          "focus:px-3 focus:py-2",
+          "focus:rounded-lg focus:bg-black",
+          "focus:text-sm focus:text-white",
+        )}
+      >
+        {dict.common.skipToContent}
+      </a>
+      <Header />
+      <main id="main" className={classNames("flex-1")}>
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 }

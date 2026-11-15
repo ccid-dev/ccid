@@ -1,6 +1,7 @@
+import classNames from "classnames";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Container } from "@repo/common";
+import { buttonClassName } from "@repo/common";
 import { ROUTES } from "@/constants";
 
 export const metadata: Metadata = {
@@ -9,22 +10,41 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="px-5 py-24 sm:px-8">
-      <Container className="text-center">
-        <p className="text-xs font-semibold tracking-[0.16em] text-muted uppercase">
+    <div
+      className={classNames(
+        "min-h-[80vh]",
+        "flex items-center justify-center",
+        "px-4 py-12",
+      )}
+    >
+      <div
+        className={classNames(
+          "w-full max-w-sm",
+          "flex flex-col items-start",
+          "p-7 sm:p-9",
+          "rounded-3xl bg-white",
+        )}
+      >
+        <p
+          className={classNames(
+            "font-neuehaas text-7xl leading-none font-medium tracking-[-0.05em]",
+          )}
+        >
           404
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
+        <h1 className={classNames("mt-6", "text-lg font-semibold")}>
           페이지를 찾을 수 없습니다
         </h1>
-        <p className="mt-4 text-muted">삭제되었거나 잘못된 주소입니다.</p>
+        <p className={classNames("mt-1", "text-sm text-sub")}>
+          삭제되었거나 잘못된 주소입니다.
+        </p>
         <Link
           href={ROUTES.home}
-          className="mt-8 inline-block rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-80"
+          className={classNames(buttonClassName({ block: true }), "mt-8")}
         >
           홈으로
         </Link>
-      </Container>
+      </div>
     </div>
   );
 }

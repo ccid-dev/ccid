@@ -1,6 +1,6 @@
 # A string used to distinguish different Supabase projects on the same host. Defaults to the working
 # directory name when running `supabase init`.
-project_id = "cms-boilerplate"
+project_id = "ccid"
 
 [api]
 # Port to use for the API URL.
@@ -48,6 +48,8 @@ additional_redirect_urls = ["http://localhost:3000", "http://localhost:3001"]
 jwt_expiry = 3600
 # Allow/disallow new user signups to your project.
 enable_signup = true
+# 비밀번호 최소 길이 (admin 가입·재설정 화면과 같은 값)
+minimum_password_length = 8
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.

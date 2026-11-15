@@ -1,23 +1,20 @@
+import classNames from "classnames";
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { Header } from "@repo/common";
-import { APP_INFO } from "@/config";
-import { ROUTES } from "@/constants";
+import { ModalRoot } from "./ModalRoot";
+import { Sidebar } from "./Sidebar";
+import { Toaster } from "./Toaster";
 
-/** 관리자 공통 레이아웃: 상단 바 · 본문(main) */
+/**
+ * 관리자 공통 레이아웃: 회색 바탕 · 왼쪽 사이드바 · 본문(main, 남은 너비 전부)
+ * 전역 모달(ModalRoot) · 알림(Toaster)도 여기 한 번만 둡니다.
+ */
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header size="wide" className="bg-paper">
-        <Link
-          href={ROUTES.home}
-          className="text-xs font-semibold tracking-[0.16em] uppercase"
-        >
-          {APP_INFO.name}
-        </Link>
-      </Header>
-
-      <main className="flex-1">{children}</main>
+    <div className={classNames("min-h-screen", "md:flex", "bg-sheet")}>
+      <Sidebar />
+      <main className={classNames("min-w-0 flex-1")}>{children}</main>
+      <ModalRoot />
+      <Toaster />
     </div>
   );
 }

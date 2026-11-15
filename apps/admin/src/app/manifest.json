@@ -1,7 +1,7 @@
 {
-  "name": "CMS Admin",
-  "short_name": "CMS Admin",
-  "description": "콘텐츠 관리 도구",
+  "name": "cciD Admin",
+  "short_name": "cciD Admin",
+  "description": "cciD 사이트 콘텐츠 관리",
   "lang": "ko",
   "start_url": "/",
   "scope": "/",

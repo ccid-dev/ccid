@@ -1,5 +1,5 @@
 {
-  "name": "cms-boilerplate",
+  "name": "ccid",
   "private": true,
   "scripts": {
     "build": "turbo run build",
