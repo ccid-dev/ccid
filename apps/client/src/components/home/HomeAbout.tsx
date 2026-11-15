@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import { useState } from "react";
 import type { Dictionary } from "@/i18n";
+import { StrategySteps } from "./StrategySteps";
 
 const twoDigits = (n: number) => String(n).padStart(2, "0");
 
@@ -17,23 +18,35 @@ export function HomeAbout({ dict }: { dict: Dictionary }) {
 
   return (
     <div className={classNames("flex flex-col gap-16 md:gap-24")}>
-      <div className={classNames("max-w-4xl", "flex flex-col gap-10")}>
-        <p
+      {/* 오른쪽 모션은 너비(화면 크기마다 고정) · 4:3 비율 고정, 왼쪽 글은 남는 너비 전부 */}
+      <div
+        className={classNames(
+          "grid gap-8",
+          "md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-start md:gap-10",
+          "lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]",
+          "xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]",
+          "2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]",
+        )}
+      >
+        <div className={classNames("min-w-0", "flex flex-col gap-10")}>
+          <p
+            className={classNames(
+              "text-xl leading-snug font-medium tracking-[-0.02em] break-keep md:text-2xl md:leading-[1.3]",
+            )}
+          >
+            {lead}
+          </p>
+          <p className={classNames("leading-7 break-keep text-sub")}>{body}</p>
+        </div>
+        {/* Design Strategy: 단계가 계단처럼 이어지는 모션 */}
+        <div
           className={classNames(
-            "text-2xl leading-snug font-medium tracking-[-0.02em] break-keep md:text-4xl md:leading-[1.3]",
+            "aspect-[4/3] w-full",
+            "rounded-3xl bg-gray-100",
+            "p-4 md:p-5",
           )}
         >
-          {lead}
-        </p>
-        <div className={classNames("grid gap-6 md:grid-cols-2 md:gap-10")}>
-          {body.map((paragraph) => (
-            <p
-              key={paragraph}
-              className={classNames("leading-7 break-keep text-sub")}
-            >
-              {paragraph}
-            </p>
-          ))}
+          <StrategySteps />
         </div>
       </div>
 

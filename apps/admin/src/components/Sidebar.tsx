@@ -65,7 +65,7 @@ export async function Sidebar() {
               "h-5",
               "inline-flex items-center",
               "px-2",
-              "rounded-full border border-gray-300",
+              "rounded-full bg-sheet/60",
               "font-neuehaas text-[10px] font-medium tracking-[0.08em] text-sub uppercase",
             )}
           >
@@ -90,17 +90,14 @@ export async function Sidebar() {
       {groups.length ? <SidebarNav groups={groups} /> : null}
 
       <div
-        className={classNames(
-          "hidden md:flex md:flex-col md:gap-4",
-          "mt-auto px-3",
-        )}
+        className={classNames("hidden md:flex md:flex-col md:gap-4", "mt-auto")}
       >
         {current ? (
           <div
             className={classNames(
               "flex flex-col gap-3",
-              "pt-4",
-              "border-t border-gray-300",
+              "p-4",
+              "rounded-2xl bg-sheet/60",
             )}
           >
             <div className={classNames("min-w-0")}>

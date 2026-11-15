@@ -39,11 +39,8 @@ export const en: Dictionary = {
   },
   about: {
     title: "About",
-    lead: "We combine interaction design, generative AI, and prototyping to reshape how people and technology meet.",
-    body: [
-      "Our interdisciplinary team of designers, researchers, and developers grounds its work in design research drawn from behavioral science, psychology, and sociological analysis, turning insight into solutions that actually work.",
-      "We define problems through qualitative research, prototype quickly with AI, and validate hypotheses with real users, helping businesses validate and launch new experiences across digital products, services, and spaces.",
-    ],
+    lead: "cciD brings user research, generative AI, and interaction design into a single process. We define the experience technology should create within products and brands, then build it ourselves.",
+    body: "Our work spans next-generation UI and emotional UX with Samsung Electronics, AI-integrated in-house design processes with Hyundai Motor Group, and turning AI visions into spatial experiences with LG Electronics. With Lotte, we are now approaching the holding company’s AX (AI transformation) from a brand perspective. cciD brings together Carnegie Mellon’s Computational Design Thinking and MIT’s Demo or Die.",
     capabilitiesTitle: "What we do",
     capabilities: [
       {
@@ -99,7 +96,7 @@ export const en: Dictionary = {
     ],
   },
   join: {
-    eyebrow: "Join the inquiry",
+    eyebrow: "Recruitment",
     title: "We’re curious about your perspective.",
     description:
       "Explore information about internships and opportunities at cciD.",

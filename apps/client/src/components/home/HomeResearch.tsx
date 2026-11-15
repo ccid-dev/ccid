@@ -36,7 +36,7 @@ export function HomeResearch({
         "grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10",
       )}
     >
-      <ol className={classNames("flex flex-col gap-1")}>
+      <ol className={classNames("flex flex-col gap-5 md:gap-1")}>
         {themes.map((theme, index) => {
           const isActive = index === active;
           const image = mediaUrl(theme.images[0]);
@@ -48,7 +48,7 @@ export function HomeResearch({
                 onFocus={() => setActive(index)}
                 className={classNames(
                   "group flex items-center gap-5",
-                  "px-4 py-5 md:px-6 md:py-6",
+                  "px-0 py-0 md:px-6 md:py-6",
                   [
                     "rounded-2xl transition",
                     isActive ? "lg:bg-sheet/60" : "hover:bg-sheet/40",
@@ -61,7 +61,7 @@ export function HomeResearch({
                     alt=""
                     className={classNames(
                       "aspect-thumbnail w-24 shrink-0 lg:hidden",
-                      "rounded-xl object-cover",
+                      "rounded-lg md:rounded-xl object-cover",
                     )}
                   />
                 ) : null}

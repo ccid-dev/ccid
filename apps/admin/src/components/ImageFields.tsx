@@ -95,7 +95,7 @@ function FormatPicker({
         className={classNames(
           "inline-flex gap-0.5",
           "p-1",
-          "rounded-xl bg-gray-100",
+          "rounded-xl bg-white",
         )}
       >
         {UPLOAD_FORMATS.map((format) => (
@@ -107,7 +107,7 @@ function FormatPicker({
               "px-3",
               [
                 "cursor-pointer rounded-lg transition has-focus-visible:ring-2 has-focus-visible:ring-black",
-                value === format.value ? "bg-white shadow-sm" : "",
+                value === format.value ? "bg-sheet" : "",
               ],
               [
                 "font-neuehaas text-xs font-medium",
@@ -254,7 +254,7 @@ export function ImageField({
               className={classNames(
                 "aspect-profile w-36",
                 "relative overflow-hidden",
-                "rounded-2xl bg-sheet",
+                "rounded-2xl bg-white",
               )}
             />
             <div className={classNames("absolute top-2 right-2")}>
@@ -277,7 +277,7 @@ export function ImageField({
             className={classNames(
               "aspect-profile w-36 shrink-0",
               "flex flex-col items-center justify-center gap-1",
-              "rounded-2xl border border-dashed border-gray-300 bg-field transition hover:border-black",
+              "rounded-2xl border border-dashed border-gray-300 bg-white/60 transition hover:border-black",
               "text-xs text-sub",
             )}
           >
@@ -372,7 +372,7 @@ export function ImageListField({
               className={classNames(
                 "aspect-thumbnail w-full",
                 "relative overflow-hidden",
-                "rounded-2xl bg-sheet",
+                "rounded-2xl bg-white",
               )}
             />
             <span
@@ -427,7 +427,7 @@ export function ImageListField({
             className={classNames(
               "aspect-thumbnail w-full",
               "flex flex-col items-center justify-center gap-1",
-              "rounded-2xl border border-dashed border-gray-300 bg-field transition hover:border-black disabled:opacity-50",
+              "rounded-2xl border border-dashed border-gray-300 bg-white/60 transition hover:border-black disabled:opacity-50",
               "text-xs text-sub",
             )}
           >

@@ -58,7 +58,7 @@ export default async function MembersPage() {
         <LoadError message={error.message} />
       ) : (
         <Panel className={classNames("overflow-hidden")}>
-          <ul className={classNames("divide-y")}>
+          <ul className={classNames("divide-y divide-white")}>
             {users.map((user) => (
               <MemberRow
                 key={user.id}

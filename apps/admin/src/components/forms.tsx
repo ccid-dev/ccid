@@ -8,7 +8,7 @@ import { closeModal } from "@/libs/modal";
 
 /** 입력칸 공통 (배경·효과 그룹) */
 const inputVisual =
-  "rounded-lg border bg-field outline-none transition focus:border-black focus:bg-white";
+  "rounded-lg border border-black/5 bg-white outline-none transition focus:border-black";
 
 /** 라벨 공통 (글자 그룹) */
 const labelText = "text-xs font-medium text-sub";
@@ -241,7 +241,7 @@ export function Checkbox({
         "max-w-md",
         "flex items-start gap-3",
         "px-3.5 py-3",
-        "rounded-lg border bg-field transition has-checked:border-black has-checked:bg-white",
+        "rounded-lg border border-black/5 bg-white transition has-checked:border-black",
       )}
     >
       <input
@@ -276,7 +276,7 @@ export function FormSection({
       className={classNames(
         "grid gap-6 md:grid-cols-[220px_1fr] md:gap-12",
         "p-6 md:p-10",
-        "rounded-3xl bg-white",
+        "rounded-3xl bg-sheet/60",
       )}
     >
       <div className={classNames("flex flex-col gap-1")}>

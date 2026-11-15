@@ -32,7 +32,7 @@ export function ProfileSummary({
         className={classNames(
           "aspect-profile w-16 shrink-0",
           "relative overflow-hidden",
-          "rounded-lg bg-sheet",
+          "rounded-lg bg-white",
         )}
       >
         {image ? (

@@ -127,7 +127,7 @@ export function ProjectForm({
                     key={theme.id}
                     className={classNames("flex items-center gap-1", "pr-1", [
                       "rounded-lg transition",
-                      checked ? "bg-gray-100" : "hover:bg-field",
+                      checked ? "bg-white" : "hover:bg-white/50",
                     ])}
                   >
                     <label
@@ -170,7 +170,7 @@ export function ProjectForm({
                           "flex items-center justify-center",
                           { invisible: !checked },
                         ],
-                        "cursor-pointer rounded-md transition hover:bg-white has-focus-visible:ring-2 has-focus-visible:ring-black",
+                        "cursor-pointer rounded-md transition hover:bg-sheet has-focus-visible:ring-2 has-focus-visible:ring-black",
                         isPrimary ? "text-main" : "text-mute",
                       )}
                     >

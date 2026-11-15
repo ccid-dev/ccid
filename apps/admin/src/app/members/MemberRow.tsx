@@ -158,7 +158,7 @@ export function MemberRow({
     <li className={classNames("flex flex-col gap-3", "px-8 py-5")}>
       <div
         className={classNames(
-          "grid gap-x-6 gap-y-3 md:grid-cols-[minmax(0,1fr)_150px_200px_auto] md:items-center",
+          "grid gap-x-6 gap-y-3 md:grid-cols-[minmax(0,1fr)_160px_200px] xl:grid-cols-[minmax(0,1fr)_160px_200px_380px] md:items-center",
         )}
       >
         <div className={classNames("min-w-0", "flex items-center gap-3")}>
@@ -167,7 +167,7 @@ export function MemberRow({
             className={classNames(
               "size-9 shrink-0",
               "flex items-center justify-center",
-              "rounded-full bg-gray-100",
+              "rounded-full bg-white",
               "font-neuehaas text-sm font-medium text-sub uppercase",
             )}
           >
@@ -210,7 +210,11 @@ export function MemberRow({
           </span>
         </div>
 
-        <div className={classNames("flex flex-wrap gap-1 md:justify-end")}>
+        <div
+          className={classNames(
+            "flex flex-wrap gap-1 md:col-span-3 xl:col-span-1 xl:justify-end",
+          )}
+        >
           {actions.map((action) => (
             <Button
               key={action.label}
@@ -256,7 +260,7 @@ export function MemberRow({
           className={classNames(
             "flex flex-col gap-2",
             "p-4",
-            "rounded-2xl bg-field",
+            "rounded-2xl bg-white",
           )}
         >
           <p className={classNames("text-xs text-sub")}>
@@ -271,7 +275,7 @@ export function MemberRow({
               className={classNames(
                 "h-9 min-w-0 flex-1",
                 "px-3",
-                "rounded-lg border bg-white outline-none",
+                "rounded-lg border border-black/5 bg-sheet/40 outline-none",
                 "font-neuehaas text-xs text-sub",
               )}
             />
@@ -321,7 +325,7 @@ function AccessPanel({
       className={classNames(
         "grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end",
         "p-4",
-        "rounded-2xl bg-field",
+        "rounded-2xl bg-white",
       )}
     >
       <Select
@@ -346,7 +350,7 @@ function AccessPanel({
         className={classNames(
           "flex items-start gap-3",
           "px-3.5 py-2.5",
-          "rounded-lg border bg-white",
+          "rounded-lg border border-black/5 bg-white",
         )}
       >
         <input

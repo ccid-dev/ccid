@@ -40,7 +40,7 @@ export default async function ThemesPage() {
                   "h-full min-h-80",
                   "flex flex-col",
                   "p-7",
-                  "rounded-3xl bg-white transition hover:shadow-lg",
+                  "rounded-3xl bg-sheet/60 transition hover:bg-sheet",
                 )}
               >
                 <div className={classNames("flex items-start justify-between")}>

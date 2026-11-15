@@ -30,7 +30,7 @@ export function NameForm({ name }: { name: string }) {
           className={classNames(
             "h-9 min-w-0 flex-1",
             "px-3",
-            "rounded-lg border bg-field outline-none transition focus:border-black focus:bg-white",
+            "rounded-lg border border-black/5 bg-white outline-none transition focus:border-black",
             "text-base sm:text-sm",
           )}
         />

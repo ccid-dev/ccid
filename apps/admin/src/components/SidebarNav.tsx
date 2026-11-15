@@ -46,7 +46,7 @@ export function SidebarNav({ groups }: { groups: NavGroup[] }) {
                       "px-3",
                       [
                         "rounded-lg transition",
-                        active ? "bg-white shadow-sm" : "hover:bg-white/60",
+                        active ? "bg-sheet/60" : "hover:bg-sheet/40",
                       ],
                       [
                         "font-neuehaas text-sm whitespace-nowrap",

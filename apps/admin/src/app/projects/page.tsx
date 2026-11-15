@@ -48,8 +48,7 @@ export default async function ProjectsPage() {
           <div
             className={classNames(
               ["hidden md:grid", columns],
-              "px-8 py-4",
-              "border-b border-gray-100",
+              "px-8 pt-5 pb-3",
             )}
           >
             {["Year", "Title", "Client", "Research", "Status"].map((head) => (
@@ -58,7 +57,7 @@ export default async function ProjectsPage() {
               </Eyebrow>
             ))}
           </div>
-          <ul className={classNames("divide-y divide-gray-100")}>
+          <ul className={classNames("divide-y divide-white")}>
             {projects.map((project, index) => {
               const firstOfYear =
                 projects[index - 1]?.year_start !== project.year_start;
@@ -73,7 +72,7 @@ export default async function ProjectsPage() {
                     className={classNames(
                       columns,
                       "px-8 py-5",
-                      "transition hover:bg-field",
+                      "transition hover:bg-sheet",
                     )}
                   >
                     <span

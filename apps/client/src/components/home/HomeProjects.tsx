@@ -40,7 +40,7 @@ export function HomeProjects({
             </span>
             <span
               className={classNames(
-                "text-xl leading-snug font-medium tracking-[-0.02em] break-keep md:text-2xl",
+                "text-lg leading-snug tracking-[-0.02em] break-keep md:text-xl",
               )}
             >
               {localized(project, "title", locale)}

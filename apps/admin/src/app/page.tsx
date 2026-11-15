@@ -15,7 +15,7 @@ const plusButton = {
   variant: "ghost",
   size: "sm",
   label: "+",
-  className: classNames("w-8 px-0", "bg-gray-100", "text-lg font-normal"),
+  className: classNames("w-8 px-0", "bg-white", "text-lg font-normal"),
 } as const;
 
 export default async function AdminHome() {
@@ -84,7 +84,7 @@ export default async function AdminHome() {
                 "min-h-56 md:min-h-72",
                 "flex flex-col",
                 "p-8",
-                "rounded-3xl bg-white",
+                "rounded-3xl bg-sheet/60",
               )}
             >
               <div className={classNames("flex items-start justify-between")}>
@@ -133,7 +133,7 @@ export default async function AdminHome() {
               "min-h-56 md:min-h-72",
               "flex flex-col justify-between gap-8",
               "p-8",
-              "rounded-3xl bg-white",
+              "rounded-3xl bg-sheet/60",
             )}
           >
             <div>

@@ -24,11 +24,14 @@ export function Eyebrow({
 }
 
 /**
- * 회색 바탕 위의 흰 면. 모서리는 안에 놓이는 버튼 · 입력칸(rounded-lg)보다 크게 둡니다.
+ * 밝은 바탕 위의 회색 면 (client 카드와 같은 bg-sheet/60). 모서리는 안에 놓이는 버튼 · 입력칸(rounded-lg)보다 크게 둡니다.
  */
 export function Panel({ className, ...props }: ComponentProps<"div">) {
   return (
-    <div className={classNames("rounded-3xl bg-white", className)} {...props} />
+    <div
+      className={classNames("rounded-3xl bg-sheet/60", className)}
+      {...props}
+    />
   );
 }
 
@@ -129,8 +132,8 @@ export function Badge({
 }) {
   /** [배경·효과, 글자] */
   const tones = {
-    default: ["bg-gray-100", "text-main"],
-    muted: ["border", "text-mute"],
+    default: ["bg-white", "text-main"],
+    muted: ["bg-white/50", "text-mute"],
     strong: ["bg-black", "text-white"],
   } as const;
   return (

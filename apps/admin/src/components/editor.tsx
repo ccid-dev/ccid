@@ -127,7 +127,7 @@ export function EditorForm({
             "sticky top-0 z-20",
             "-mx-4 md:-mx-10 xl:-mx-14",
             "px-4 pt-4 pb-3 md:px-10 md:pt-6 xl:px-14",
-            "bg-sheet/80 backdrop-blur-md",
+            "bg-background/80 backdrop-blur-md",
           )}
         >
           <div
@@ -135,7 +135,7 @@ export function EditorForm({
               "min-h-14",
               "flex items-center gap-3",
               "py-2 pr-2 pl-4 md:pl-5",
-              "rounded-2xl bg-white shadow-sm",
+              "rounded-2xl bg-sheet/60",
             )}
           >
             <Link
@@ -251,7 +251,7 @@ export function EditorSection({
       className={classNames(
         "flex flex-col gap-7",
         "p-6 md:p-10",
-        "rounded-3xl bg-white",
+        "rounded-3xl bg-sheet/60",
       )}
     >
       <div className={classNames("flex flex-col gap-1")}>
@@ -284,7 +284,7 @@ export function InspectorSection({
       className={classNames(
         "flex flex-col gap-5",
         "p-6",
-        "rounded-3xl bg-white",
+        "rounded-3xl bg-sheet/60",
       )}
     >
       <div className={classNames("flex flex-col gap-1")}>

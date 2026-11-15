@@ -97,7 +97,7 @@ export function ThemeForm({
                         "min-h-10",
                         "flex items-center gap-3",
                         "px-2",
-                        "rounded-lg transition hover:bg-field",
+                        "rounded-lg transition hover:bg-white/60",
                         "text-sm",
                       )}
                     >

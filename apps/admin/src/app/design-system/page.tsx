@@ -167,7 +167,7 @@ function ShowSection({
       className={classNames(
         "grid gap-6 md:grid-cols-[220px_1fr] md:gap-12",
         "p-6 md:p-10",
-        "rounded-3xl bg-white",
+        "rounded-3xl bg-sheet/60",
       )}
     >
       <div className={classNames("flex flex-col gap-1.5")}>

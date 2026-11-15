@@ -129,9 +129,7 @@ export default async function PeoplePage() {
                     size="sm"
                   />
                 </div>
-                <ul
-                  className={classNames("divide-y divide-gray-100", "md:py-3")}
-                >
+                <ul className={classNames("divide-y divide-white", "md:py-3")}>
                   {members.map((person) => {
                     const image = mediaUrl(person.image);
                     return (
@@ -141,14 +139,14 @@ export default async function PeoplePage() {
                           className={classNames(
                             "grid grid-cols-[36px_1fr_auto] items-center gap-x-4 md:grid-cols-[36px_1fr_1fr_auto]",
                             "px-8 py-3",
-                            "transition hover:bg-field",
+                            "transition hover:bg-sheet",
                           )}
                         >
                           <span
                             className={classNames(
                               "aspect-profile w-9",
                               "relative overflow-hidden",
-                              "rounded-md bg-sheet",
+                              "rounded-md bg-white",
                             )}
                           >
                             {image ? (

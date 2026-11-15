@@ -22,7 +22,7 @@ export default function NotFound() {
           "w-full max-w-sm",
           "flex flex-col items-start",
           "p-7 sm:p-9",
-          "rounded-3xl bg-white",
+          "rounded-3xl bg-sheet/60",
         )}
       >
         <p

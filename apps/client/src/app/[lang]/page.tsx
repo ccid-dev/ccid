@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import {
-  GRID,
   JoinSection,
   PAGE_X,
   PartnerMarquee,
@@ -43,31 +42,38 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       {/* 첫 화면: 왼쪽 아래 큰 이름, 오른쪽 아래 정식 명칭 · 소개 (자세한 소개는 아래 About) */}
       <div
         className={classNames(
-          "md:min-h-[68svh]",
+          "min-h-[30svh] md:min-h-[68svh]",
           "flex flex-col justify-end",
           PAGE_X,
-          "pt-24 pb-10 md:pb-14",
+          "pt-24 pb-4 md:pb-14",
         )}
       >
-        <div className={classNames(GRID, "lg:items-end")}>
+        <div
+          className={classNames(
+            "w-full h-fit",
+            "flex flex-col md:flex-row justify-between",
+            "gap-4 md:gap-0",
+            "items-start md:items-end",
+          )}
+        >
           <h1
             className={classNames(
-              "lg:col-span-7",
-              "font-neuehaas text-[clamp(4.5rem,13vw,12rem)] leading-[0.8] font-medium tracking-[-0.05em]",
+              "hidden md:block",
+              "font-neuehaas md:text-[clamp(4.5rem,13vw,12rem)] leading-[0.8] font-medium tracking-[-0.05em]",
             )}
           >
             {APP_INFO.name}
           </h1>
-          <div
-            className={classNames(
-              "max-w-md lg:col-span-4 lg:col-start-9",
-              "flex flex-col gap-3",
-            )}
-          >
+          <div className={classNames("max-w-md", "flex flex-col gap-3")}>
             <p className={classNames("font-neuehaas text-lg font-medium")}>
               {APP_INFO.fullName}
             </p>
-            <p className={classNames("leading-7 break-keep text-sub")}>
+            <p
+              className={classNames(
+                "text-sm md:text-base",
+                "leading-snug break-keep text-sub",
+              )}
+            >
               {dict.meta.description}
             </p>
           </div>

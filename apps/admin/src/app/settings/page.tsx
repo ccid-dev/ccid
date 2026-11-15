@@ -48,7 +48,7 @@ export default async function SettingsPage() {
     <AdminPage title="Settings" description="내 계정 이름 · 정보와 탈퇴">
       <div className={classNames("max-w-5xl", "flex flex-col gap-2")}>
         <FormSection title="계정">
-          <dl className={classNames("divide-y border-y")}>
+          <dl className={classNames("divide-y divide-white")}>
             {rows.map(([label, value]) => (
               <div
                 key={label}

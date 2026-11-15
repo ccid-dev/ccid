@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           role="alert"
           className={classNames(
             "mb-6 p-3",
-            "rounded-lg bg-field",
+            "rounded-lg bg-white",
             "text-sm text-red-700",
           )}
         >
