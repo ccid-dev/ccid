@@ -12,10 +12,11 @@ import {
 import { BilingualField, Field, Switch } from "@/components/forms";
 import { Badge, PublishBadge } from "@/components/ui";
 import { ROUTES } from "@/constants";
-import type { Project, Theme } from "@/types";
+import type { Project } from "@/types";
 import { deleteProject, saveProject } from "./actions";
+import { ProjectPreview, type PreviewTheme } from "./ProjectPreview";
 
-type ThemeOption = Pick<Theme, "id" | "number" | "title_ko" | "title_en">;
+type ThemeOption = PreviewTheme;
 
 /** 프로젝트 편집: 왼쪽 내용 · 오른쪽 공개 · 연도 · 순서 · 리서치 분야 */
 export function ProjectForm({
@@ -57,6 +58,9 @@ export function ProjectForm({
       }
       onDelete={onDelete}
       deleting={deleting}
+      preview={(values, lang) => (
+        <ProjectPreview values={values} lang={lang} themes={themes} />
+      )}
       inspector={
         <>
           <InspectorSection title="공개">

@@ -60,3 +60,6 @@ supabase/
 | `20261115215000_people_accounts.sql`     | 2026-11-15 | People ↔ 계정 연결(`people.admin_user_id`), 본인 프로필 권한(`admin_users.can_edit_profile`), 계정 정지(`suspended`). People 쓰기는 메인테이너 전체 + 권한 있는 본인 프로필 |
 | `20261116120000_project_slug.sql`        | 2026-11-16 | 프로젝트 주소 `projects.slug` (사이트 공유 링크 `/projects#<slug>`). 비우면 영문 제목으로 자동 생성, 기존 행도 채움                                                         |
 | `20261116150000_site_settings.sql`       | 2026-11-16 | 사이트 설정 `site_settings`(키-값). `join_url` = Join 버튼 링크. 누구나 읽고 메인테이너만 수정 (admin → Site)                                                               |
+| `20261116180000_notices_system.sql`      | 2026-11-16 | 공지사항 `notices` (누구나 쓰기 · 고정은 메인테이너 · 본인 글만 수정/삭제, 메인테이너는 전부) · System Check 사용량 함수 `system_usage()` (메인테이너)                      |
+| `20261116200000_recruit.sql`             | 2026-11-16 | 모집 설정 `recruit`(한 줄): 모집 중 여부 · 지원 링크 · Join 문구 · 닫혔을 때 모달 문구(한/영). 이전 `site_settings`의 링크를 옮기고 그 표는 지움                            |
+| `20261116210000_notice_comments.sql`     | 2026-11-16 | 공지 댓글 `notice_comments`(누구나 쓰기 · 본인/메인테이너 삭제) · 반응 `notice_reactions`(👍 ❤️ 🎉 👀 🙏, 한 사람이 종류별 한 번) · 이름 맞추기 확장                        |

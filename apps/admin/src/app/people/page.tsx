@@ -1,14 +1,11 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   AdminPage,
-  Badge,
   ButtonLink,
   Eyebrow,
   LoadError,
   Panel,
-  PublishBadge,
 } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import { ProfileSummary } from "@/components/ProfileSummary";
@@ -17,6 +14,7 @@ import { mediaUrl } from "@/libs/media";
 import { createClient } from "@/libs/supabase/server";
 import { PERSON_CATEGORIES, PERSON_CATEGORY_LABEL } from "@/types";
 import { NewPersonButton } from "./NewPersonButton";
+import { SortablePeople } from "./SortablePeople";
 import { getAccountOptions } from "./data";
 
 export const metadata: Metadata = { title: "People" };
@@ -129,87 +127,23 @@ export default async function PeoplePage() {
                     size="sm"
                   />
                 </div>
-                <ul className={classNames("divide-y divide-white", "md:py-3")}>
-                  {members.map((person) => {
-                    const image = mediaUrl(person.image);
-                    return (
-                      <li key={person.id}>
-                        <Link
-                          href={`${ROUTES.people}/${person.id}`}
-                          className={classNames(
-                            "grid grid-cols-[36px_1fr_auto] items-center gap-x-4 md:grid-cols-[36px_1fr_1fr_auto]",
-                            "px-8 py-3",
-                            "transition hover:bg-sheet",
-                          )}
-                        >
-                          <span
-                            className={classNames(
-                              "aspect-profile w-9",
-                              "relative overflow-hidden",
-                              "rounded-md bg-white",
-                            )}
-                          >
-                            {image ? (
-                              <img
-                                src={image}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                className={classNames(
-                                  "size-full",
-                                  "absolute inset-0 object-cover",
-                                )}
-                              />
-                            ) : null}
-                          </span>
-                          <span className={classNames("min-w-0")}>
-                            <span
-                              className={classNames(
-                                "block",
-                                "truncate text-sm font-medium",
-                              )}
-                            >
-                              {person.name_ko || person.name_en}
-                            </span>
-                            {person.name_ko && person.name_en ? (
-                              <span
-                                className={classNames(
-                                  "block",
-                                  "truncate font-neuehaas text-xs text-sub",
-                                )}
-                              >
-                                {person.name_en}
-                              </span>
-                            ) : null}
-                          </span>
-                          <span
-                            className={classNames(
-                              "hidden md:block",
-                              "line-clamp-1 text-sm text-sub",
-                            )}
-                          >
-                            {person.role_ko || person.role_en}
-                          </span>
-                          <span className={classNames("flex gap-1.5")}>
-                            {person.admin_user_id ? (
-                              <Badge>
-                                {person.admin_user_id === me.id ? "나" : "계정"}
-                              </Badge>
-                            ) : null}
-                            <PublishBadge published={person.is_published} />
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                  {!members.length ? (
-                    <li
-                      className={classNames("px-8 py-6", "text-sm text-mute")}
-                    >
-                      아직 없습니다.
-                    </li>
-                  ) : null}
-                </ul>
+                <SortablePeople
+                  key={members.map((p) => `${p.id}:${p.sort_order}`).join()}
+                  people={members.map((person) => ({
+                    id: person.id,
+                    name: person.name_ko || person.name_en,
+                    nameEn:
+                      person.name_ko && person.name_en ? person.name_en : "",
+                    role: person.role_ko || person.role_en,
+                    image: mediaUrl(person.image),
+                    published: person.is_published,
+                    account: person.admin_user_id
+                      ? person.admin_user_id === me.id
+                        ? "나"
+                        : "계정"
+                      : "",
+                  }))}
+                />
               </Panel>
             );
           })}

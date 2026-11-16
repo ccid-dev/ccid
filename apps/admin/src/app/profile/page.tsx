@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ProfileSummary } from "@/components/ProfileSummary";
 import { AdminPage, Panel } from "@/components/ui";
 import { ROUTES } from "@/constants";
-import { requireAdmin } from "@/libs/auth";
+import { isViewingAsMember, requireAdmin } from "@/libs/auth";
 import { createClient } from "@/libs/supabase/server";
 import { NewMyProfileButton } from "../people/NewPersonButton";
 import { PersonForm } from "../people/PersonForm";
@@ -17,7 +17,8 @@ export const metadata: Metadata = { title: "Profile" };
  */
 export default async function ProfilePage() {
   const me = await requireAdmin();
-  if (me.role === "master") redirect(ROUTES.people);
+  if (me.role === "master" && !(await isViewingAsMember(me)))
+    redirect(ROUTES.people);
 
   const supabase = await createClient();
   const { data: person } = await supabase

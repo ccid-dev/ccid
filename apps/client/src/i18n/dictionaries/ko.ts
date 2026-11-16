@@ -103,6 +103,7 @@ export const ko = {
     title: "새로운 관점을 기다립니다.",
     description: "cciD의 인턴십과 참여 기회를 안내합니다.",
     cta: "참여 및 채용 안내",
+    closedTitle: "지금은 모집 기간이 아닙니다",
   },
   research: {
     title: "Research",
@@ -110,6 +111,7 @@ export const ko = {
     keywords: "Focus areas",
     projects: "Projects",
     images: "Images",
+    others: "More research",
     more: "자세히 보기",
   },
   projects: {
@@ -141,6 +143,14 @@ export const ko = {
       intern: "Research Interns",
       alumni: "Alumni",
     },
+  },
+  lab: {
+    title: "Lab",
+    eyebrow: "Coming soon",
+    lead: "새로운 cciD만의 다양한 이야기들이 곧 공개됩니다.",
+    description:
+      "연구실에서 만들고 있는 프로토타입, 도구, 작은 실험들을 한곳에 모으고 있습니다. 곧 공개됩니다.",
+    research: "리서치 보기",
   },
   notFound: {
     title: "페이지를 찾을 수 없습니다",

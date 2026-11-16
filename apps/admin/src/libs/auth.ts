@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { config } from "@/config";
 import { ROUTES } from "@/constants";
@@ -42,9 +43,29 @@ export async function requireMaster(): Promise<AdminUser> {
   return admin;
 }
 
-/** People 관리 화면: 메인테이너만. 일반 멤버는 본인 Profile 로 보냅니다. */
+/** "일반 멤버로 보기" 쿠키 이름 (메인테이너가 일반 멤버 화면을 확인할 때) */
+export const VIEW_AS_COOKIE = "ccid_view_as";
+
+/**
+ * 화면에 쓰는 역할. 메인테이너가 "일반 멤버로 보기"를 켜면 "member" 입니다.
+ * 화면(메뉴 · 대시보드 · 버튼)만 바꾸고, 실제 권한(DB)은 그대로입니다.
+ */
+export const getViewRole = cache(
+  async (admin: AdminUser): Promise<"master" | "member"> => {
+    if (admin.role !== "master") return "member";
+    const store = await cookies();
+    return store.get(VIEW_AS_COOKIE)?.value === "member" ? "member" : "master";
+  },
+);
+
+/** 메인테이너가 "일반 멤버로 보기" 중인지 */
+export async function isViewingAsMember(admin: AdminUser) {
+  return admin.role === "master" && (await getViewRole(admin)) === "member";
+}
+
+/** People 관리 화면: 메인테이너만. 일반 멤버(로 보는 중 포함)는 본인 Profile 로 보냅니다. */
 export async function requirePeopleManager(): Promise<AdminUser> {
   const admin = await requireAdmin();
-  if (admin.role !== "master") redirect(ROUTES.profile);
+  if ((await getViewRole(admin)) !== "master") redirect(ROUTES.profile);
   return admin;
 }

@@ -7,7 +7,7 @@ export async function getThemeOptions() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("themes")
-    .select("id, number, title_ko, title_en")
+    .select("id, number, slug, title_ko, title_en, summary_ko, summary_en")
     .order("number");
   if (error) throw new Error(error.message);
   return data;

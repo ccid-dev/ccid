@@ -1,15 +1,12 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
-import {
-  JoinSection,
-  MediaBox,
-  PageHeader,
-  Section,
-} from "@/components/content";
+import { PersonCard } from "@repo/blocks";
+import { JoinSection, PageHeader, Section } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { hasLocale, localized } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
-import { getPeopleGroups, getSiteSettings } from "@/libs/content";
+import { getPeopleGroups, getRecruit } from "@/libs/content";
+import { mediaUrl } from "@/libs/media";
 import { localeAlternates } from "@/libs/seo";
 
 export const revalidate = 60;
@@ -31,10 +28,10 @@ export default async function PeoplePage({
 }: PageProps<"/[lang]/people">) {
   const { lang } = await params;
   if (!hasLocale(lang)) return null;
-  const [dict, groups, settings] = await Promise.all([
+  const [dict, groups, recruit] = await Promise.all([
     getDictionary(lang),
     getPeopleGroups(),
-    getSiteSettings(),
+    getRecruit(),
   ]);
 
   return (
@@ -52,56 +49,25 @@ export default async function PeoplePage({
               "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
             )}
           >
-            {group.people.map((person) => {
-              const name = localized(person, "name", lang);
-              const profile = localized(person, "profile", lang);
-              return (
-                <li
-                  key={person.id}
-                  className={classNames("flex flex-col gap-1.5")}
-                >
-                  <MediaBox src={person.image} alt={name} ratio="profile" />
-                  <p className={classNames("mt-2", "font-semibold")}>{name}</p>
-                  {localized(person, "role", lang) ? (
-                    <p
-                      className={classNames(
-                        "text-sm leading-6 whitespace-pre-line",
-                      )}
-                    >
-                      {localized(person, "role", lang)}
-                    </p>
-                  ) : null}
-                  {localized(person, "bio", lang) ? (
-                    <p
-                      className={classNames(
-                        "text-[13px] leading-5 whitespace-pre-line text-sub",
-                      )}
-                    >
-                      {localized(person, "bio", lang)}
-                    </p>
-                  ) : null}
-                  {profile ? (
-                    <details className={classNames("text-sm")}>
-                      <summary className={classNames("underline")}>
-                        {dict.people.profile}
-                      </summary>
-                      <p
-                        className={classNames(
-                          "mt-2",
-                          "leading-6 whitespace-pre-line",
-                        )}
-                      >
-                        {profile}
-                      </p>
-                    </details>
-                  ) : null}
-                </li>
-              );
-            })}
+            {group.people.map((person) => (
+              <li key={person.id}>
+                <PersonCard
+                  profileLabel={dict.people.profile}
+                  person={{
+                    name: localized(person, "name", lang),
+                    role: localized(person, "role", lang),
+                    bio: localized(person, "bio", lang),
+                    profile: localized(person, "profile", lang),
+                    image: mediaUrl(person.image),
+                    imageFallback: person.image || "no image",
+                  }}
+                />
+              </li>
+            ))}
           </ul>
         </Section>
       ))}
-      <JoinSection url={settings.joinUrl} dict={dict} />
+      <JoinSection recruit={recruit} dict={dict} locale={lang} />
     </>
   );
 }

@@ -86,9 +86,10 @@ export function AdminPage({
             {description ? (
               <div
                 className={classNames(
-                  "max-w-md",
+                  "w-full",
                   "flex flex-wrap items-center gap-2 lg:justify-end",
                   "text-sm leading-6 text-sub lg:text-right",
+                  "break-keep",
                 )}
               >
                 {description}

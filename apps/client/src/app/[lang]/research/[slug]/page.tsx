@@ -1,7 +1,9 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SiteImage } from "@repo/blocks";
 import { ThemeDot } from "@repo/common";
+import Link from "next/link";
 import {
   GRID,
   ImageBento,
@@ -16,6 +18,7 @@ import { ROUTES } from "@/constants";
 import { hasLocale, localePath, localized, locales } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { getProjectsByTheme, getThemeBySlug, getThemes } from "@/libs/content";
+import { mediaUrl } from "@/libs/media";
 import { localeAlternates } from "@/libs/seo";
 
 export const revalidate = 60;
@@ -49,10 +52,14 @@ export default async function ResearchPage({
   if (!hasLocale(lang)) notFound();
   const theme = await getThemeBySlug(slug);
   if (!theme) notFound();
-  const [dict, projects] = await Promise.all([
+  const [dict, projects, themes] = await Promise.all([
     getDictionary(lang),
     getProjectsByTheme(theme.id),
+    getThemes(),
   ]);
+  /** 다른 리서치 분야 (이 분야 다음 번호부터 돌아가며) */
+  const index = themes.findIndex((t) => t.id === theme.id);
+  const others = [...themes.slice(index + 1), ...themes.slice(0, index)];
   const keywords = localized(theme, "keywords", lang);
   const alt = localized(theme, "image_alt", lang);
   const catchphrase = localized(theme, "catchphrase", lang);
@@ -60,8 +67,9 @@ export default async function ResearchPage({
   return (
     <>
       <PageHeader
+        titleSide="right"
         top={
-          <div className={classNames("flex flex-wrap items-center gap-3")}>
+          <div className={classNames("flex flex-col items-start gap-5")}>
             <PillLink href={localePath(lang, ROUTES.research)}>
               ← {dict.research.title}
             </PillLink>
@@ -118,7 +126,8 @@ export default async function ResearchPage({
           </div>
           <div
             className={classNames(
-              "flex flex-col gap-6 lg:col-span-6",
+              "max-w-3xl lg:col-span-7",
+              "flex flex-col gap-6",
               "break-keep",
             )}
           >
@@ -144,12 +153,77 @@ export default async function ResearchPage({
       <Section
         title={dict.research.projects}
         action={{
-          href: localePath(lang, ROUTES.projects),
+          href: `${localePath(lang, ROUTES.projects)}?research=${theme.slug}`,
           label: dict.home.viewAll,
         }}
       >
         <ProjectList projects={projects} locale={lang} dict={dict} />
       </Section>
+
+      {others.length ? (
+        <Section
+          title={dict.research.others}
+          action={{
+            href: localePath(lang, ROUTES.research),
+            label: dict.home.viewAll,
+          }}
+        >
+          <ul
+            className={classNames("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}
+          >
+            {others.map((other) => (
+              <li key={other.id}>
+                <Link
+                  href={localePath(lang, `/research/${other.slug}`)}
+                  cursor-label="Open"
+                  className={classNames(
+                    "h-full",
+                    "flex flex-col gap-4",
+                    "p-2",
+                    "rounded-3xl bg-sheet/60 transition hover:bg-sheet",
+                  )}
+                >
+                  <SiteImage
+                    src={mediaUrl(other.images[0])}
+                    alt={localized(other, "image_alt", lang)}
+                  />
+                  <span
+                    className={classNames(
+                      "flex flex-1 flex-col gap-2",
+                      "px-3 pb-3",
+                    )}
+                  >
+                    <span className={classNames("flex items-center gap-2")}>
+                      <ThemeDot number={other.number} size="sm" />
+                      <span
+                        className={classNames(
+                          "font-neuehaas text-xs font-medium text-sub",
+                        )}
+                      >
+                        {String(other.number).padStart(2, "0")}
+                      </span>
+                    </span>
+                    <span
+                      className={classNames(
+                        "text-lg leading-snug font-medium break-keep",
+                      )}
+                    >
+                      {localized(other, "title", lang)}
+                    </span>
+                    <span
+                      className={classNames(
+                        "line-clamp-2 text-sm leading-6 whitespace-pre-line text-sub",
+                      )}
+                    >
+                      {localized(other, "question", lang)}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
     </>
   );
 }

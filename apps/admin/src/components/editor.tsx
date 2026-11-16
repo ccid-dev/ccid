@@ -18,6 +18,12 @@ import { Button } from "@repo/common";
 import type { FormState } from "@/app/actions/auth";
 import { notify } from "@/libs/toast";
 import { SubmitButton } from "./forms";
+import {
+  PreviewPanel,
+  readForm,
+  type FormValues,
+  type PreviewLang,
+} from "./preview";
 
 /**
  * 편집 화면의 저장 · 삭제. 결과는 알림(토스트)으로 보여 주고,
@@ -79,6 +85,7 @@ export function EditorForm({
   onDelete,
   deleting = false,
   inspector,
+  preview,
   children,
 }: {
   action: (formData: FormData) => void;
@@ -90,11 +97,25 @@ export function EditorForm({
   deleting?: boolean;
   /** 오른쪽 속성 패널 */
   inspector?: ReactNode;
+  /** 사이트 미리보기 (지금 폼 값 · 언어 → 사이트 모양). 있으면 도구 막대에 ‘미리보기’ 버튼이 생깁니다. */
+  preview?: (values: FormValues, lang: PreviewLang) => ReactNode;
   children: ReactNode;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [dirty, setDirty] = useState(false);
-  const markDirty = useCallback(() => setDirty(true), []);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [values, setValues] = useState<FormValues>({});
+
+  /** 미리보기용 폼 값 다시 읽기 (화면이 바뀐 다음 프레임에 — 이미지처럼 상태로 바뀌는 값까지) */
+  const refreshValues = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (formRef.current) setValues(readForm(formRef.current));
+    });
+  }, []);
+  const markDirty = useCallback(() => {
+    setDirty(true);
+    refreshValues();
+  }, [refreshValues]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -120,6 +141,7 @@ export function EditorForm({
         ref={formRef}
         action={action}
         onChange={markDirty}
+        onInput={refreshValues}
         className={classNames("px-4 pb-16 md:px-10 xl:px-14")}
       >
         <div
@@ -189,6 +211,19 @@ export function EditorForm({
                   저장하지 않은 변경
                 </span>
               ) : null}
+              {preview ? (
+                <Button
+                  variant={previewOpen ? "solid" : "ghost"}
+                  aria-pressed={previewOpen}
+                  onClick={() => {
+                    if (!previewOpen && formRef.current)
+                      setValues(readForm(formRef.current));
+                    setPreviewOpen(!previewOpen);
+                  }}
+                >
+                  미리보기
+                </Button>
+              ) : null}
               {onDelete ? (
                 <Button
                   variant="ghost"
@@ -231,6 +266,14 @@ export function EditorForm({
             </aside>
           ) : null}
         </div>
+        {preview ? (
+          <PreviewPanel
+            open={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+          >
+            {(lang) => preview(values, lang)}
+          </PreviewPanel>
+        ) : null}
       </form>
     </DirtyContext>
   );

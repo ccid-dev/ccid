@@ -7,7 +7,7 @@ import { MediaBox } from "./MediaBox";
  *   3장 이하: 같은 크기로 한 줄
  *   4–5장: 대표 50% + 작은 칸 2열
  *   6–7장: 대표 40% + 작은 칸 3열
- *   8장 이상: 대표 33% + 작은 칸 4열 (9장까지), 나머지는 아래 가로 스크롤 줄
+ *   8장 이상: 대표 33% + 작은 칸 4열 (9장까지), 나머지는 아래 작은 칸들 (화면 너비에 맞춰 줄바꿈)
  */
 const MAX_SMALL = 8;
 const GRID_BY_COLUMNS: Record<number, string> = {
@@ -71,13 +71,11 @@ export function ImageBento({
       {rest.length ? (
         <ul
           className={classNames(
-            "-mx-5 md:mx-0",
-            "flex gap-3 overflow-x-auto",
-            "px-5 md:px-0",
+            "grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8",
           )}
         >
           {rest.map((image) => (
-            <li key={image} className={classNames("w-36 shrink-0 md:w-44")}>
+            <li key={image} className={classNames("min-w-0")}>
               <MediaBox src={image} alt={alt} />
             </li>
           ))}

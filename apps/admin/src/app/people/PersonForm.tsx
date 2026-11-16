@@ -18,6 +18,7 @@ import {
   type PersonCategory,
 } from "@/types";
 import { deletePerson, saveMyProfile, savePerson } from "./actions";
+import { PersonPreview } from "./PersonPreview";
 
 /** 계정 연결 고르기에 쓰는 계정 */
 export type AccountOption = { id: string; name: string; email: string };
@@ -71,6 +72,7 @@ export function PersonForm({
       }
       onDelete={onDelete}
       deleting={deleting}
+      preview={(values, lang) => <PersonPreview values={values} lang={lang} />}
       inspector={
         isMaster ? (
           <>
@@ -176,7 +178,7 @@ export function PersonForm({
           name="image"
           folder="people"
           defaultValue={person.image}
-          hint="세로 3:4 비율을 권장합니다."
+          hint="고르면 편집 도구가 떠서 3:4 영역을 고릅니다. 올린 뒤에도 편집으로 다시 고칠 수 있습니다."
         />
       </EditorSection>
     </EditorForm>

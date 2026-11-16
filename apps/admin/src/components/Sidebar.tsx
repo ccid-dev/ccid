@@ -2,6 +2,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import Logo from "@/public/img/logo.svg";
 import { signOut } from "@/app/actions/auth";
+import { setViewAsMember } from "@/app/actions/view";
 import { APP_INFO } from "@/config";
 import {
   ACCOUNT_NAV_ITEMS,
@@ -11,8 +12,9 @@ import {
   NAV_ITEMS,
   ROUTES,
   TOOL_NAV_ITEMS,
+  WORKSPACE_NAV_ITEMS,
 } from "@/constants";
-import { getCurrentAdmin } from "@/libs/auth";
+import { getCurrentAdmin, getViewRole } from "@/libs/auth";
 import { ADMIN_ROLE_LABEL, type AdminRole } from "@/types";
 import { SidebarNav, type NavGroup } from "./SidebarNav";
 
@@ -24,9 +26,12 @@ export async function Sidebar() {
   const current = await getCurrentAdmin();
   const profile =
     current?.profile?.status === "approved" ? current.profile : null;
-  const isMaster = profile?.role === "master";
+  // 메인테이너가 "일반 멤버로 보기" 중이면 일반 멤버 메뉴를 보여 줍니다.
+  const viewRole = profile ? await getViewRole(profile) : "member";
+  const isMaster = viewRole === "master";
   const groups: NavGroup[] = profile
     ? [
+        { label: "Lab", items: WORKSPACE_NAV_ITEMS },
         {
           label: "Content",
           items: [
@@ -37,8 +42,8 @@ export async function Sidebar() {
         {
           label: "System",
           items: [
-            ...TOOL_NAV_ITEMS,
             ...(isMaster ? MASTER_NAV_ITEMS : []),
+            ...TOOL_NAV_ITEMS,
             ...ACCOUNT_NAV_ITEMS,
           ],
         },
@@ -117,6 +122,9 @@ export async function Sidebar() {
                 {profile
                   ? ADMIN_ROLE_LABEL[profile.role as AdminRole]
                   : "승인 대기"}
+                {profile?.role === "master" && !isMaster
+                  ? " · 멤버로 보는 중"
+                  : ""}
               </span>
               <form action={signOut}>
                 <button
@@ -130,6 +138,20 @@ export async function Sidebar() {
                 </button>
               </form>
             </div>
+            {profile?.role === "master" ? (
+              <form action={setViewAsMember.bind(null, isMaster)}>
+                <button
+                  type="submit"
+                  className={classNames(
+                    "h-8 w-full",
+                    "rounded-lg bg-white transition hover:bg-sheet",
+                    "text-xs font-medium",
+                  )}
+                >
+                  {isMaster ? "일반 멤버로 보기" : "메인테이너 화면으로"}
+                </button>
+              </form>
+            ) : null}
           </div>
         ) : null}
         <p className={classNames("font-neuehaas text-[11px] text-mute")}>

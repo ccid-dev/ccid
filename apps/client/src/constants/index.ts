@@ -26,11 +26,11 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "people", href: ROUTES.people },
 ];
 
-/** 구분선 뒤에 따로 두는 메뉴 (Lab 페이지는 준비 중) */
+/** 구분선 뒤에 따로 두는 메뉴 (Lab — 지금은 곧 공개 대문). 숨기려면 isVisible: false */
 export const NAV_EXTRA_ITEM: NavItem = {
   key: "lab",
   href: ROUTES.lab,
-  isVisible: false, // Lab 페이지는 준비 중이므로 메뉴에서 숨김
+  isVisible: true, // 지금은 "곧 공개" 대문 페이지 (app/[lang]/lab)
 };
 
 /** 푸터의 People 링크가 이동할 그룹 (People 페이지의 구역 id 와 같음) */

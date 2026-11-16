@@ -22,3 +22,6 @@ export type {
 } from "@repo/blocks";
 export type { AdminRole, AdminStatus, AdminUser } from "./auth";
 export { ADMIN_ROLE_LABEL, ADMIN_STATUS_LABEL } from "./auth";
+
+/** 공지사항 */
+export type Notice = import("./database").Tables<"notices">;

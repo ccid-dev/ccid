@@ -189,3 +189,19 @@ export async function saveMyProfile(
   revalidatePeople();
   return { message: "저장했습니다." };
 }
+
+/** 그룹 안 순서 바꾸기 — 메인테이너 (끌어서 놓은 순서대로 sort_order 0, 1, 2 …) */
+export async function reorderPeople(ids: string[]): Promise<FormState> {
+  await requireMaster();
+  const supabase = await createClient();
+  const results = await Promise.all(
+    ids.map((id, index) =>
+      supabase.from("people").update({ sort_order: index }).eq("id", id),
+    ),
+  );
+  const failed = results.find((result) => result.error);
+  if (failed?.error)
+    return { error: `순서를 저장하지 못했습니다. (${failed.error.message})` };
+  revalidatePeople();
+  return { message: "순서를 바꿨습니다." };
+}

@@ -3,14 +3,14 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 /**
- * 레이아웃 기준: 화면 너비 전체를 12칸으로 나누고 (바깥 여백 px-5 · md:px-10),
- * 구역마다 필요한 칸만 씁니다. 기본은 왼쪽 3칸 = 제목, 오른쪽 9칸 = 내용.
+ * 레이아웃 기준: 화면 너비 전체를 10칸으로 나누고 (바깥 여백 px-5 · md:px-10),
+ * 왼쪽 3칸 = 제목, 오른쪽 7칸 = 내용. (홈 첫 화면만 자유 배치)
  */
 export const PAGE_X = "px-5 md:px-10";
 export const GRID = "grid gap-y-6 lg:grid-cols-10 lg:gap-x-10";
 
 /**
- * 구역: 왼쪽 3칸에 제목(+ 전체 보기), 오른쪽 9칸에 내용.
+ * 구역: 왼쪽 3칸에 제목(+ 전체 보기), 오른쪽 7칸에 내용.
  * 넓은 화면에서는 제목이 스크롤을 따라옵니다.
  */
 export function Section({
@@ -48,7 +48,7 @@ export function Section({
             <PillLink href={action.href}>{action.label} →</PillLink>
           ) : null}
         </header>
-        <div className={classNames("min-w-0 lg:col-span-9")}>{children}</div>
+        <div className={classNames("min-w-0 lg:col-span-7")}>{children}</div>
       </div>
     </section>
   );
@@ -79,76 +79,61 @@ export function PillLink({
 }
 
 /**
- * 페이지 머리: 왼쪽 큰 제목, 오른쪽 아래 설명.
- *   top: 제목 위 (뒤로 가기 · 번호), children: 머리 아래 덧붙일 것
+ * 페이지 머리 (구역과 같은 왼쪽 3칸 · 오른쪽 7칸 틀).
+ * - 목록 페이지: 왼쪽에 큰 제목, 오른쪽에 설명 (titleSide="left", 기본)
+ * - 상세 페이지: 왼쪽에 top(뒤로 가기 · 번호), 오른쪽에 큰 제목 · 설명 (titleSide="right")
  */
 export function PageHeader({
   title,
   description,
   top,
+  titleSide = "left",
   children,
 }: {
   title: ReactNode;
   description?: ReactNode;
   top?: ReactNode;
+  titleSide?: "left" | "right";
   children?: ReactNode;
 }) {
+  const heading = (
+    <h1
+      className={classNames(
+        "font-neuehaas text-4xl leading-[1.02] font-medium tracking-[-0.03em] break-keep md:text-6xl",
+      )}
+    >
+      {title}
+    </h1>
+  );
   return (
     <div className={classNames(PAGE_X, "pt-14 pb-4 md:pt-20")}>
-      {top ? <div className={classNames("mb-6")}>{top}</div> : null}
-      <div className={classNames(GRID, "lg:items-end")}>
-        <h1
-          className={classNames(
-            "lg:col-span-7",
-            "font-neuehaas text-4xl leading-[0.98] font-medium break-keep md:text-6xl",
-          )}
+      <div
+        className={classNames(GRID, { "lg:items-end": titleSide === "left" })}
+      >
+        <div className={classNames("flex flex-col gap-6 lg:col-span-3")}>
+          {top}
+          {titleSide === "left" ? heading : null}
+        </div>
+        <div
+          className={classNames("min-w-0 lg:col-span-7", "flex flex-col gap-4")}
         >
-          {title}
-        </h1>
-        {description ? (
-          <div
-            className={classNames(
-              "max-w-md lg:col-span-4 lg:col-start-9",
-              "text-base leading-7 text-sub",
-            )}
-          >
-            {description}
-          </div>
-        ) : null}
+          {titleSide === "right" ? heading : null}
+          {description ? (
+            <div
+              className={classNames(
+                "max-w-2xl",
+                "text-base leading-7 text-sub",
+              )}
+            >
+              {description}
+            </div>
+          ) : null}
+          {children}
+        </div>
       </div>
-      {children}
     </div>
   );
 }
 
-/** 작은 알약 목록 (키워드 · 해시태그). tone 으로 바탕을 고릅니다. */
-export function Pills({
-  items,
-  prefix = "",
-  tone = "sheet",
-}: {
-  items: string[];
-  prefix?: string;
-  /** sheet: 흰 바탕 위 · white: 회색 면 위 */
-  tone?: "sheet" | "white";
-}) {
-  return (
-    <ul className={classNames("flex flex-wrap gap-1.5")}>
-      {items.map((item) => (
-        <li
-          key={item}
-          className={classNames(
-            "h-7",
-            "inline-flex items-center",
-            "px-3",
-            ["rounded-full", tone === "white" ? "bg-white" : "bg-sheet/60"],
-            "text-xs text-sub",
-          )}
-        >
-          {prefix}
-          {item}
-        </li>
-      ))}
-    </ul>
-  );
-}
+/** 작은 알약 목록 (키워드 · 해시태그) — admin 미리보기와 같은 공용 컴포넌트 */
+export { Pills } from "@repo/blocks";

@@ -59,6 +59,90 @@ export type Database = {
           },
         ];
       };
+      notice_comments: {
+        Row: {
+          author_id: string | null;
+          author_name: string;
+          body: string;
+          created_at: string;
+          id: string;
+          notice_id: string;
+        };
+        Insert: {
+          author_id?: string | null;
+          author_name?: string;
+          body: string;
+          created_at?: string;
+          id?: string;
+          notice_id: string;
+        };
+        Update: {
+          author_id?: string | null;
+          author_name?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          notice_id?: string;
+        };
+        Relationships: [];
+      };
+      notice_reactions: {
+        Row: {
+          created_at: string;
+          emoji: string;
+          notice_id: string;
+          user_id: string;
+          user_name: string;
+        };
+        Insert: {
+          created_at?: string;
+          emoji: string;
+          notice_id: string;
+          user_id?: string;
+          user_name?: string;
+        };
+        Update: {
+          created_at?: string;
+          emoji?: string;
+          notice_id?: string;
+          user_id?: string;
+          user_name?: string;
+        };
+        Relationships: [];
+      };
+      notices: {
+        Row: {
+          author_id: string | null;
+          author_name: string;
+          body: string;
+          created_at: string;
+          id: string;
+          pinned: boolean;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          author_id?: string | null;
+          author_name?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          pinned?: boolean;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          author_id?: string | null;
+          author_name?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          pinned?: boolean;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       people: {
         Row: {
           id: string;
@@ -217,21 +301,60 @@ export type Database = {
         };
         Relationships: [];
       };
-      site_settings: {
+      recruit: {
         Row: {
-          key: string;
+          apply_url: string;
+          closed_message_en: string;
+          closed_message_ko: string;
+          closed_title_en: string;
+          closed_title_ko: string;
+          cta_en: string;
+          cta_ko: string;
+          description_en: string;
+          description_ko: string;
+          eyebrow_en: string;
+          eyebrow_ko: string;
+          id: number;
+          is_open: boolean;
+          title_en: string;
+          title_ko: string;
           updated_at: string;
-          value: string;
         };
         Insert: {
-          key: string;
+          apply_url?: string;
+          closed_message_en?: string;
+          closed_message_ko?: string;
+          closed_title_en?: string;
+          closed_title_ko?: string;
+          cta_en?: string;
+          cta_ko?: string;
+          description_en?: string;
+          description_ko?: string;
+          eyebrow_en?: string;
+          eyebrow_ko?: string;
+          id?: number;
+          is_open?: boolean;
+          title_en?: string;
+          title_ko?: string;
           updated_at?: string;
-          value?: string;
         };
         Update: {
-          key?: string;
+          apply_url?: string;
+          closed_message_en?: string;
+          closed_message_ko?: string;
+          closed_title_en?: string;
+          closed_title_ko?: string;
+          cta_en?: string;
+          cta_ko?: string;
+          description_en?: string;
+          description_ko?: string;
+          eyebrow_en?: string;
+          eyebrow_ko?: string;
+          id?: number;
+          is_open?: boolean;
+          title_en?: string;
+          title_ko?: string;
           updated_at?: string;
-          value?: string;
         };
         Relationships: [];
       };
@@ -315,6 +438,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_master: { Args: never; Returns: boolean };
       can_edit_own_profile: { Args: never; Returns: boolean };
+      system_usage: { Args: never; Returns: Json };
     };
     Enums: {
       [_ in never]: never;

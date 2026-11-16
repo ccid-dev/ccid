@@ -1,6 +1,24 @@
 "use client";
 
 import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  useCallback,
   useId,
   useRef,
   useState,
@@ -8,10 +26,18 @@ import {
   type ReactNode,
 } from "react";
 import classNames from "classnames";
-import { Button, LoadingOverlay } from "@repo/common";
+import { CroppedImage, splitCrop, withCrop, type CropArea } from "@repo/blocks";
+import {
+  Button,
+  IMAGE_ASPECTS,
+  IMAGE_RATIOS,
+  LoadingOverlay,
+  type ImageRatio,
+} from "@repo/common";
 import { mediaUrl } from "@/libs/media";
 import { toast } from "@/libs/toast";
 import { useMarkDirty } from "./editor";
+import { ImageEditor } from "./ImageEditor";
 import {
   formatBytes,
   UPLOAD_FORMATS,
@@ -19,19 +45,19 @@ import {
   type UploadFormat,
 } from "@/libs/upload";
 
-/** 미리보기 (주소가 없으면 키만 적은 회색 상자) */
+const RATIO_LABEL: Record<ImageRatio, string> = {
+  thumbnail: "4:3",
+  banner: "16:9",
+  profile: "3:4",
+};
+
+/** 미리보기 (크롭 반영 · 주소가 없으면 키만 적은 회색 상자) */
 function Preview({ value, className }: { value: string; className: string }) {
   const url = mediaUrl(value);
   return (
     <div className={classNames(className)}>
       {url ? (
-        <img
-          src={url}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className={classNames("size-full", "absolute inset-0 object-cover")}
-        />
+        <CroppedImage src={url} alt="" />
       ) : (
         <span
           className={classNames(
@@ -40,23 +66,21 @@ function Preview({ value, className }: { value: string; className: string }) {
             "text-center text-[10px] break-all text-sub",
           )}
         >
-          {value}
+          {splitCrop(value).key}
         </span>
       )}
     </div>
   );
 }
 
-/** 이미지 위에 놓이는 작은 네모 버튼 (←, →, ×) */
+/** 이미지 위에 놓이는 작은 네모 버튼 (편집 · 빼기) */
 function IconButton({
   label,
   onClick,
-  disabled,
   children,
 }: {
   label: string;
   onClick: () => void;
-  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -65,12 +89,14 @@ function IconButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      disabled={disabled}
+      // 끌어서 순서 바꾸기와 겹치지 않게
+      onPointerDown={(event) => event.stopPropagation()}
       className={classNames(
-        "size-7",
+        "h-7 min-w-7",
         "flex items-center justify-center",
-        "rounded-md bg-white/90 shadow-sm backdrop-blur transition hover:bg-white disabled:opacity-30",
-        "text-sm leading-none",
+        "px-2",
+        "rounded-md bg-white/90 shadow-sm backdrop-blur transition hover:bg-white",
+        "text-xs leading-none font-medium",
       )}
     >
       {children}
@@ -134,8 +160,57 @@ function FormatPicker({
   );
 }
 
-/** 파일 고르기 → 최적화 → 업로드. 진행 중에는 로딩 팝업을 띄웁니다. */
-function useUpload(folder: string, onUploaded: (keys: string[]) => void) {
+/**
+ * 크롭 도구를 약속(Promise)처럼 씁니다.
+ *   const crop = await edit(주소, 지금 크롭, "1 / 3")  → 적용하면 영역, 취소하면 null
+ */
+function useImageEditor(ratio: ImageRatio) {
+  const [editing, setEditing] = useState<{
+    src: string;
+    initial: CropArea | null;
+    step?: string;
+    resolve: (crop: CropArea | null) => void;
+  } | null>(null);
+
+  const edit = useCallback(
+    (src: string, initial: CropArea | null = null, step?: string) =>
+      new Promise<CropArea | null>((resolve) =>
+        setEditing({ src, initial, step, resolve }),
+      ),
+    [],
+  );
+
+  const finish = (crop: CropArea | null) => {
+    editing?.resolve(crop);
+    setEditing(null);
+  };
+
+  const editor = editing ? (
+    <ImageEditor
+      key={editing.src}
+      src={editing.src}
+      aspect={IMAGE_ASPECTS[ratio]}
+      aspectLabel={RATIO_LABEL[ratio]}
+      initial={editing.initial}
+      step={editing.step}
+      onCancel={() => finish(null)}
+      onApply={(crop) => finish(crop)}
+    />
+  ) : null;
+
+  return { edit, editor };
+}
+
+/**
+ * 파일 고르기 → 크롭 도구 → 최적화 → 업로드. 올리는 동안 로딩 팝업을 띄웁니다.
+ * 원본(최적화본)을 올리고, 고른 영역은 키 끝에 #crop=… 으로 적습니다.
+ * 크롭 도구에서 취소한 파일은 올리지 않습니다.
+ */
+function useUpload(
+  folder: string,
+  ratio: ImageRatio,
+  onUploaded: (values: string[]) => void,
+) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [format, setFormat] = useState<UploadFormat>("webp");
   const [progress, setProgress] = useState<{
@@ -144,6 +219,7 @@ function useUpload(folder: string, onUploaded: (keys: string[]) => void) {
     name: string;
   }>();
   const markDirty = useMarkDirty();
+  const { edit, editor } = useImageEditor(ratio);
 
   const accept = UPLOAD_FORMATS.find((f) => f.value === format)!.accept;
 
@@ -151,14 +227,34 @@ function useUpload(folder: string, onUploaded: (keys: string[]) => void) {
     const files = [...(event.target.files ?? [])];
     event.target.value = "";
     if (!files.length) return;
-    const keys: string[] = [];
+
+    // 1. 한 장씩 크롭 영역 고르기
+    const picked: { file: File; crop: CropArea }[] = [];
+    for (const [index, file] of files.entries()) {
+      const preview = URL.createObjectURL(file);
+      const crop = await edit(
+        preview,
+        null,
+        files.length > 1 ? `${index + 1} / ${files.length}` : undefined,
+      );
+      URL.revokeObjectURL(preview);
+      if (crop) picked.push({ file, crop });
+    }
+    if (!picked.length) return;
+
+    // 2. 올리기
+    const values: string[] = [];
     let before = 0;
     let after = 0;
     try {
-      for (const [index, file] of files.entries()) {
-        setProgress({ index: index + 1, total: files.length, name: file.name });
+      for (const [index, { file, crop }] of picked.entries()) {
+        setProgress({
+          index: index + 1,
+          total: picked.length,
+          name: file.name,
+        });
         const uploaded = await uploadImage(file, folder, format);
-        keys.push(uploaded.key);
+        values.push(withCrop(uploaded.key, crop));
         before += uploaded.originalSize;
         after += uploaded.size;
       }
@@ -168,30 +264,44 @@ function useUpload(folder: string, onUploaded: (keys: string[]) => void) {
       );
     } finally {
       setProgress(undefined);
-      if (keys.length) {
-        onUploaded(keys);
+      if (values.length) {
+        onUploaded(values);
         markDirty();
         toast(
-          `${keys.length}장 올림 · ${formatBytes(before)} → ${formatBytes(after)}`,
+          `${values.length}장 올림 · ${formatBytes(before)} → ${formatBytes(after)}`,
         );
       }
     }
   };
 
+  /** 이미 올린 이미지의 크롭 다시 고르기 (원본 그대로) */
+  const recrop = async (value: string) => {
+    const { key, crop } = splitCrop(value);
+    const url = mediaUrl(key);
+    if (!url) return null;
+    const next = await edit(url, crop);
+    if (!next) return null;
+    markDirty();
+    return withCrop(key, next);
+  };
+
   const overlay = (
-    <LoadingOverlay
-      open={Boolean(progress)}
-      message={
-        format === "webp"
-          ? "이미지를 최적화해서 올리는 중"
-          : "이미지를 올리는 중"
-      }
-      detail={
-        progress
-          ? `${progress.index} / ${progress.total} · ${progress.name}`
-          : undefined
-      }
-    />
+    <>
+      <LoadingOverlay
+        open={Boolean(progress)}
+        message={
+          format === "webp"
+            ? "이미지를 최적화해서 올리는 중"
+            : "이미지를 올리는 중"
+        }
+        detail={
+          progress
+            ? `${progress.index} / ${progress.total} · ${progress.name}`
+            : undefined
+        }
+      />
+      {editor}
+    </>
   );
   const fileInput = (multiple: boolean) => (
     <input
@@ -211,6 +321,7 @@ function useUpload(folder: string, onUploaded: (keys: string[]) => void) {
     overlay,
     fileInput,
     markDirty,
+    recrop,
   };
 }
 
@@ -224,23 +335,27 @@ function FieldLabel({ children }: { children: ReactNode }) {
 }
 
 /**
- * 이미지 한 장 (구성원 사진 등). 폼에는 name 으로 키가 전송됩니다.
+ * 이미지 한 장 (구성원 사진 등). 고르면 크롭 도구가 뜨고, 올린 뒤에도 "편집"으로 다시 고릅니다.
+ * 폼에는 name 으로 "키#crop=…" 이 전송됩니다.
  */
 export function ImageField({
   label,
   name,
   folder,
+  ratio = "profile",
   defaultValue = "",
   hint,
 }: {
   label: string;
   name: string;
   folder: string;
+  /** 크롭 · 미리보기 비율 (사이트에서 보이는 비율과 같게) */
+  ratio?: ImageRatio;
   defaultValue?: string;
   hint?: string;
 }) {
   const [value, setValue] = useState(defaultValue);
-  const upload = useUpload(folder, ([key]) => setValue(key ?? ""));
+  const upload = useUpload(folder, ratio, ([next]) => setValue(next ?? ""));
 
   return (
     <div className={classNames("flex flex-col gap-3")}>
@@ -248,16 +363,25 @@ export function ImageField({
       <input type="hidden" name={name} value={value} />
       <div className={classNames("flex flex-wrap items-start gap-5")}>
         {value ? (
-          <div className={classNames("relative", "shrink-0")}>
+          <div className={classNames("w-36", "relative shrink-0")}>
             <Preview
               value={value}
               className={classNames(
-                "aspect-profile w-36",
+                ["w-full", IMAGE_RATIOS[ratio]],
                 "relative overflow-hidden",
                 "rounded-2xl bg-white",
               )}
             />
-            <div className={classNames("absolute top-2 right-2")}>
+            <div className={classNames("absolute top-2 right-2", "flex gap-1")}>
+              <IconButton
+                label="편집"
+                onClick={async () => {
+                  const next = await upload.recrop(value);
+                  if (next) setValue(next);
+                }}
+              >
+                편집
+              </IconButton>
               <IconButton
                 label="빼기"
                 onClick={() => {
@@ -275,7 +399,7 @@ export function ImageField({
             onClick={upload.open}
             disabled={upload.uploading}
             className={classNames(
-              "aspect-profile w-36 shrink-0",
+              ["w-36 shrink-0", IMAGE_RATIOS[ratio]],
               "flex flex-col items-center justify-center gap-1",
               "rounded-2xl border border-dashed border-gray-300 bg-white/60 transition hover:border-black",
               "text-xs text-sub",
@@ -297,15 +421,6 @@ export function ImageField({
               {value ? "다른 사진으로 바꾸기" : "파일 고르기"}
             </Button>
           </div>
-          {value ? (
-            <p
-              className={classNames(
-                "font-neuehaas text-[11px] break-all text-mute",
-              )}
-            >
-              {value}
-            </p>
-          ) : null}
           {hint ? (
             <p className={classNames("text-xs text-mute")}>{hint}</p>
           ) : null}
@@ -317,36 +432,121 @@ export function ImageField({
   );
 }
 
+/** 여러 장 목록의 한 칸: 끌어서 순서 바꾸기 · 편집 · 빼기 */
+function SortableTile({
+  value,
+  index,
+  ratio,
+  onEdit,
+  onRemove,
+}: {
+  value: string;
+  index: number;
+  ratio: ImageRatio;
+  onEdit: () => void;
+  onRemove: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: value });
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
+      aria-label={`이미지 ${index + 1} — 끌어서 순서를 바꿉니다`}
+      className={classNames(
+        "relative",
+        "cursor-grab touch-none outline-none active:cursor-grabbing",
+        "rounded-2xl focus-visible:ring-2 focus-visible:ring-black",
+        { "z-10 opacity-80 shadow-xl": isDragging },
+      )}
+    >
+      <Preview
+        value={value}
+        className={classNames(
+          ["w-full", IMAGE_RATIOS[ratio]],
+          "relative overflow-hidden",
+          "rounded-2xl bg-white",
+          "pointer-events-none",
+        )}
+      />
+      <span
+        className={classNames(
+          "h-6",
+          "absolute top-2 left-2 inline-flex items-center",
+          "px-2",
+          [
+            "rounded-full",
+            index === 0 ? "bg-black" : "bg-white/90 backdrop-blur",
+          ],
+          [
+            "font-neuehaas text-[11px] font-medium",
+            index === 0 ? "text-white" : "text-main",
+          ],
+        )}
+      >
+        {index === 0 ? "대표" : String(index + 1).padStart(2, "0")}
+      </span>
+      <div className={classNames("absolute top-2 right-2", "flex gap-1")}>
+        <IconButton label="편집" onClick={onEdit}>
+          편집
+        </IconButton>
+        <IconButton label="빼기" onClick={onRemove}>
+          ×
+        </IconButton>
+      </div>
+    </li>
+  );
+}
+
 /**
- * 이미지 여러 장 (분야 이미지 등). 첫 번째가 대표 이미지이고, 순서를 바꿀 수 있습니다.
+ * 이미지 여러 장 (분야 이미지 등). 첫 번째가 대표 이미지이고, 끌어서 순서를 바꿉니다.
+ * 고르면 한 장씩 크롭 도구가 뜨고, 올린 뒤에도 "편집"으로 다시 고릅니다.
  * 폼에는 같은 name 으로 순서대로 전송됩니다. (formData.getAll(name))
  */
 export function ImageListField({
   label,
   name,
   folder,
+  ratio = "thumbnail",
   defaultValue = [],
   hint,
 }: {
   label: string;
   name: string;
   folder: string;
+  ratio?: ImageRatio;
   defaultValue?: string[];
   hint?: string;
 }) {
   const [items, setItems] = useState(defaultValue);
-  const upload = useUpload(folder, (keys) =>
-    setItems((prev) => [...prev, ...keys]),
+  const upload = useUpload(folder, ratio, (values) =>
+    setItems((prev) => [...prev, ...values]),
+  );
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
-  const move = (index: number, offset: number) => {
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    setItems((prev) =>
+      arrayMove(
+        prev,
+        prev.indexOf(String(active.id)),
+        prev.indexOf(String(over.id)),
+      ),
+    );
     upload.markDirty();
-    setItems((prev) => {
-      const next = [...prev];
-      const [item] = next.splice(index, 1);
-      next.splice(index + offset, 0, item!);
-      return next;
-    });
   };
 
   return (
@@ -364,78 +564,51 @@ export function ImageListField({
       {items.map((item) => (
         <input key={item} type="hidden" name={name} value={item} />
       ))}
-      <ul className={classNames("grid grid-cols-2 gap-2 sm:grid-cols-3")}>
-        {items.map((item, index) => (
-          <li key={item} className={classNames("relative")}>
-            <Preview
-              value={item}
-              className={classNames(
-                "aspect-thumbnail w-full",
-                "relative overflow-hidden",
-                "rounded-2xl bg-white",
-              )}
-            />
-            <span
-              className={classNames(
-                "h-6",
-                "absolute top-2 left-2 inline-flex items-center",
-                "px-2",
-                [
-                  "rounded-full",
-                  index === 0 ? "bg-black" : "bg-white/90 backdrop-blur",
-                ],
-                [
-                  "font-neuehaas text-[11px] font-medium",
-                  index === 0 ? "text-white" : "text-main",
-                ],
-              )}
-            >
-              {index === 0 ? "대표" : String(index + 1).padStart(2, "0")}
-            </span>
-            <div className={classNames("absolute top-2 right-2", "flex gap-1")}>
-              <IconButton
-                label="앞으로"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-              >
-                ←
-              </IconButton>
-              <IconButton
-                label="뒤로"
-                disabled={index === items.length - 1}
-                onClick={() => move(index, 1)}
-              >
-                →
-              </IconButton>
-              <IconButton
-                label="빼기"
-                onClick={() => {
-                  upload.markDirty();
-                  setItems((prev) => prev.filter((_, i) => i !== index));
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onDragEnd}
+      >
+        <SortableContext items={items} strategy={rectSortingStrategy}>
+          <ul className={classNames("grid grid-cols-2 gap-2 sm:grid-cols-3")}>
+            {items.map((item, index) => (
+              <SortableTile
+                key={item}
+                value={item}
+                index={index}
+                ratio={ratio}
+                onEdit={async () => {
+                  const next = await upload.recrop(item);
+                  if (next)
+                    setItems((prev) =>
+                      prev.map((value) => (value === item ? next : value)),
+                    );
                 }}
+                onRemove={() => {
+                  upload.markDirty();
+                  setItems((prev) => prev.filter((value) => value !== item));
+                }}
+              />
+            ))}
+            <li>
+              <button
+                type="button"
+                onClick={upload.open}
+                disabled={upload.uploading}
+                className={classNames(
+                  ["w-full", IMAGE_RATIOS[ratio]],
+                  "flex flex-col items-center justify-center gap-1",
+                  "rounded-2xl border border-dashed border-gray-300 bg-white/60 transition hover:border-black disabled:opacity-50",
+                  "text-xs text-sub",
+                )}
               >
-                ×
-              </IconButton>
-            </div>
-          </li>
-        ))}
-        <li>
-          <button
-            type="button"
-            onClick={upload.open}
-            disabled={upload.uploading}
-            className={classNames(
-              "aspect-thumbnail w-full",
-              "flex flex-col items-center justify-center gap-1",
-              "rounded-2xl border border-dashed border-gray-300 bg-white/60 transition hover:border-black disabled:opacity-50",
-              "text-xs text-sub",
-            )}
-          >
-            <span className={classNames("text-xl leading-none")}>+</span>
-            이미지 올리기
-          </button>
-        </li>
-      </ul>
+                <span className={classNames("text-xl leading-none")}>+</span>
+                이미지 올리기
+              </button>
+            </li>
+          </ul>
+        </SortableContext>
+      </DndContext>
       {hint ? <p className={classNames("text-xs text-mute")}>{hint}</p> : null}
       {upload.fileInput(true)}
       {upload.overlay}

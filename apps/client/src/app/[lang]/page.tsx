@@ -11,7 +11,7 @@ import { APP_INFO } from "@/config";
 import { PARTNERS, ROUTES } from "@/constants";
 import { hasLocale, localePath } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
-import { getProjects, getSiteSettings, getThemes } from "@/libs/content";
+import { getProjects, getRecruit, getThemes } from "@/libs/content";
 import { localeAlternates } from "@/libs/seo";
 
 /** admin 에서 바꾼 내용이 최대 60초 뒤 반영됩니다. */
@@ -30,11 +30,11 @@ export async function generateMetadata({
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) return null;
-  const [dict, themes, projects, settings] = await Promise.all([
+  const [dict, themes, projects, recruit] = await Promise.all([
     getDictionary(lang),
     getThemes(),
     getProjects(),
-    getSiteSettings(),
+    getRecruit(),
   ]);
 
   return (
@@ -111,7 +111,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <PartnerMarquee title={dict.home.partners} partners={PARTNERS} />
 
-      <JoinSection url={settings.joinUrl} dict={dict} />
+      <JoinSection recruit={recruit} dict={dict} locale={lang} />
     </>
   );
 }

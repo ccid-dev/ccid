@@ -27,3 +27,23 @@ export const formInt = (formData: FormData, key: string) => {
 /** FormData 의 체크박스 값 */
 export const formBool = (formData: FormData, key: string) =>
   formData.get(key) === "on";
+
+/** 날짜 표시 (한국 시간) "2026. 11. 16." */
+export const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));
+
+/** 날짜 · 시각 표시 (한국 시간) "2026. 11. 16. 오후 3:20" */
+export const formatDateTime = (value: string) =>
+  new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "Asia/Seoul",
+  }).format(new Date(value));

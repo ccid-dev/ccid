@@ -50,9 +50,7 @@ export function SidebarNav({ groups }: { groups: NavGroup[] }) {
                       ],
                       [
                         "font-neuehaas text-sm whitespace-nowrap",
-                        active
-                          ? "font-medium text-main"
-                          : "text-sub hover:text-main",
+                        active ? "font-medium text-main" : "text-main",
                       ],
                     )}
                   >

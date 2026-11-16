@@ -101,15 +101,14 @@ export async function getPeopleGroups() {
 }
 
 /**
- * 사이트 설정 (admin 의 Site 화면). 아직 테이블이 없거나 읽지 못하면 빈 값으로 둡니다.
- *   joinUrl: Join 버튼이 여는 주소 (비면 Join 구역을 숨김)
+ * 모집 설정 (admin 의 Recruit 화면): Join 문구 · 모집 중 여부 · 지원 링크 · 닫혔을 때 안내.
+ * 아직 표가 없거나 읽지 못하면 null (Join 은 사전 문구 · 닫힘 상태로 보입니다).
  */
-export async function getSiteSettings() {
+export async function getRecruit() {
   const { data } = await getSupabase()
-    .from("site_settings")
-    .select("key, value");
-  const values = Object.fromEntries(
-    (data ?? []).map((row) => [row.key, row.value]),
-  );
-  return { joinUrl: values.join_url ?? "" };
+    .from("recruit")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+  return data;
 }

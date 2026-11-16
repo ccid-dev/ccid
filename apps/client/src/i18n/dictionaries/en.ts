@@ -103,6 +103,7 @@ export const en: Dictionary = {
     description:
       "Explore information about internships and opportunities at cciD.",
     cta: "Opportunities at cciD",
+    closedTitle: "We’re not recruiting right now",
   },
   research: {
     title: "Research",
@@ -111,6 +112,7 @@ export const en: Dictionary = {
     keywords: "Focus areas",
     projects: "Projects",
     images: "Images",
+    others: "More research",
     more: "Learn more",
   },
   projects: {
@@ -143,6 +145,14 @@ export const en: Dictionary = {
       intern: "Research Interns",
       alumni: "Alumni",
     },
+  },
+  lab: {
+    title: "Lab",
+    eyebrow: "Coming soon",
+    lead: "New stories from cciD will be available soon.",
+    description:
+      "We’re gathering the prototypes, tools, and small experiments in progress at the lab. Opening soon.",
+    research: "Explore research",
   },
   notFound: {
     title: "Page not found",

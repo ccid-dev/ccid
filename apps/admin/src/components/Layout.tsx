@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
-import { getCurrentAdmin } from "@/libs/auth";
+import { setViewAsMember } from "@/app/actions/view";
+import { getCurrentAdmin, isViewingAsMember } from "@/libs/auth";
 import { ModalRoot } from "./ModalRoot";
 import { Sidebar } from "./Sidebar";
 import { Toaster } from "./Toaster";
@@ -14,19 +15,46 @@ import { Toaster } from "./Toaster";
 export async function Layout({ children }: { children: ReactNode }) {
   const current = await getCurrentAdmin();
   const approved = current?.profile?.status === "approved";
+  const viewingAsMember =
+    approved && current?.profile
+      ? await isViewingAsMember(current.profile)
+      : false;
 
   return (
-    <div
-      className={classNames(
-        "min-h-screen",
-        { "md:flex": approved },
-        "bg-background",
-      )}
-    >
-      {approved ? <Sidebar /> : null}
-      <main className={classNames("min-w-0 flex-1")}>{children}</main>
-      <ModalRoot />
-      <Toaster />
-    </div>
+    <>
+      {viewingAsMember ? (
+        <form
+          action={setViewAsMember.bind(null, false)}
+          className={classNames(
+            "flex flex-wrap items-center justify-center gap-x-3 gap-y-1",
+            "px-4 py-2",
+            "bg-black",
+            "text-xs text-white",
+          )}
+        >
+          <span>
+            일반 멤버 화면으로 보는 중입니다. 화면만 바뀌고 권한은 그대로예요.
+          </span>
+          <button
+            type="submit"
+            className={classNames("font-medium underline underline-offset-2")}
+          >
+            메인테이너 화면으로
+          </button>
+        </form>
+      ) : null}
+      <div
+        className={classNames(
+          "min-h-screen",
+          { "md:flex": approved },
+          "bg-background",
+        )}
+      >
+        {approved ? <Sidebar /> : null}
+        <main className={classNames("min-w-0 flex-1")}>{children}</main>
+        <ModalRoot />
+        <Toaster />
+      </div>
+    </>
   );
 }

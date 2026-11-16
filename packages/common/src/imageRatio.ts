@@ -10,3 +10,10 @@ export const IMAGE_RATIOS = {
 } as const;
 
 export type ImageRatio = keyof typeof IMAGE_RATIOS;
+
+/** 비율 숫자 (가로 / 세로) — 이미지 크롭 도구에서 씁니다. global.css 의 값과 같게 둡니다. */
+export const IMAGE_ASPECTS: Record<ImageRatio, number> = {
+  thumbnail: 4 / 3,
+  banner: 16 / 9,
+  profile: 3 / 4,
+};

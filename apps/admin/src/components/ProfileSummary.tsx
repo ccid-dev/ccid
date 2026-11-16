@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
+import { CroppedImage } from "@repo/blocks";
 import { mediaUrl } from "@/libs/media";
 import {
   PERSON_CATEGORY_LABEL,
@@ -35,15 +36,7 @@ export function ProfileSummary({
           "rounded-lg bg-white",
         )}
       >
-        {image ? (
-          <img
-            src={image}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className={classNames("size-full", "absolute inset-0 object-cover")}
-          />
-        ) : null}
+        {image ? <CroppedImage src={image} alt="" /> : null}
       </span>
       <div className={classNames("min-w-0 flex-1", "flex flex-col gap-1")}>
         <p className={classNames("font-neuehaas text-xl font-medium")}>

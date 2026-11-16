@@ -25,6 +25,7 @@ export function HomeProjects({
         <li key={project.id}>
           <Link
             href={projectHref(locale, project)}
+            cursor-label="View"
             className={classNames(
               "group grid gap-x-8 gap-y-1 md:grid-cols-[56px_minmax(0,1fr)_minmax(0,200px)_64px] md:items-baseline",
               "px-4 py-4 md:px-5",

@@ -4,6 +4,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useState } from "react";
 import { ThemeDot } from "@repo/common";
+import { CroppedImage } from "@repo/blocks";
 import { Pills } from "@/components/content";
 import { localePath, localized, type Dictionary, type Locale } from "@/i18n";
 import { mediaUrl } from "@/libs/media";
@@ -44,6 +45,7 @@ export function HomeResearch({
             <li key={theme.id}>
               <Link
                 href={href(theme)}
+                cursor-label="Open"
                 onMouseEnter={() => setActive(index)}
                 onFocus={() => setActive(index)}
                 className={classNames(
@@ -56,14 +58,15 @@ export function HomeResearch({
                 )}
               >
                 {image ? (
-                  <img
-                    src={image}
-                    alt=""
+                  <span
                     className={classNames(
                       "aspect-thumbnail w-24 shrink-0 lg:hidden",
-                      "rounded-lg md:rounded-xl object-cover",
+                      "relative overflow-hidden",
+                      "rounded-lg bg-sheet md:rounded-xl",
                     )}
-                  />
+                  >
+                    <CroppedImage src={image} alt="" />
+                  </span>
                 ) : null}
                 <span
                   className={classNames(
@@ -131,19 +134,18 @@ export function HomeResearch({
         {themes.map((theme, index) => {
           const image = mediaUrl(theme.images[0]);
           return image ? (
-            <img
+            <span
               key={theme.id}
-              src={image}
-              alt=""
               className={classNames(
-                "size-full",
-                "absolute inset-0 object-cover",
+                "absolute inset-0 overflow-hidden",
                 "transition duration-700",
                 index === active
                   ? "scale-100 opacity-100"
                   : "scale-105 opacity-0",
               )}
-            />
+            >
+              <CroppedImage src={image} alt="" lazy={false} />
+            </span>
           ) : null;
         })}
         <span

@@ -14,6 +14,7 @@ import { Badge, PublishBadge } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import type { Theme } from "@/types";
 import { deleteTheme, saveTheme } from "./actions";
+import { ThemePreview } from "./ThemePreview";
 
 /** 이 분야에 연결된 프로젝트 (오른쪽 목록) */
 export type LinkedProject = {
@@ -50,6 +51,7 @@ export function ThemeForm({
       status={<PublishBadge published={theme.is_published} />}
       onDelete={onDelete}
       deleting={deleting}
+      preview={(values, lang) => <ThemePreview values={values} lang={lang} />}
       inspector={
         <>
           <InspectorSection title="공개">
@@ -189,7 +191,7 @@ export function ThemeForm({
           name="images"
           folder="themes"
           defaultValue={theme.images}
-          hint="첫 번째가 대표 이미지입니다. 화살표로 순서를 바꿉니다. WebP 를 고르면 긴 변 2400px 이하로 줄여 WebP 로 저장합니다."
+          hint="첫 번째가 대표 이미지입니다. 끌어서 순서를 바꾸고, 편집으로 4:3 영역을 다시 고릅니다. WebP 를 고르면 긴 변 2400px 이하로 줄여 저장합니다."
         />
         <BilingualField
           label="이미지 대체 텍스트"

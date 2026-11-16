@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { websiteJsonLd } from "@/libs/seo";
 import { Footer } from "./Footer";
+import { CustomCursor } from "./CustomCursor";
 import { Header } from "./Header";
 import { JsonLd } from "./JsonLd";
 
@@ -31,6 +32,7 @@ export async function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer />
+      <CustomCursor />
     </div>
   );
 }

@@ -19,3 +19,12 @@
     }
   }
 }
+
+/* 커스텀 커서(components/CustomCursor.tsx)가 켜지면 기본 커서를 숨깁니다. 글 입력칸은 그대로 둡니다. */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none;
+}
+html.has-custom-cursor :is(input, textarea, [contenteditable="true"]) {
+  cursor: auto;
+}
