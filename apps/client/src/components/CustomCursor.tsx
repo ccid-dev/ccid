@@ -25,6 +25,7 @@ const TRAIL = [
  *   스크롤 중에는 스크롤 표현만 보여 주고(원은 기본 크기 · 설명 숨김),
  *   멈추면 그 자리의 요소를 다시 확인해 커짐 · 설명을 되살립니다.
  * 움직임 줄이기 설정이면 따라오는 지연 · 스크롤 원 없이 바로 움직입니다.
+ * 모달(<dialog>) 위에서도 보이도록 커서를 최상위 층(popover)에 둡니다.
  */
 export function CustomCursor() {
   const [enabled, setEnabled] = useState(false);
@@ -47,6 +48,30 @@ export function CustomCursor() {
     if (!enabled) return;
     const root = document.documentElement;
     root.classList.add("has-custom-cursor");
+
+    // 커서를 최상위 층(top layer)에 올립니다. 모달(<dialog>)도 최상위 층에 뜨기 때문에,
+    // 모달이 열릴 때마다 커서를 다시 올려 모달 위에서도 보이게 합니다.
+    const cursor = cursorRef.current;
+    const raise = () => {
+      if (!cursor || typeof cursor.showPopover !== "function") return;
+      if (cursor.matches(":popover-open")) cursor.hidePopover();
+      cursor.showPopover();
+    };
+    raise();
+    const dialogs = new MutationObserver((records) => {
+      if (
+        records.some(
+          (record) =>
+            record.target instanceof HTMLDialogElement && record.target.open,
+        )
+      )
+        raise();
+    });
+    dialogs.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["open"],
+    });
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -101,6 +126,8 @@ export function CustomCursor() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       root.classList.remove("has-custom-cursor");
+      dialogs.disconnect();
+      if (cursor?.matches(":popover-open")) cursor.hidePopover();
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
       window.removeEventListener("pointermove", onMove);
@@ -120,8 +147,12 @@ export function CustomCursor() {
     <div
       ref={cursorRef}
       aria-hidden
+      // 최상위 층에 올리기 위한 popover (브라우저 기본 popover 모양은 아래 클래스로 지움)
+      popover="manual"
       className={classNames(
-        "pointer-events-none fixed top-0 left-0 z-200",
+        "size-0",
+        "pointer-events-none fixed inset-auto top-0 left-0 z-200 overflow-visible",
+        "m-0 border-0 bg-transparent p-0",
         "mix-blend-difference transition-opacity duration-300",
         visible ? "opacity-100" : "opacity-0",
       )}
