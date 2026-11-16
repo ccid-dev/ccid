@@ -79,11 +79,14 @@ export function SiteImage({
   alt,
   ratio = "thumbnail",
   fallback = "no image",
+  imageClassName,
 }: {
   src: string | null | undefined;
   alt: string;
   ratio?: ImageRatio;
   fallback?: string;
+  /** 이미지에 더할 클래스 (예: 흑백 grayscale) */
+  imageClassName?: string;
 }) {
   return (
     <div
@@ -94,7 +97,7 @@ export function SiteImage({
       )}
     >
       {src ? (
-        <CroppedImage src={src} alt={alt} />
+        <CroppedImage src={src} alt={alt} className={imageClassName} />
       ) : (
         <span
           className={classNames(

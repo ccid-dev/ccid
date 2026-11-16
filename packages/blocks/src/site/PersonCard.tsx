@@ -12,7 +12,7 @@ export type PersonCardData = {
   imageFallback?: string;
 };
 
-/** People 페이지의 구성원 카드: 사진 · 이름 · 직함 · 짧은 약력 · (펼쳐 보는) 긴 소개 */
+/** People 페이지의 구성원 카드: 사진(흑백) · 이름 · 직함 · 짧은 약력 · (펼쳐 보는) 긴 소개 */
 export function PersonCard({
   person,
   profileLabel,
@@ -27,6 +27,7 @@ export function PersonCard({
         alt={person.name}
         ratio="profile"
         fallback={person.imageFallback}
+        imageClassName={classNames("grayscale")}
       />
       <p className={classNames("mt-2", "font-semibold")}>{person.name}</p>
       {person.role ? (
