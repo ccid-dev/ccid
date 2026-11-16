@@ -29,14 +29,18 @@ export async function Footer() {
         "font-neuehaas",
       )}
     >
-      <div className={classNames("flex flex-col justify-between gap-12")}>
-        <p className={classNames("text-xl font-medium")}>{APP_INFO.fullName}</p>
+      <div
+        className={classNames("flex flex-col justify-between gap-4 md:gap-12")}
+      >
+        <p className={classNames("text-lg md:text-xl font-medium")}>
+          {APP_INFO.fullName}
+        </p>
         <Link
           href={localePath(locale, ROUTES.home)}
           aria-label={APP_INFO.name}
           className={classNames("self-start")}
         >
-          <Logo aria-hidden className={classNames("h-24 w-auto")} />
+          <Logo aria-hidden className={classNames("h-16 md:h-24 w-auto")} />
         </Link>
       </div>
 
@@ -47,7 +51,7 @@ export async function Footer() {
           )}
         >
           <nav className={classNames("flex gap-10 sm:gap-0")}>
-            <div className={classNames("sm:w-34")}>
+            <div className={classNames("w-30 sm:w-40")}>
               <p className={classNames("text-base leading-6 font-medium")}>
                 {dict.footer.people}
               </p>

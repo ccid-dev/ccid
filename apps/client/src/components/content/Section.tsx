@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
  * 구역마다 필요한 칸만 씁니다. 기본은 왼쪽 3칸 = 제목, 오른쪽 9칸 = 내용.
  */
 export const PAGE_X = "px-5 md:px-10";
-export const GRID = "grid gap-y-8 lg:grid-cols-12 lg:gap-x-10";
+export const GRID = "grid gap-y-6 lg:grid-cols-10 lg:gap-x-10";
 
 /**
  * 구역: 왼쪽 3칸에 제목(+ 전체 보기), 오른쪽 9칸에 내용.
@@ -100,7 +100,7 @@ export function PageHeader({
         <h1
           className={classNames(
             "lg:col-span-7",
-            "font-neuehaas text-5xl leading-[0.98] font-medium tracking-[-0.04em] break-keep md:text-6xl",
+            "font-neuehaas text-4xl leading-[0.98] font-medium break-keep md:text-6xl",
           )}
         >
           {title}

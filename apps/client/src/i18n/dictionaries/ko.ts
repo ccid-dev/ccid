@@ -31,6 +31,8 @@ export const ko = {
   common: {
     loading: "불러오는 중…",
     skipToContent: "본문으로 건너뛰기",
+    openMenu: "메뉴 열기",
+    closeMenu: "메뉴 닫기",
   },
   home: {
     research: "Research",

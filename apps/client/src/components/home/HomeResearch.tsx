@@ -47,7 +47,7 @@ export function HomeResearch({
                 onMouseEnter={() => setActive(index)}
                 onFocus={() => setActive(index)}
                 className={classNames(
-                  "group flex items-center gap-5",
+                  "group flex items-start gap-5",
                   "px-0 py-0 md:px-6 md:py-6",
                   [
                     "rounded-2xl transition",
@@ -83,7 +83,7 @@ export function HomeResearch({
                   </span>
                   <span
                     className={classNames(
-                      "text-xl leading-snug font-medium tracking-[-0.02em] break-keep md:text-2xl",
+                      "text-lg leading-snug font-medium tracking-[-0.02em] break-keep md:text-2xl",
                     )}
                   >
                     {localized(theme, "title", locale)}
@@ -99,7 +99,7 @@ export function HomeResearch({
                 <span
                   aria-hidden
                   className={classNames(
-                    "size-9 shrink-0",
+                    "size-9 shrink-0 self-center",
                     "flex items-center justify-center",
                     [
                       "rounded-full transition",
