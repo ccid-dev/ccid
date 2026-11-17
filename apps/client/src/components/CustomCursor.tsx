@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /** 누를 수 있는 요소 (이 위에서는 원이 커집니다) */
 const CLICKABLE =
@@ -25,7 +25,8 @@ const TRAIL = [
  *   스크롤 중에는 스크롤 표현만 보여 주고(원은 기본 크기 · 설명 숨김),
  *   멈추면 그 자리의 요소를 다시 확인해 커짐 · 설명을 되살립니다.
  * 움직임 줄이기 설정이면 따라오는 지연 · 스크롤 원 없이 바로 움직입니다.
- * 모달(<dialog>) 위에서도 보이도록 커서를 최상위 층(popover)에 둡니다.
+ * 모달(<dialog>)이 열려 있는 동안에는 커서를 최상위 층(popover)에 올려 모달 위에서도 보이게 합니다.
+ *   (Safari 는 최상위 층에서 mix-blend 가 아래 페이지와 섞이지 않아서, 그동안은 반전 대신 검은 원으로)
  */
 export function CustomCursor() {
   const [enabled, setEnabled] = useState(false);
@@ -33,7 +34,22 @@ export function CustomCursor() {
   const [hover, setHover] = useState(false);
   const [label, setLabel] = useState("");
   const [scroll, setScroll] = useState<"up" | "down" | null>(null);
+  /** 모달이 열려 있어 커서를 최상위 층에 올렸는지 */
+  const [layered, setLayered] = useState(false);
   const cursorRef = useRef<HTMLDivElement>(null);
+
+  /** 최상위 층으로 (이미 올라가 있으면 다시 올려 새로 열린 모달보다 위로) */
+  const raise = () => {
+    const cursor = cursorRef.current;
+    if (!cursor?.hasAttribute("popover") || !cursor.showPopover) return;
+    if (cursor.matches(":popover-open")) cursor.hidePopover();
+    cursor.showPopover();
+  };
+
+  // popover 가 붙은 직후 (그리기 전에) 최상위 층에 띄웁니다.
+  useLayoutEffect(() => {
+    if (layered) raise();
+  }, [layered]);
 
   // 마우스가 있는 화면인지 (터치 기기에서는 쓰지 않음)
   useEffect(() => {
@@ -49,23 +65,16 @@ export function CustomCursor() {
     const root = document.documentElement;
     root.classList.add("has-custom-cursor");
 
-    // 커서를 최상위 층(top layer)에 올립니다. 모달(<dialog>)도 최상위 층에 뜨기 때문에,
-    // 모달이 열릴 때마다 커서를 다시 올려 모달 위에서도 보이게 합니다.
-    const cursor = cursorRef.current;
-    const raise = () => {
-      if (!cursor || typeof cursor.showPopover !== "function") return;
-      if (cursor.matches(":popover-open")) cursor.hidePopover();
-      cursor.showPopover();
-    };
-    raise();
+    // 모달(<dialog>)이 열리고 닫히는 것을 지켜보고, 열려 있는 동안만 커서를 최상위 층에 올립니다.
     const dialogs = new MutationObserver((records) => {
-      if (
-        records.some(
-          (record) =>
-            record.target instanceof HTMLDialogElement && record.target.open,
-        )
-      )
-        raise();
+      const opened = records.some(
+        (record) =>
+          record.target instanceof HTMLDialogElement && record.target.open,
+      );
+      const anyOpen = Boolean(document.querySelector("dialog[open]"));
+      setLayered(anyOpen);
+      // 이미 올라가 있는데 모달이 또 열리면 그 위로 다시
+      if (opened) raise();
     });
     dialogs.observe(document.body, {
       subtree: true,
@@ -127,7 +136,6 @@ export function CustomCursor() {
     return () => {
       root.classList.remove("has-custom-cursor");
       dialogs.disconnect();
-      if (cursor?.matches(":popover-open")) cursor.hidePopover();
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
       window.removeEventListener("pointermove", onMove);
@@ -147,13 +155,15 @@ export function CustomCursor() {
     <div
       ref={cursorRef}
       aria-hidden
-      // 최상위 층에 올리기 위한 popover (브라우저 기본 popover 모양은 아래 클래스로 지움)
-      popover="manual"
+      // 모달이 열려 있을 때만 최상위 층용 popover (브라우저 기본 popover 모양은 아래 클래스로 지움)
+      popover={layered ? "manual" : undefined}
       className={classNames(
         "size-0",
         "pointer-events-none fixed inset-auto top-0 left-0 z-200 overflow-visible",
         "m-0 border-0 bg-transparent p-0",
-        "mix-blend-difference transition-opacity duration-300",
+        // 평소: 바탕과 반전 · 모달 위: 검은 원 (Safari 최상위 층에서는 반전이 안 됨)
+        { "mix-blend-difference": !layered },
+        "transition-opacity duration-300",
         visible ? "opacity-100" : "opacity-0",
       )}
     >
@@ -168,7 +178,7 @@ export function CustomCursor() {
           }}
           className={classNames(
             "absolute top-0 left-0",
-            "rounded-full bg-white",
+            ["rounded-full", layered ? "bg-black" : "bg-white"],
             "transition-[transform,opacity] duration-300 ease-out",
             scroll ? "opacity-100" : "opacity-0",
           )}
@@ -183,7 +193,7 @@ export function CustomCursor() {
         }}
         className={classNames(
           "absolute top-0 left-0",
-          "rounded-full bg-white",
+          ["rounded-full", layered ? "bg-black" : "bg-white"],
           "transition-[width,height] duration-200 ease-out",
         )}
       />
@@ -193,7 +203,10 @@ export function CustomCursor() {
         className={classNames(
           "absolute top-0 left-0",
           "transition-[opacity,transform] duration-200",
-          "font-neuehaas text-[11px] font-medium whitespace-nowrap text-white",
+          [
+            "font-neuehaas text-[11px] font-medium whitespace-nowrap",
+            layered ? "text-main" : "text-white",
+          ],
           showLabel ? "opacity-100" : "opacity-0",
         )}
       >
