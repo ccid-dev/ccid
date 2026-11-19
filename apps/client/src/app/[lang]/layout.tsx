@@ -39,7 +39,8 @@ export default async function RootLayout({
         />
         <link rel="stylesheet" href={ADOBE_FONTS_URL} />
       </head>
-      <body>
+      {/* 브라우저 확장 프로그램이 <body> 에 속성(예: location)을 붙여도 경고하지 않도록. (안쪽 내용은 그대로 검사) */}
+      <body suppressHydrationWarning>
         <Layout>{children}</Layout>
       </body>
       {/* ID가 없으면 빈 id로 스크립트를 요청해 400이 나므로, 환경변수가 있을 때만 붙인다 */}

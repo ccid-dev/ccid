@@ -38,7 +38,7 @@ export function ResearchNumber({
     >
       <span
         className={classNames(
-          "font-neuehaas text-4xl leading-none font-medium tracking-[-0.04em] md:text-5xl",
+          "font-neuehaas text-4xl leading-none md:text-5xl",
         )}
       >
         {twoDigits(number)}
@@ -49,8 +49,10 @@ export function ResearchNumber({
 }
 
 /**
- * Research 목록의 분야 카드: 회색 면 안에 글(제목 · 질문 · 요약 · 키워드) · 대표 이미지.
- * 칸 배치는 쓰는 쪽이 className 으로 정합니다.
+ * Research 목록의 분야 카드: 회색 면 안에 글 · 대표 이미지. 칸 배치는 쓰는 쪽이 className 으로 정합니다.
+ * 글은 세 덩어리로 묶습니다 (덩어리 안은 붙이고, 덩어리 사이는 크게 띄움):
+ *   ① 제목(크게, 보통 굵기) + 영문 부제  ② 질문 + 요약  ③ 키워드 + 자세히 보기 (맨 아래)
+ * 모션: 마우스를 올리면 바탕이 진해지고, 이미지가 살짝 확대되며, 화살표가 밀립니다.
  */
 export function ResearchCard({
   theme,
@@ -69,54 +71,76 @@ export function ResearchCard({
       cursorLabel="Open"
       className={classNames(
         className,
-        "grid gap-8 md:grid-cols-2 md:gap-12",
-        "p-6 md:p-10",
-        "rounded-3xl bg-sheet/60 transition hover:bg-sheet",
+        "group grid gap-10 md:grid-cols-2 md:gap-12",
+        "p-6 md:p-12 2xl:p-16",
+        "rounded-3xl bg-sheet/60 transition-colors duration-300 hover:bg-sheet",
       )}
     >
-      <span className={classNames("flex flex-col gap-6")}>
-        <span>
+      <span className={classNames("flex flex-col gap-10 md:gap-14")}>
+        {/* ① 제목 + 영문 부제 */}
+        <span className={classNames("flex flex-col gap-2")}>
           <span
             className={classNames(
-              "block",
-              "text-2xl leading-tight font-medium tracking-[-0.02em] break-keep md:text-3xl",
+              "text-3xl leading-tight break-keep md:text-4xl 2xl:text-5xl",
             )}
           >
             {theme.title}
           </span>
           {theme.subtitle ? (
-            <span
-              className={classNames(
-                "block",
-                "mt-1.5",
-                "font-neuehaas text-sub",
-              )}
-            >
+            <span className={classNames("font-neuehaas text-sm text-sub")}>
               {theme.subtitle}
             </span>
           ) : null}
         </span>
-        <span
-          className={classNames(
-            "text-lg leading-8 whitespace-pre-line break-keep",
-          )}
-        >
-          {theme.question}
+        {/* ② 질문 + 요약 */}
+        <span className={classNames("flex flex-col gap-3")}>
+          <span
+            className={classNames(
+              "text-lg leading-8 font-medium whitespace-pre-line break-keep 2xl:text-2xl 2xl:leading-10",
+            )}
+          >
+            {theme.question}
+          </span>
+          <span
+            className={classNames(
+              "text-sm leading-6 text-sub 2xl:text-base 2xl:leading-7",
+            )}
+          >
+            {theme.summary}
+          </span>
         </span>
-        <span className={classNames("text-sm leading-6 text-sub")}>
-          {theme.summary}
-        </span>
-        {theme.keywords.length ? (
-          <Pills items={theme.keywords} tone="white" />
-        ) : null}
-        <span
-          className={classNames("mt-auto", "font-neuehaas text-sm font-medium")}
-        >
-          {moreLabel} →
+        {/* ③ 키워드 + 자세히 보기 (맨 아래) */}
+        <span className={classNames("mt-auto flex flex-col gap-5")}>
+          {theme.keywords.length ? (
+            <Pills items={theme.keywords} tone="white" />
+          ) : null}
+          <span
+            className={classNames(
+              "inline-flex items-center gap-1.5",
+              "font-neuehaas text-sm font-medium",
+            )}
+          >
+            {moreLabel}
+            <span
+              aria-hidden
+              className={classNames(
+                "transition-transform duration-300 group-hover:translate-x-1",
+              )}
+            >
+              →
+            </span>
+          </span>
         </span>
       </span>
       {theme.image ? (
-        <SiteImage src={theme.image} alt={theme.imageAlt} />
+        <span
+          className={classNames(
+            "block overflow-hidden rounded-2xl",
+            "[&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-[cubic-bezier(.22,1,.36,1)] group-hover:[&_img]:scale-105",
+          )}
+        >
+          <SiteImage src={theme.image} alt={theme.imageAlt} />
+        </span>
       ) : null}
     </Link>
   );

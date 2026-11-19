@@ -5,9 +5,7 @@ import { SiteImage } from "@repo/blocks";
 import { ThemeDot } from "@repo/common";
 import Link from "next/link";
 import {
-  GRID,
   ImageBento,
-  PAGE_X,
   PageHeader,
   PillLink,
   Pills,
@@ -70,8 +68,8 @@ export default async function ResearchPage({
         titleSide="right"
         top={
           <div className={classNames("flex flex-col items-start gap-5")}>
-            <PillLink href={localePath(lang, ROUTES.research)}>
-              ← {dict.research.title}
+            <PillLink href={localePath(lang, ROUTES.research)} arrow="left">
+              {dict.research.title}
             </PillLink>
             <span className={classNames("flex items-center gap-2.5")}>
               <ThemeDot number={theme.number} size="lg" />
@@ -90,7 +88,7 @@ export default async function ResearchPage({
         description={
           <p
             className={classNames(
-              "text-xl leading-snug font-medium tracking-[-0.01em] whitespace-pre-line break-keep text-main",
+              "text-xl leading-snug font-medium whitespace-pre-line break-keep text-main",
             )}
           >
             {localized(theme, "question", lang)}
@@ -99,24 +97,25 @@ export default async function ResearchPage({
       />
 
       {theme.images.length ? (
-        <div className={classNames(PAGE_X, "pt-12 md:pt-16")}>
+        <div className={classNames("px-5 md:px-10", "pt-12 md:pt-16")}>
           <ImageBento
             images={theme.images}
             alt={alt}
             label={dict.research.images}
+            prevLabel={dict.research.prevImage}
+            nextLabel={dict.research.nextImage}
           />
         </div>
       ) : null}
 
-      <div className={classNames(PAGE_X, "pt-16 md:pt-24")}>
-        <div className={classNames(GRID)}>
-          <div className={classNames("flex flex-col gap-3 lg:col-span-3")}>
+      <div className={classNames("px-5 md:px-10", "pt-16 md:pt-24")}>
+        <div className={classNames("grid gap-y-6 lg:grid-cols-10 lg:gap-x-10")}>
+          <div className={classNames("flex flex-col gap-5 lg:col-span-2")}>
             {keywords.length ? (
               <>
+                {/* 다른 구역 제목과 같은 크기 */}
                 <h2
-                  className={classNames(
-                    "font-neuehaas text-sm font-medium text-sub",
-                  )}
+                  className={classNames("font-neuehaas text-2xl leading-tight")}
                 >
                   {dict.research.keywords}
                 </h2>
@@ -126,26 +125,37 @@ export default async function ResearchPage({
           </div>
           <div
             className={classNames(
-              "max-w-3xl lg:col-span-7",
-              "flex flex-col gap-6",
+              "max-w-3xl lg:col-span-8 2xl:max-w-4xl",
+              "flex flex-col gap-10",
               "break-keep",
             )}
           >
+            {/* 캐치프레이즈 (크게, 보통 굵기) → 한 칸 띄우고 요약 + 설명 (붙여서 한 덩어리) */}
             {catchphrase ? (
               <p
                 className={classNames(
-                  "text-2xl leading-snug font-medium tracking-[-0.02em] whitespace-pre-line",
+                  "text-2xl leading-snug whitespace-pre-line md:text-3xl 2xl:text-4xl",
                 )}
               >
                 {catchphrase}
               </p>
             ) : null}
-            <p className={classNames("text-lg leading-8")}>
-              {localized(theme, "summary", lang)}
-            </p>
-            <p className={classNames("leading-7 whitespace-pre-line text-sub")}>
-              {localized(theme, "description", lang)}
-            </p>
+            <div className={classNames("flex flex-col gap-4")}>
+              <p
+                className={classNames(
+                  "text-lg leading-8 2xl:text-xl 2xl:leading-9",
+                )}
+              >
+                {localized(theme, "summary", lang)}
+              </p>
+              <p
+                className={classNames(
+                  "text-base leading-7 whitespace-pre-line text-sub",
+                )}
+              >
+                {localized(theme, "description", lang)}
+              </p>
+            </div>
           </div>
         </div>
       </div>

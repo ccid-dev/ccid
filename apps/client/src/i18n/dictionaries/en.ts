@@ -33,11 +33,23 @@ export const en: Dictionary = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
   },
+  /** 에이전트 구 대화 창 (components/agent-blob — mode="agent" 일 때) */
+  agent: {
+    open: "Open voice agent",
+    title: "cciD Agent",
+    close: "Close",
+    talk: "Talk",
+    send: "Send",
+  },
   home: {
     research: "Research",
     projects: "Projects",
     viewAll: "View all",
     partners: "Partners",
+    /** 첫 화면 아래 스크롤 안내 버튼 (스크린리더용) */
+    scrollHint: "Scroll down",
+    /** 넓은 화면 오른쪽 섹션 인디케이터 (스크린리더용) */
+    sections: "Sections",
   },
   about: {
     title: "About",
@@ -112,6 +124,8 @@ export const en: Dictionary = {
     keywords: "Focus areas",
     projects: "Projects",
     images: "Images",
+    prevImage: "Previous image",
+    nextImage: "Next image",
     others: "More research",
     more: "Learn more",
   },
@@ -131,6 +145,8 @@ export const en: Dictionary = {
     empty: "No published projects yet.",
     open: "Details",
     close: "Close",
+    prev: "Previous project",
+    next: "Next project",
     research: "Related research",
     ndaNote: "This project is under NDA, so only basic details are shown.",
   },

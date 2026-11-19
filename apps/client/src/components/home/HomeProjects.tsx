@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import Link from "next/link";
 import { ThemeDot } from "@repo/common";
+import { Reveal } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { localePath, localized, type Locale } from "@/i18n";
 import type { ProjectWithThemes } from "@/libs/content";
@@ -11,6 +12,8 @@ export const projectHref = (locale: Locale, project: ProjectWithThemes) =>
 
 /**
  * 홈 Projects: 큰 글자 목록. 누르면 Projects 페이지로 가서 그 프로젝트 모달이 열립니다.
+ * 넓은 화면에서는 내용 8칸에 맞춥니다: 연도 1 · 제목(+ 아래 회사명) 6 · 점 · 화살표 1.
+ * 모션: 화면에 들어올 때 위에서부터 차례로 떠오르고, 한 줄에 마우스를 올리면 나머지 줄이 흐려집니다.
  */
 export function HomeProjects({
   projects,
@@ -20,53 +23,63 @@ export function HomeProjects({
   locale: Locale;
 }) {
   return (
-    <ul className={classNames("-mx-4 flex flex-col md:-mx-5")}>
-      {projects.map((project) => (
+    <ul className={classNames("group/list -mx-4 flex flex-col md:-mx-5")}>
+      {projects.map((project, index) => (
         <li key={project.id}>
-          <Link
-            href={projectHref(locale, project)}
-            cursor-label="View"
-            className={classNames(
-              "group grid gap-x-8 gap-y-1 md:grid-cols-[56px_minmax(0,1fr)_minmax(0,200px)_64px] md:items-baseline",
-              "px-4 py-4 md:px-5",
-              "rounded-2xl transition hover:bg-sheet/60",
-            )}
-          >
-            <span
+          <Reveal delay={index * 60}>
+            <Link
+              href={projectHref(locale, project)}
+              cursor-label="View"
               className={classNames(
-                "font-neuehaas text-sm font-medium text-sub",
+                "group grid gap-x-8 gap-y-1 md:grid-cols-[56px_minmax(0,1fr)_64px] md:items-baseline",
+                "lg:grid-cols-8 lg:gap-x-10",
+                "px-4 py-4 md:px-5",
+                "rounded-2xl transition duration-300 hover:bg-sheet/60",
+                // 다른 줄 흐리게 (보고 있는 줄은 그대로)
+                "group-hover/list:opacity-40 hover:opacity-100! focus-visible:opacity-100!",
               )}
             >
-              {project.year_start}
-            </span>
-            <span
-              className={classNames(
-                "text-base leading-snug tracking-[-0.02em] break-keep md:text-xl",
-              )}
-            >
-              {localized(project, "title", locale)}
-            </span>
-            <span className={classNames("truncate text-sm text-sub")}>
-              {localized(project, "client", locale)}
-            </span>
-            <span
-              className={classNames("flex items-center gap-1.5 md:justify-end")}
-            >
-              {project.themes.map((theme) => (
-                <ThemeDot key={theme.slug} number={theme.number} />
-              ))}
               <span
-                aria-hidden
                 className={classNames(
-                  "hidden md:inline",
-                  "ml-2",
-                  "font-neuehaas text-sub transition group-hover:translate-x-1 group-hover:text-main",
+                  "font-neuehaas text-sm font-medium text-sub",
                 )}
               >
-                →
+                {project.year_start}
               </span>
-            </span>
-          </Link>
+              {/* 제목 + 바로 아래 회사명 (한 덩어리로 읽히도록) */}
+              <span className={classNames("flex flex-col gap-1 lg:col-span-6")}>
+                <span
+                  className={classNames(
+                    "text-lg leading-snug break-keep md:text-xl",
+                  )}
+                >
+                  {localized(project, "title", locale)}
+                </span>
+                <span className={classNames("truncate text-sm text-sub")}>
+                  {localized(project, "client", locale)}
+                </span>
+              </span>
+              <span
+                className={classNames(
+                  "flex items-center gap-1.5 md:justify-end",
+                )}
+              >
+                {project.themes.map((theme) => (
+                  <ThemeDot key={theme.slug} number={theme.number} />
+                ))}
+                <span
+                  aria-hidden
+                  className={classNames(
+                    "hidden md:inline",
+                    "ml-2",
+                    "font-neuehaas text-sub transition group-hover:translate-x-1 group-hover:text-main",
+                  )}
+                >
+                  →
+                </span>
+              </span>
+            </Link>
+          </Reveal>
         </li>
       ))}
     </ul>

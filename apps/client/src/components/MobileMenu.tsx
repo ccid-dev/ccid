@@ -108,7 +108,7 @@ export function MobileMenu({
                   className={classNames(
                     "block",
                     "py-1",
-                    "font-neuehaas text-5xl leading-tight font-medium tracking-[-0.03em]",
+                    "font-neuehaas text-5xl leading-tight",
                     isCurrent(link.href) ? "text-main" : "text-gray-300",
                   )}
                 >

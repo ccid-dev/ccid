@@ -32,21 +32,30 @@ export function JoinSection({
 
   return (
     <Section id="join" title={text("eyebrow", dict.join.eyebrow)}>
-      <div className={classNames("max-w-4xl", "flex flex-col gap-6")}>
-        <p
-          className={classNames(
-            "text-xl leading-snug font-medium tracking-[-0.02em] whitespace-pre-line break-keep md:text-2xl md:leading-[1.3]",
-          )}
-        >
-          {text("title", dict.join.title)}
-        </p>
-        <p
-          className={classNames(
-            "leading-7 whitespace-pre-line break-keep text-sub",
-          )}
-        >
-          {text("description", dict.join.description)}
-        </p>
+      {/* 검은 박스로 묶어 강조: 넓은 화면은 왼쪽 제목 · 설명, 오른쪽 아래 버튼 */}
+      <div
+        className={classNames(
+          "flex flex-col gap-10 md:flex-row md:items-end md:justify-between",
+          "p-8 md:p-12 lg:p-16",
+          "rounded-3xl bg-black text-white",
+        )}
+      >
+        <div className={classNames("max-w-2xl", "flex flex-col gap-4")}>
+          <p
+            className={classNames(
+              "text-2xl leading-snug whitespace-pre-line break-keep md:text-3xl 2xl:text-4xl",
+            )}
+          >
+            {text("title", dict.join.title)}
+          </p>
+          <p
+            className={classNames(
+              "text-base leading-7 whitespace-pre-line break-keep text-white/60",
+            )}
+          >
+            {text("description", dict.join.description)}
+          </p>
+        </div>
         <JoinButton
           label={text("cta", dict.join.cta)}
           url={recruit?.apply_url ?? ""}

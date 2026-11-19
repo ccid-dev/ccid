@@ -3,7 +3,9 @@
 /*
  * 폰트
  * - font-pretendard: 본문·설명 등 한글이 들어가는 곳 (기본 폰트)
- * - font-neuehaas:   UI 요소 (Adobe Fonts, 400 · 500 · 700). 한글은 Pretendard 로 대체
+ * - font-neuehaas:   UI 요소 (Adobe Fonts). 한글은 Pretendard 로 대체
+ *   굵기 클래스가 폰트 이름 그대로 나오도록 맞춰 뒀습니다 (아래 @layer base 의 .font-neuehaas):
+ *     font-light = 45 Light · font-normal(기본) = 55 Roman · font-medium = 65 Medium · font-bold = 75 Bold
  * --font-pretendard-variable 은 next/font(apps/<app>/src/theme/fonts.ts)가 <html> 에 붙입니다.
  */
 @theme {
@@ -85,5 +87,41 @@
 
   .checking {
     border: 1px dashed red;
+  }
+
+  /*
+   * Neue Haas 굵기 맞추기.
+   * Adobe 키트는 이름과 CSS 숫자가 한 칸씩 밀려 있습니다: 45 Light = 400 · 55 Roman = 500 · 65 Medium = 600 · 75 Bold = 700.
+   * 그대로 두면 font-medium 이 55 Roman, 굵기 없음이 45 Light 로 나와서,
+   * font-neuehaas 안에서만 Tailwind 굵기 변수를 한 칸씩 옮겨 클래스 이름 = 폰트 이름이 되게 합니다.
+   * (font-medium 등은 font-weight: var(--font-weight-medium) 을 읽으므로 이 범위 안에서만 바뀝니다. Pretendard 는 그대로)
+   * 키트에 없는 굵기: thin · extralight → 45 Light, semibold → 65 Medium, extrabold · black → 75 Bold.
+   * 주의: 이 안의 한글(Pretendard 대체)도 같은 숫자를 받아 한 단계 굵어집니다. (기본 → Medium 500)
+   */
+  .font-neuehaas {
+    --font-weight-thin: 400;
+    --font-weight-extralight: 400;
+    --font-weight-light: 400; /* 45 Light */
+    --font-weight-normal: 500; /* 55 Roman */
+    --font-weight-medium: 600; /* 65 Medium */
+    --font-weight-semibold: 600; /* 65 Medium */
+    --font-weight-bold: 700; /* 75 Bold */
+    --font-weight-extrabold: 700;
+    --font-weight-black: 700;
+    /* 굵기 클래스가 없으면 55 Roman (같은 요소의 굵기 클래스가 있으면 그쪽이 이김) */
+    font-weight: 500;
+  }
+
+  /* Neue Haas 안에서 다시 Pretendard 로 바꾼 곳은 굵기 변수를 원래대로 */
+  .font-pretendard {
+    --font-weight-thin: 100;
+    --font-weight-extralight: 200;
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
   }
 }

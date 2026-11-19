@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buttonClassName, Container } from "@repo/common";
 import { ROUTES } from "@/constants";
 import { localePath } from "@/i18n";
 import { getDictionary, getLocale } from "@/i18n/server";
@@ -17,20 +16,15 @@ export default async function NotFound() {
 
   return (
     <div className={classNames("px-5 py-24 sm:px-8")}>
-      <Container className={classNames("text-center")}>
+      <div className={classNames("w-full max-w-5xl", "mx-auto", "text-center")}>
         <p
           className={classNames(
-            "font-neuehaas text-xs font-medium tracking-[0.16em] text-sub uppercase",
+            "font-neuehaas text-xs font-medium text-sub uppercase",
           )}
         >
           404
         </p>
-        <h1
-          className={classNames(
-            "mt-3",
-            "text-3xl font-semibold tracking-[-0.03em]",
-          )}
-        >
+        <h1 className={classNames("mt-3", "text-3xl font-semibold")}>
           {dict.notFound.title}
         </h1>
         <p className={classNames("mt-4", "text-sub")}>
@@ -38,11 +32,17 @@ export default async function NotFound() {
         </p>
         <Link
           href={localePath(locale, ROUTES.home)}
-          className={classNames(buttonClassName(), "mt-8")}
+          className={classNames(
+            "h-10",
+            "inline-flex shrink-0 items-center justify-center gap-2",
+            "mt-8 px-4",
+            "rounded-lg bg-black transition hover:opacity-85",
+            "text-sm font-semibold whitespace-nowrap text-white",
+          )}
         >
           {dict.notFound.home}
         </Link>
-      </Container>
+      </div>
     </div>
   );
 }

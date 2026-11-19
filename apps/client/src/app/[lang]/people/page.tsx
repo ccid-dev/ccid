@@ -53,6 +53,7 @@ export default async function PeoplePage({
               <li key={person.id}>
                 <PersonCard
                   profileLabel={dict.people.profile}
+                  closeLabel={dict.project.close}
                   person={{
                     name: localized(person, "name", lang),
                     role: localized(person, "role", lang),

@@ -53,15 +53,48 @@ export type Partner = {
  * 로고 파일을 넣으면 logo 를 적어 주세요. (public/img/partners/README.md)
  */
 export const PARTNERS: Partner[] = [
-  { name: "Samsung Electronics" },
-  { name: "Hyundai Motor Group" },
-  { name: "Kia" },
-  { name: "LG Electronics" },
-  { name: "ZER01NE" },
-  { name: "CJ CGV" },
-  { name: "NAVER Cloud" },
-  { name: "Ministry of Trade, Industry and Energy" },
-  { name: "Seoul Design Foundation" },
-  { name: "Lotte" },
-  { name: "Häagen-Dazs" },
+  {
+    name: "Samsung Electronics",
+    logo: "/img/partners/samsung.png",
+  },
+  {
+    name: "Hyundai Motor Group",
+    logo: "/img/partners/hyundai.png",
+  },
+  {
+    name: "Kia",
+    logo: "/img/partners/kia.png",
+  },
+  {
+    name: "LG Electronics",
+    logo: "/img/partners/lg.png",
+  },
+  {
+    name: "ZER01NE",
+    logo: "/img/partners/zerone.png",
+  },
+  {
+    name: "CJ CGV",
+    logo: "/img/partners/cjcgv.png",
+  },
+  {
+    name: "NAVER Cloud",
+    logo: "/img/partners/navercloud.png",
+  },
+  {
+    name: "Ministry of Trade, Industry and Energy",
+    logo: "/img/partners/trade.png",
+  },
+  {
+    name: "Seoul Design Foundation",
+    logo: "/img/partners/seouldesign.png",
+  },
+  {
+    name: "Lotte",
+    logo: "/img/partners/lotte.png",
+  },
+  {
+    name: "Häagen-Dazs",
+    logo: "/img/partners/haagendazs.png",
+  },
 ];

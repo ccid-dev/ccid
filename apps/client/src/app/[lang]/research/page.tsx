@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import { ResearchCard, ResearchNumber } from "@repo/blocks";
-import { GRID, PAGE_X, PageHeader, SiteNextLink } from "@/components/content";
+import { PageHeader, SiteNextLink } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { hasLocale, localePath, localized } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
@@ -40,18 +40,21 @@ export default async function ResearchIndexPage({
       />
       <ol
         className={classNames(
-          PAGE_X,
+          "px-5 md:px-10",
           "flex flex-col gap-6 pt-10 pb-24 md:pt-14",
         )}
       >
         {themes.map((theme) => (
-          <li key={theme.id} className={classNames(GRID, "gap-y-4")}>
+          <li
+            key={theme.id}
+            className={classNames("grid gap-y-4 lg:grid-cols-10 lg:gap-x-10")}
+          >
             <ResearchNumber
               number={theme.number}
-              className={classNames("lg:col-span-3")}
+              className={classNames("lg:col-span-2")}
             />
             <ResearchCard
-              className={classNames("lg:col-span-7")}
+              className={classNames("lg:col-span-8")}
               Link={SiteNextLink}
               moreLabel={dict.research.more}
               theme={{

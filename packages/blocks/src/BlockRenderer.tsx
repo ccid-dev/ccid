@@ -11,7 +11,7 @@ function TitleBlockView({ block }: { block: TitleBlock }) {
   return (
     <h1
       className={classNames(
-        "text-4xl leading-[1.1] font-semibold tracking-[-0.04em] text-balance sm:text-6xl",
+        "text-4xl leading-[1.1] font-semibold text-balance sm:text-6xl",
       )}
     >
       {block.content.text}

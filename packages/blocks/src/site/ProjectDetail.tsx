@@ -78,7 +78,7 @@ export function ProjectDetail({
           <h2
             id={titleId}
             className={classNames(
-              "text-xl leading-snug font-medium tracking-[-0.02em] break-keep md:text-2xl",
+              "text-xl leading-snug font-medium break-keep md:text-2xl",
             )}
           >
             {project.title}

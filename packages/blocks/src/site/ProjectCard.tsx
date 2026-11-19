@@ -13,6 +13,8 @@ export type ProjectCardData = {
 
 /**
  * 프로젝트 목록의 한 줄 카드. onClick 이 있으면 누를 수 있는 버튼, 없으면 그냥 상자입니다.
+ * 묶음: 제목 + 바로 아래 회사명(붙여서) → 한 칸 띄우고 설명. 회사명은 Medium, 설명은 보통 굵기로 구분합니다.
+ * 모션: 마우스를 올리면 바탕이 진해지고 오른쪽 버튼이 검정으로 바뀌며 살짝 커집니다.
  */
 export function ProjectCard({
   project,
@@ -40,9 +42,9 @@ export function ProjectCard({
       className={classNames(
         "w-full",
         "group grid gap-x-10 gap-y-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center",
-        "px-5 py-4 md:px-6",
+        "px-6 py-6 md:px-8 md:py-7",
         [
-          "rounded-2xl bg-sheet/60 transition",
+          "rounded-2xl bg-sheet/60 transition-colors duration-300",
           { "cursor-pointer hover:bg-sheet": onClick },
         ],
         "text-left",
@@ -57,15 +59,13 @@ export function ProjectCard({
           </span>
         ) : null}
         <span
-          className={classNames(
-            "text-lg leading-snug font-medium tracking-[-0.01em] break-keep",
-          )}
+          className={classNames("text-lg leading-snug font-medium break-keep")}
         >
           {project.title}
           {project.nda ? <NdaBadge label={ndaLabel} /> : null}
         </span>
         {project.client ? (
-          <span className={classNames("text-sm text-sub")}>
+          <span className={classNames("text-sm font-medium text-sub")}>
             {project.client}
           </span>
         ) : null}
@@ -73,8 +73,8 @@ export function ProjectCard({
           <span
             className={classNames(
               "max-w-3xl",
-              "mt-1",
-              "line-clamp-1 text-sm leading-6 text-sub",
+              "mt-3",
+              "line-clamp-2 text-sm leading-6 text-sub",
             )}
           >
             {project.description}
@@ -92,7 +92,7 @@ export function ProjectCard({
             "size-8 shrink-0",
             "flex items-center justify-center gap-[3px]",
             "ml-auto md:ml-3",
-            "rounded-full bg-white transition group-hover:bg-black group-hover:text-white",
+            "rounded-full bg-white transition duration-300 group-hover:scale-110 group-hover:bg-black group-hover:text-white",
           )}
         >
           <span

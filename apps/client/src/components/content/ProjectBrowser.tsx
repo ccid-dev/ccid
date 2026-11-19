@@ -7,7 +7,6 @@ import { localized, type Dictionary, type Locale } from "@/i18n";
 import type { ProjectWithThemes } from "@/libs/content";
 import type { Theme } from "@/types";
 import { ProjectList } from "./ProjectList";
-import { GRID } from "./Section";
 
 type ThemeOption = Pick<Theme, "number" | "slug" | "title_ko" | "title_en">;
 
@@ -53,39 +52,44 @@ export function ProjectBrowser({
   const shown = slug
     ? projects.filter((p) => p.themes.some((t) => t.slug === slug))
     : projects;
-  const years = [...new Set(shown.map((p) => p.year_start))];
-
-  const chip = (active: boolean) =>
-    classNames(
-      "h-9",
-      "inline-flex items-center gap-2",
-      "px-4",
-      [
-        "rounded-full transition",
-        active ? "bg-black" : "bg-sheet/60 hover:bg-sheet",
-      ],
-      [
-        "font-neuehaas text-sm font-medium whitespace-nowrap",
-        active ? "text-white" : "text-main",
-      ],
-    );
 
   return (
     <div className={classNames("flex flex-col gap-8")}>
-      <div className={classNames(GRID)}>
+      {/* 좁은 화면: 이 줄이 헤더 바로 아래에 붙어 따라옴 (부모가 목록 전체라 끝까지 붙어 있음) */}
+      <div
+        className={classNames(
+          "grid gap-y-6 lg:grid-cols-10 lg:gap-x-10",
+          "sticky top-18 z-20 -mx-5 lg:static lg:mx-0",
+          "bg-background/90 backdrop-blur lg:bg-transparent lg:backdrop-blur-none",
+        )}
+      >
+        {/*
+          분야 필터. 좁은 화면: 한 줄 가로 스와이프 + 헤더 바로 아래에 붙어 있어 언제든 바꿀 수 있음.
+          넓은 화면: 여러 줄로 놓임.
+        */}
         <div
           role="group"
           aria-label={dict.projects.filterLabel}
           className={classNames(
-            "flex flex-wrap gap-2",
-            "lg:col-span-7 lg:col-start-4",
+            "flex snap-x scroll-px-5 gap-2 overflow-x-auto px-5 py-3 lg:flex-wrap lg:overflow-visible lg:p-0",
+            "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "lg:col-span-8 lg:col-start-3",
           )}
         >
           <button
             type="button"
             aria-pressed={slug === null}
             onClick={() => select(null)}
-            className={chip(slug === null)}
+            className={classNames(
+              "h-9 shrink-0 snap-start",
+              "inline-flex items-center gap-2",
+              "px-4",
+              "rounded-full transition-colors duration-300",
+              slug === null
+                ? "bg-black text-white"
+                : "bg-sheet/60 text-main hover:bg-sheet",
+              "font-neuehaas text-sm font-medium whitespace-nowrap",
+            )}
           >
             {dict.projects.all}
           </button>
@@ -95,7 +99,16 @@ export function ProjectBrowser({
               type="button"
               aria-pressed={slug === theme.slug}
               onClick={() => select(slug === theme.slug ? null : theme.slug)}
-              className={chip(slug === theme.slug)}
+              className={classNames(
+                "h-9 shrink-0 snap-start",
+                "inline-flex items-center gap-2",
+                "px-4",
+                "rounded-full transition-colors duration-300",
+                slug === theme.slug
+                  ? "bg-black text-white"
+                  : "bg-sheet/60 text-main hover:bg-sheet",
+                "font-neuehaas text-sm font-medium whitespace-nowrap",
+              )}
             >
               <ThemeDot number={theme.number} />
               {localized(theme, "title", locale)}
@@ -104,34 +117,16 @@ export function ProjectBrowser({
         </div>
       </div>
 
-      {years.length ? (
-        <div className={classNames("flex flex-col gap-16 md:gap-20")}>
-          {years.map((year) => (
-            <section key={year} className={classNames(GRID, "gap-y-4")}>
-              <h2
-                className={classNames(
-                  "self-start lg:sticky lg:top-24 lg:col-span-3",
-                  "font-neuehaas text-2xl leading-none font-medium tracking-[-0.02em]",
-                )}
-              >
-                {year}
-              </h2>
-              <div className={classNames("min-w-0 lg:col-span-7")}>
-                <ProjectList
-                  projects={shown.filter(
-                    (project) => project.year_start === year,
-                  )}
-                  locale={locale}
-                  dict={dict}
-                  showYear={false}
-                />
-              </div>
-            </section>
-          ))}
-        </div>
-      ) : (
-        <p className={classNames("text-sm text-sub")}>{dict.project.empty}</p>
-      )}
+      {/* 필터를 바꾸면 목록이 새로 그려지며 살짝 페이드 */}
+      <div
+        key={slug ?? "all"}
+        className={classNames(
+          "transition-[opacity,translate] duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
+          "starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none",
+        )}
+      >
+        <ProjectList projects={shown} locale={locale} dict={dict} groupByYear />
+      </div>
     </div>
   );
 }

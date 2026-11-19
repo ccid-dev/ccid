@@ -2,7 +2,6 @@ import classNames from "classnames";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ThemeDot } from "@repo/common";
-import { PAGE_X } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { hasLocale, localePath } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
@@ -43,24 +42,30 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
       className={classNames(
         "min-h-[calc(100svh-4.5rem)]",
         "flex flex-col justify-end",
-        PAGE_X,
+        "px-5 md:px-10",
         "pt-24 pb-14 md:pb-20",
       )}
     >
       <div
         className={classNames(
-          "flex flex-col justify-between gap-10 md:flex-row md:items-end md:gap-12",
+          // 큰 "Lab" 바로 오른쪽 글자 윗선에 설명 (큰 화면에서도 한 덩어리로)
+          "flex flex-col gap-10 md:flex-row md:items-start md:gap-12",
         )}
       >
         <h1
           className={classNames(
-            "font-neuehaas text-[clamp(5rem,16vw,15rem)] leading-[0.78] font-medium tracking-[-0.05em]",
+            "font-neuehaas text-[28vw] leading-[0.8] whitespace-nowrap md:text-[22vw]",
           )}
         >
           {dict.lab.title}
         </h1>
 
-        <div className={classNames("max-w-lg", "flex flex-col gap-5")}>
+        <div
+          className={classNames(
+            "max-w-lg md:pt-[1.5vw]",
+            "flex flex-col gap-5",
+          )}
+        >
           <span className={classNames("flex items-center gap-3")}>
             <span aria-hidden className={classNames("flex gap-1.5")}>
               {[1, 2, 3, 4].map((number, index) => (

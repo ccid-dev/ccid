@@ -3,14 +3,6 @@
 import classNames from "classnames";
 import { useRef } from "react";
 
-const buttonClass = classNames(
-  "h-10 self-start",
-  "group inline-flex items-center gap-2",
-  "mt-2 px-5",
-  "rounded-full bg-black transition hover:opacity-85",
-  "font-neuehaas text-sm font-medium text-white",
-);
-
 /**
  * Join 버튼. 모집 중이면 지원 링크(새 창), 아니면 누를 때 "모집 기간이 아닙니다" 안내 모달.
  */
@@ -44,7 +36,13 @@ export function JoinButton({
         target="_blank"
         rel="noreferrer"
         cursor-label="Apply"
-        className={buttonClass}
+        className={classNames(
+          "h-11 shrink-0 self-start md:self-auto",
+          "group inline-flex items-center gap-2",
+          "px-6",
+          "rounded-full bg-white transition hover:bg-white/85",
+          "font-neuehaas text-sm font-medium text-black",
+        )}
       >
         {label}
         {arrow}
@@ -58,7 +56,13 @@ export function JoinButton({
         type="button"
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
-        className={buttonClass}
+        className={classNames(
+          "h-11 shrink-0 self-start md:self-auto",
+          "group inline-flex items-center gap-2",
+          "px-6",
+          "rounded-full bg-white transition hover:bg-white/85",
+          "font-neuehaas text-sm font-medium text-black",
+        )}
       >
         {label}
         {arrow}
@@ -85,7 +89,7 @@ export function JoinButton({
           <h2
             id="recruit-closed-title"
             className={classNames(
-              "text-xl leading-snug font-medium tracking-[-0.02em] break-keep",
+              "text-xl leading-snug font-medium break-keep",
             )}
           >
             {closed.title}

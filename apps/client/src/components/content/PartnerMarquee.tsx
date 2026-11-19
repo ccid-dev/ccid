@@ -1,36 +1,41 @@
 import classNames from "classnames";
 import type { Partner } from "@/constants";
+import { Reveal } from "./Reveal";
 
 /** 줄 수: 기관이 많으면 3줄, 아니면 2줄 */
 const rowCount = (count: number) => (count > 18 ? 3 : count > 1 ? 2 : 1);
-/** 한 줄이 화면보다 짧아 빈틈이 생기지 않도록, 한 묶음에 최소 이만큼 채웁니다. */
-const MIN_ITEMS_PER_COPY = 8;
+/** 한 묶음이 화면(2560px 이상 포함)보다 짧아 오른쪽 끝에 빈틈이 생기지 않도록, 한 묶음에 최소 이만큼 채웁니다. */
+const MIN_ITEMS_PER_COPY = 16;
+/** 로고 하나가 흘러가는 시간 (초) — 묶음 길이와 상관없이 같은 속도로 흐르도록 */
+const SECONDS_PER_ITEM = 10;
 
 /** 기관 하나: 로고(흑백) 또는 이름 글자 */
 function PartnerMark({ partner }: { partner: Partner }) {
   return (
     <li
       className={classNames(
-        "h-12 shrink-0",
+        "h-16 shrink-0 md:h-24",
         "flex items-center",
-        "px-6 md:px-10",
+        "px-8 md:px-14",
       )}
     >
       {partner.logo ? (
         <img
           src={partner.logo}
           alt={partner.name}
-          loading="lazy"
+          // 화면 밖 두 번째 묶음이 흘러 들어올 때 빈칸이 보이지 않도록 미리 불러옵니다.
+          loading="eager"
           decoding="async"
           className={classNames(
-            "h-7 w-auto max-w-36",
-            "object-contain opacity-50 grayscale transition hover:opacity-100",
+            "h-10 w-auto max-w-52 md:h-14 md:max-w-64",
+            "object-contain opacity-50 grayscale ",
+            // "transition hover:opacity-100",
           )}
         />
       ) : (
         <span
           className={classNames(
-            "font-neuehaas text-xl font-medium tracking-[-0.02em] whitespace-nowrap text-mute md:text-2xl",
+            "font-neuehaas text-2xl font-medium whitespace-nowrap text-mute md:text-4xl",
           )}
         >
           {partner.name}
@@ -54,8 +59,11 @@ function MarqueeRow({
     <div
       className={classNames("w-max", "flex", [
         reverse ? "animate-marquee-reverse" : "animate-marquee",
+        // 마우스를 올리면 그 줄이 멈춤
+        // "hover:[animation-play-state:paused]",
         "motion-reduce:animate-none",
       ])}
+      style={{ animationDuration: `${copy.length * SECONDS_PER_ITEM}s` }}
     >
       {[0, 1].map((half) => (
         <ul
@@ -92,27 +100,33 @@ export function PartnerMarquee({
 
   return (
     <section
+      id="partners"
       aria-label={title}
-      className={classNames("overflow-hidden", "py-16 md:py-24")}
+      className={classNames("scroll-mt-20 overflow-hidden")}
     >
-      <h2
-        className={classNames(
-          "mb-8",
-          "px-5 md:px-10",
-          "font-neuehaas text-xl leading-tight font-medium tracking-[-0.02em] md:text-2xl",
-        )}
-      >
-        {title}
-      </h2>
-      <div
-        className={classNames(
-          "flex flex-col gap-4",
-          "[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]",
-        )}
-      >
-        {lines.map((line, index) => (
-          <MarqueeRow key={index} partners={line} reverse={index % 2 === 1} />
-        ))}
+      <div className={classNames("py-24 md:py-40 lg:py-48")}>
+        <Reveal>
+          <h2
+            className={classNames(
+              "mb-8",
+              "px-5 md:px-10",
+              "font-neuehaas text-2xl leading-tight",
+            )}
+          >
+            {title}
+          </h2>
+        </Reveal>
+        <Reveal
+          delay={120}
+          className={classNames(
+            "flex flex-col gap-6 md:gap-10",
+            "[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]",
+          )}
+        >
+          {lines.map((line, index) => (
+            <MarqueeRow key={index} partners={line} reverse={index % 2 === 1} />
+          ))}
+        </Reveal>
       </div>
     </section>
   );

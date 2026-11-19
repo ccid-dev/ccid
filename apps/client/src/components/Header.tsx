@@ -9,7 +9,7 @@ import { LanguageSwitch } from "./LanguageSwitch";
 import { MobileMenu } from "./MobileMenu";
 
 /**
- * 공개 사이트 헤더: 로고 · 가운데 메뉴(+ 구분선 뒤 Lab) · 언어 전환 · 에이전트 자리
+ * 공개 사이트 헤더: 로고 · 가운데 메뉴(+ 구분선 뒤 Lab) · 언어 전환
  * 768px 미만에서는 가운데 메뉴 대신 햄버거 버튼(MobileMenu)이 화면 전체 메뉴를 엽니다.
  */
 export async function Header() {
@@ -19,12 +19,28 @@ export async function Header() {
   return (
     <header
       className={classNames(
-        "h-18",
-        "sticky top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]",
+        "w-full h-18",
+        "fixed top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]",
         "px-5 md:px-10",
-        "bg-background",
       )}
     >
+      {/*
+        반투명 흐린 배경은 헤더 뒤에 깔린 별도 층에 둡니다.
+        헤더 자체에 backdrop-blur 를 걸면 안쪽 position: fixed 요소(모바일 메뉴 패널 등)가
+        화면이 아니라 헤더 기준으로 잡혀서 패널이 헤더 높이로 줄어듭니다.
+      */}
+      {/*
+        흰색 → 아래로 갈수록 투명: 헤더보다 40px 아래까지 내려와 자연스럽게 사라집니다.
+        (헤더 밖으로 나온 부분이 아래 내용 클릭을 막지 않도록 pointer-events-none)
+      */}
+      <div
+        aria-hidden
+        className={classNames(
+          "",
+          "pointer-events-none absolute inset-x-0 top-0 -bottom-10 -z-10",
+          "bg-linear-to-b from-background/95 via-background/50 to-transparent",
+        )}
+      />
       <Link
         href={localePath(locale, ROUTES.home)}
         aria-label={APP_INFO.name}
@@ -37,7 +53,7 @@ export async function Header() {
         <div
           className={classNames(
             "flex items-center gap-6",
-            "font-neuehaas text-base font-medium whitespace-nowrap",
+            "font-neuehaas text-base whitespace-nowrap",
           )}
         >
           <ul className={classNames("flex items-center gap-9")}>
@@ -81,7 +97,7 @@ export async function Header() {
           contact={{ email: APP_INFO.email, phone: APP_INFO.phone }}
           labels={{ open: dict.common.openMenu, close: dict.common.closeMenu }}
         />
-        {/* 대화 에이전트(Let's talk) 자리 — 아직 기능 없음 */}
+        {/* 에이전트 구(AgentBlob)는 공통 레이아웃(Layout.tsx)에서 화면에 띄웁니다. */}
       </div>
     </header>
   );

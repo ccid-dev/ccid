@@ -34,11 +34,23 @@ export const ko = {
     openMenu: "메뉴 열기",
     closeMenu: "메뉴 닫기",
   },
+  /** 에이전트 구 대화 창 (components/agent-blob — mode="agent" 일 때) */
+  agent: {
+    open: "보이스 에이전트 열기",
+    title: "cciD 에이전트",
+    close: "닫기",
+    talk: "말하기",
+    send: "보내기",
+  },
   home: {
     research: "Research",
     projects: "Projects",
     viewAll: "전체 보기",
     partners: "Partners",
+    /** 첫 화면 아래 스크롤 안내 버튼 (스크린리더용) */
+    scrollHint: "아래로 스크롤",
+    /** 넓은 화면 오른쪽 섹션 인디케이터 (스크린리더용) */
+    sections: "섹션 이동",
   },
   about: {
     title: "About",
@@ -111,6 +123,8 @@ export const ko = {
     keywords: "Focus areas",
     projects: "Projects",
     images: "Images",
+    prevImage: "이전 이미지",
+    nextImage: "다음 이미지",
     others: "More research",
     more: "자세히 보기",
   },
@@ -129,6 +143,8 @@ export const ko = {
     empty: "아직 공개된 프로젝트가 없습니다.",
     open: "자세히",
     close: "닫기",
+    prev: "이전 프로젝트",
+    next: "다음 프로젝트",
     research: "Related research",
     ndaNote: "NDA 프로젝트라 기본 정보만 공개합니다.",
   },

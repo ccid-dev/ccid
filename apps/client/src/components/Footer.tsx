@@ -22,10 +22,11 @@ export async function Footer() {
     <footer
       id="contact"
       className={classNames(
-        "md:min-h-[416px]",
+        "md:min-h-[560px]",
         "grid gap-12 md:grid-cols-[47fr_53fr] md:gap-x-0",
-        "px-5 py-10 md:px-10",
-        "bg-background",
+        "px-5 py-16 md:px-10 md:py-20",
+        // 본문과 선 없이 배경 톤으로 구분
+        "bg-sheet/50",
         "font-neuehaas",
       )}
     >

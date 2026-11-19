@@ -1,85 +1,143 @@
 import classNames from "classnames";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Reveal } from "./Reveal";
 
 /**
- * 레이아웃 기준: 화면 너비 전체를 10칸으로 나누고 (바깥 여백 px-5 · md:px-10),
- * 왼쪽 3칸 = 제목, 오른쪽 7칸 = 내용. (홈 첫 화면만 자유 배치)
+ * 레이아웃 기준: 화면 너비 전체를 10칸으로 나누고 (바깥 여백 px-5 md:px-10 · 그리드 grid lg:grid-cols-10 lg:gap-x-10),
+ * 왼쪽 2칸 = 제목, 오른쪽 8칸 = 내용. (홈 첫 화면만 자유 배치)
+ * 내용 안에서도 칸에 맞추려면 lg:grid-cols-8 lg:gap-x-10 으로 다시 8칸을 나누세요. (바깥과 간격이 같아 칸 선이 맞음)
  */
-export const PAGE_X = "px-5 md:px-10";
-export const GRID = "grid gap-y-6 lg:grid-cols-10 lg:gap-x-10";
 
 /**
- * 구역: 왼쪽 3칸에 제목(+ 전체 보기), 오른쪽 7칸에 내용.
+ * 구역: 왼쪽 2칸에 제목, 오른쪽 8칸에 내용 (+ 맨 아래 전체 보기). 구역끼리는 선 없이 넉넉한 위아래 여백으로 나눕니다.
  * 넓은 화면에서는 제목이 스크롤을 따라옵니다.
+ * 모션: 화면에 들어오면 제목이 떠오르고 → 내용이 조금 늦게 따라옵니다.
+ * hold: 넓은 화면에서 구역이 화면에 꽉 찬 채 한 번 멈췄다가 내려갑니다. (내용이 한 화면에 들어가는 구역에만)
  */
 export function Section({
   id,
   title,
   action,
+  hold = false,
   children,
 }: {
   id?: string;
   title: string;
-  /** 제목 아래 링크 (예: 전체 보기 → /projects) */
+  /** 내용 맨 아래 링크 (예: 전체 보기 → /projects). 목록을 다 본 뒤 더 볼지 정하는 흐름에 맞춰 아래에 둡니다. */
   action?: { href: string; label: string };
+  /** 넓은 화면에서 한 번 멈췄다 내려가기 (구역을 화면 1.6배로 길게 + 안쪽을 화면에 고정) */
+  hold?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
       id={id}
-      className={classNames("scroll-mt-20", PAGE_X, "py-16 md:py-24")}
+      className={classNames(
+        "scroll-mt-20",
+        "px-5 md:px-10",
+        hold && "lg:h-[160svh]",
+      )}
     >
-      <div className={classNames(GRID)}>
+      <div
+        className={classNames(
+          "grid gap-y-8 lg:grid-cols-10 lg:gap-x-10",
+          "py-24 md:py-40",
+          hold
+            ? "lg:sticky lg:top-0 lg:min-h-svh lg:content-center lg:py-24"
+            : "lg:py-48",
+        )}
+      >
         <header
           className={classNames(
-            "flex items-end justify-between gap-4 lg:col-span-3 lg:flex-col lg:items-start lg:justify-start",
-            "lg:sticky lg:top-24 lg:self-start",
+            "lg:col-span-2 lg:sticky lg:top-24 lg:self-start",
           )}
         >
-          <h2
-            className={classNames(
-              "font-neuehaas text-2xl leading-tight font-medium tracking-[-0.02em]",
-            )}
-          >
-            {title}
-          </h2>
-          {action ? (
-            <PillLink href={action.href}>{action.label} →</PillLink>
-          ) : null}
+          <Reveal>
+            <h2 className={classNames("font-neuehaas text-2xl leading-tight")}>
+              {title}
+            </h2>
+          </Reveal>
         </header>
-        <div className={classNames("min-w-0 lg:col-span-7")}>{children}</div>
+        <Reveal delay={120} className={classNames("min-w-0 lg:col-span-8")}>
+          {children}
+          {action ? (
+            <div className={classNames("mt-12 md:mt-16")}>
+              {/* 텍스트 버튼: 마우스를 올리면 밑줄 · 화살표가 밀림 */}
+              <Link
+                href={action.href}
+                className={classNames(
+                  "group inline-flex items-center gap-1.5",
+                  "font-neuehaas text-sm font-medium",
+                  "underline-offset-4 hover:underline",
+                )}
+              >
+                {action.label}
+                <span
+                  aria-hidden
+                  className={classNames(
+                    "transition-transform duration-300 group-hover:translate-x-1",
+                  )}
+                >
+                  →
+                </span>
+              </Link>
+            </div>
+          ) : null}
+        </Reveal>
       </div>
     </section>
   );
 }
 
-/** 알약 모양 링크 (면 기반) */
+/**
+ * 알약 모양 링크 (면 기반).
+ * 마우스를 올리면 검정으로 채워지고 화살표가 그 방향으로 밀립니다.
+ */
 export function PillLink({
   href,
+  arrow,
   children,
 }: {
   href: string;
+  /** 화살표 (오른쪽 = 더 보기 · 왼쪽 = 돌아가기) */
+  arrow?: "left" | "right";
   children: ReactNode;
 }) {
+  const icon = arrow ? (
+    <span
+      aria-hidden
+      className={classNames(
+        "transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)]",
+        arrow === "right"
+          ? "group-hover:translate-x-1"
+          : "group-hover:-translate-x-1",
+      )}
+    >
+      {arrow === "right" ? "→" : "←"}
+    </span>
+  ) : null;
   return (
     <Link
       href={href}
       className={classNames(
-        "h-9 shrink-0",
-        "inline-flex items-center",
+        "group h-9 shrink-0",
+        "inline-flex items-center gap-1.5",
         "px-4",
-        "rounded-full bg-sheet/60 transition hover:bg-sheet",
+        "rounded-full bg-sheet/60",
+        "transition-colors duration-300 hover:bg-black hover:text-white",
         "font-neuehaas text-sm font-medium whitespace-nowrap",
       )}
     >
+      {arrow === "left" ? icon : null}
       {children}
+      {arrow === "right" ? icon : null}
     </Link>
   );
 }
 
 /**
- * 페이지 머리 (구역과 같은 왼쪽 3칸 · 오른쪽 7칸 틀).
+ * 페이지 머리 (구역과 같은 왼쪽 2칸 · 오른쪽 8칸 틀).
  * - 목록 페이지: 왼쪽에 큰 제목, 오른쪽에 설명 (titleSide="left", 기본)
  * - 상세 페이지: 왼쪽에 top(뒤로 가기 · 번호), 오른쪽에 큰 제목 · 설명 (titleSide="right")
  */
@@ -99,23 +157,25 @@ export function PageHeader({
   const heading = (
     <h1
       className={classNames(
-        "font-neuehaas text-4xl leading-[1.02] font-medium tracking-[-0.03em] break-keep md:text-6xl",
+        "font-neuehaas text-3xl leading-[1.02] break-keep md:text-5xl",
       )}
     >
       {title}
     </h1>
   );
   return (
-    <div className={classNames(PAGE_X, "pt-14 pb-4 md:pt-20")}>
+    <div className={classNames("px-5 md:px-10", "pt-32 pb-4 md:pt-40")}>
       <div
-        className={classNames(GRID, { "lg:items-end": titleSide === "left" })}
+        className={classNames("grid gap-y-6 lg:grid-cols-10 lg:gap-x-10", {
+          "lg:items-end": titleSide === "left",
+        })}
       >
-        <div className={classNames("flex flex-col gap-6 lg:col-span-3")}>
+        <div className={classNames("flex flex-col gap-6 lg:col-span-2")}>
           {top}
           {titleSide === "left" ? heading : null}
         </div>
         <div
-          className={classNames("min-w-0 lg:col-span-7", "flex flex-col gap-4")}
+          className={classNames("min-w-0 lg:col-span-8", "flex flex-col gap-4")}
         >
           {titleSide === "right" ? heading : null}
           {description ? (

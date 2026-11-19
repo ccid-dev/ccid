@@ -1,0 +1,55 @@
+{
+  "intensity": 3,
+  "motion": {
+    "speed": 5,
+    "drift": 2,
+    "wave": 2,
+    "colorShift": 1,
+    "cursorStrength": 2,
+    "cursorSpeed": 1,
+    "scrollStrength": 1
+  },
+  "band": [
+    {
+      "position": 0,
+      "color": "#E1C8FF",
+      "opacity": 0.2
+    },
+    {
+      "position": 0.438,
+      "color": "#68D7FF",
+      "opacity": 0.14
+    },
+    {
+      "position": 0.549,
+      "color": "#FBB398",
+      "opacity": 0.11
+    },
+    {
+      "position": 1,
+      "color": "#E1C8FF",
+      "opacity": 0.2
+    }
+  ],
+  "circle": {
+    "opacity": 0.05,
+    "stops": [
+      {
+        "position": 0.163,
+        "color": "#F15D9F"
+      },
+      {
+        "position": 0.567,
+        "color": "#F6D3C4"
+      },
+      {
+        "position": 1,
+        "color": "#55B9DD"
+      }
+    ]
+  },
+  "fade": {
+    "top": 18,
+    "bottom": 72
+  }
+}

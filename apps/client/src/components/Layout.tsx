@@ -6,6 +6,7 @@ import { Footer } from "./Footer";
 import { CustomCursor } from "./CustomCursor";
 import { Header } from "./Header";
 import { JsonLd } from "./JsonLd";
+import { AgentBlob } from "./agent-blob";
 
 /** 공개 사이트 공통 레이아웃: 사이트 구조화 데이터 · 헤더 · 본문(main) · 푸터 */
 export async function Layout({ children }: { children: ReactNode }) {
@@ -32,6 +33,13 @@ export async function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer />
+      {/* 에이전트 구: 누르면 대화 창(모달)으로 커짐 */}
+      <AgentBlob
+        mode="agent"
+        labels={dict.agent}
+        size={56}
+        className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
+      />
       <CustomCursor />
     </div>
   );

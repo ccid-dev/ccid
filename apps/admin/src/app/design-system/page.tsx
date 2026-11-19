@@ -110,11 +110,12 @@ const FONTS = [
   {
     className: "font-neuehaas",
     name: "Neue Haas Grotesk Display",
-    use: "UI 요소 · 메뉴 · 제목 (Adobe Fonts). 한글은 Pretendard 로 대체",
+    use: "UI 요소 · 메뉴 · 제목 (Adobe Fonts). 한글은 Pretendard 로 대체. 클래스 이름 = 폰트 굵기 이름",
     weights: [
-      { className: "font-normal", label: "400" },
-      { className: "font-medium", label: "500" },
-      { className: "font-bold", label: "700" },
+      { className: "font-light", label: "45 Light" },
+      { className: "font-normal", label: "55 Roman (기본)" },
+      { className: "font-medium", label: "65 Medium" },
+      { className: "font-bold", label: "75 Bold" },
     ],
     sample: "Center for Creative Intelligence Design",
   },
