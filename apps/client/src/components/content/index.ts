@@ -5,7 +5,6 @@ export { PageHeader, Pills, PillLink, Section } from "./Section";
 export { Reveal } from "./Reveal";
 export { InView } from "./InView";
 export { RevealItem } from "./RevealItem";
-export { GradientLoader } from "./GradientLoader";
 export { TypedText } from "./TypedText";
 export { PartnerMarquee } from "./PartnerMarquee";
 export { ImageBento } from "./ImageBento";

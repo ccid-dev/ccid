@@ -3,19 +3,17 @@
 import classNames from "classnames";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { GradientLoader } from "./content";
 
 /**
  * 페이지 전환 유리 베일 값 — 여기서 조절합니다.
  * blur: 유리의 흐림 (px) · coverMs: 내려앉는 시간 · revealMs: 걷히는 시간
- * loaderDelayMs: 이보다 오래 걸리면 가운데 로더를 띄움 · minMs: 빨리 와도 최소한 덮고 있는 시간
+ * minMs: 빨리 와도 최소한 덮고 있는 시간
  * maxMs: 이동이 안 일어나도 이 시간이 지나면 걷음 (안전장치)
  */
 const VEIL = {
   blur: 24,
   coverMs: 300,
   revealMs: 700,
-  loaderDelayMs: 300,
   minMs: 250,
   maxMs: 8000,
 };
@@ -42,15 +40,13 @@ function isPageLink(event: MouseEvent): boolean {
 /**
  * 페이지 전환 모션 (유리 베일).
  * 1) 다른 페이지 링크를 누르면 지금 화면 위로 젖빛 유리가 내려앉으며 흐려지고 (가장자리에 브랜드 색이 살짝 번짐)
- * 2) 오래 걸리면 가운데 로더가 뜨고
- * 3) 새 페이지가 다 그려지면 (loading.tsx 화면이 사라지면) 유리가 걷히며 선명해집니다.
- * 덮여 있는 동안에는 <html data-veil="on"> — loading.tsx 의 로더는 그동안 숨깁니다. (로더가 둘로 보이지 않게)
+ * 2) 새 페이지가 다 그려지면 (loading.tsx 화면이 사라지면) 유리가 걷히며 선명해집니다.
+ * 덮여 있는 동안에는 <html data-veil="on"> 이 붙습니다. (그동안 다르게 보여야 할 것이 있으면 in-data-[veil=on]: 로)
  * 움직임 줄이기 설정이면 쓰지 않습니다.
  */
-export function PageVeil({ loadingLabel }: { loadingLabel: string }) {
+export function PageVeil() {
   const pathname = usePathname();
   const [phase, setPhase] = useState<Phase>("idle");
-  const [showLoader, setShowLoader] = useState(false);
   const startRef = useRef(0);
   const fromRef = useRef(pathname);
 
@@ -67,18 +63,13 @@ export function PageVeil({ loadingLabel }: { loadingLabel: string }) {
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  // 덮여 있는 동안: 로더 늦게 띄우기 · 안전장치 · loading.tsx 로더 숨김 표시
+  // 덮여 있는 동안: 안전장치 · <html data-veil="on"> 표시
   useEffect(() => {
     if (phase !== "cover") return;
     const root = document.documentElement;
     root.dataset.veil = "on";
-    const loader = window.setTimeout(
-      () => setShowLoader(true),
-      VEIL.loaderDelayMs,
-    );
     const safety = window.setTimeout(() => setPhase("reveal"), VEIL.maxMs);
     return () => {
-      window.clearTimeout(loader);
       window.clearTimeout(safety);
       delete root.dataset.veil;
     };
@@ -109,7 +100,6 @@ export function PageVeil({ loadingLabel }: { loadingLabel: string }) {
     if (phase !== "reveal") return;
     const timer = window.setTimeout(() => {
       setPhase("idle");
-      setShowLoader(false);
     }, VEIL.revealMs);
     return () => window.clearTimeout(timer);
   }, [phase]);
@@ -141,16 +131,6 @@ export function PageVeil({ loadingLabel }: { loadingLabel: string }) {
           "bg-[radial-gradient(60%_50%_at_0%_0%,rgba(199,158,255,0.28),transparent),radial-gradient(55%_50%_at_100%_100%,rgba(104,215,255,0.22),transparent),radial-gradient(45%_40%_at_100%_0%,rgba(251,179,152,0.18),transparent)]",
         )}
       />
-      {/* 오래 걸리면 가운데 로더 */}
-      <span
-        className={classNames(
-          "absolute inset-0 flex items-center justify-center",
-          "transition-opacity duration-500",
-          covered && showLoader ? "opacity-100" : "opacity-0",
-        )}
-      >
-        {phase !== "idle" ? <GradientLoader label={loadingLabel} /> : null}
-      </span>
     </div>
   );
 }

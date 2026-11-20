@@ -16,7 +16,9 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
 /**
  * 홈 Research 쇼케이스: 왼쪽 분야 목록 · 오른쪽 큰 이미지 · 질문 · 키워드. 누르면 분야 페이지로.
  * - 넓은 화면(1024+): 스크롤하는 만큼 분야가 하나씩 넘어가고 오른쪽 이미지가 바뀝니다.
- *   (구역을 분야 수만큼 길게 + 안쪽 화면 고정) 마우스를 올리면 글이 살짝 밀리기만 하고 바뀌지는 않습니다.
+ *   (구역을 분야 수만큼 길게 + 안쪽 화면 고정)
+ *   목록에 마우스를 올리면 오른쪽 이미지 · 질문이 그 분야로 미리 바뀌고, 마우스가 목록을 떠나면 스크롤 위치의 분야로 돌아갑니다.
+ *   (목록의 강조 — 바탕 면 · 검은 화살표 — 는 스크롤로 고른 분야에만. 호버는 글이 살짝 밀리는 것으로만)
  * - 좁은 화면: 큰 이미지 위 · 글 아래 세로 카드
  */
 export function HomeResearch({
@@ -31,10 +33,14 @@ export function HomeResearch({
   /** 목록 바로 아래 '전체 보기' 링크 */
   viewAll?: { href: string; label: string };
 }) {
+  /** 스크롤로 고른 분야 */
   const [active, setActive] = useState(0);
+  /** 마우스를 올린 분야 (없으면 null) — 오른쪽 이미지 · 질문은 이게 우선 */
+  const [hovered, setHovered] = useState<number | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   useScrollStep(trackRef, themes.length, setActive);
-  const current = themes[active];
+  const shown = hovered ?? active;
+  const current = themes[shown];
   if (!current) return null;
   const href = (theme: Theme) => localePath(locale, `/research/${theme.slug}`);
 
@@ -60,6 +66,8 @@ export function HomeResearch({
             )}
           >
             <ol
+              // 목록을 떠나면 스크롤 위치의 분야로
+              onMouseLeave={() => setHovered(null)}
               className={classNames("flex flex-col gap-10 md:gap-6 lg:gap-1")}
             >
               {themes.map((theme, index) => {
@@ -72,7 +80,8 @@ export function HomeResearch({
                       <Link
                         href={href(theme)}
                         cursor-label="Open"
-                        // 넓은 화면은 스크롤이 고르므로 마우스를 올려도 바뀌지 않음 (호버는 움직임으로만 표시)
+                        // 올리면 오른쪽 이미지 · 질문만 미리 바뀜 (목록 강조는 스크롤로 고른 분야 그대로)
+                        onMouseEnter={() => setHovered(index)}
                         onFocus={() => setActive(index)}
                         className={classNames(
                           // 좁은 화면: 이미지 위 · 글 아래 세로 카드 (누를 때 살짝 작아짐) / 넓은 화면: 한 줄
@@ -193,7 +202,7 @@ export function HomeResearch({
                   className={classNames(
                     "absolute inset-0 overflow-hidden",
                     "transition duration-700",
-                    index === active
+                    index === shown
                       ? "scale-100 opacity-100"
                       : "scale-105 opacity-0",
                   )}

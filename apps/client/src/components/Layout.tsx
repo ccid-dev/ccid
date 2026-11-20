@@ -42,7 +42,7 @@ export async function Layout({ children }: { children: ReactNode }) {
         className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
       />
       {/* 페이지 전환: 유리처럼 흐려졌다가 새 페이지가 준비되면 선명해짐 */}
-      <PageVeil loadingLabel={dict.common.loading} />
+      <PageVeil />
       <CustomCursor />
     </div>
   );

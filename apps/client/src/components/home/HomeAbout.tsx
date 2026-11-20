@@ -85,10 +85,7 @@ export function HomeAbout({ dict }: { dict: Dictionary }) {
           >
             <div className={classNames("lg:col-span-4")}>
               <h3
-                className={classNames(
-                  "mb-3",
-                  "font-neuehaas text-sm font-medium text-sub",
-                )}
+                className={classNames("mb-3", "font-neuehaas text-sm text-sub")}
               >
                 {capabilitiesTitle}
               </h3>

@@ -17,27 +17,6 @@
     0.6s both;
   --animate-scroll-hint-arrow: scroll-hint-arrow 2.2s
     cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  /*
-   * 페이지 로딩 표시(components/content/GradientLoader.tsx)
-   * - loader-blob: 그라디언트가 돌면서 (spin) 모양이 물방울처럼 일렁임 (loader-morph)
-   */
-  --animate-loader-blob:
-    spin 2.4s linear infinite, loader-morph 3.2s ease-in-out infinite;
-
-  @keyframes loader-morph {
-    0%,
-    100% {
-      border-radius: 42% 58% 60% 40% / 45% 45% 55% 55%;
-    }
-
-    33% {
-      border-radius: 58% 42% 40% 60% / 55% 60% 40% 45%;
-    }
-
-    66% {
-      border-radius: 48% 52% 46% 54% / 40% 55% 45% 60%;
-    }
-  }
 
   @keyframes marquee {
     from {
