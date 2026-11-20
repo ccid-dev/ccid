@@ -56,11 +56,7 @@ export function HomeHero({
           )}
         />
         <div className={classNames("max-w-md ", "flex flex-col gap-3")}>
-          <p
-            className={classNames(
-              "font-neuehaas text-lg font-medium 2xl:text-xl",
-            )}
-          >
+          <p className={classNames("font-neuehaas text-lg 2xl:text-xl")}>
             <TypedText
               text={NAME}
               delay={TYPING.startMs}
