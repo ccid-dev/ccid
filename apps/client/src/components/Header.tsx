@@ -19,6 +19,7 @@ export async function Header() {
   return (
     <header
       className={classNames(
+        "group/header",
         "w-full h-18",
         "fixed top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]",
         "px-5 md:px-10",
@@ -39,6 +40,18 @@ export async function Header() {
           "",
           "pointer-events-none absolute inset-x-0 top-0 -bottom-10 -z-10",
           "bg-linear-to-b from-background/95 via-background/50 to-transparent",
+        )}
+      />
+      {/*
+        모바일 메뉴가 열려 있으면 헤더도 메뉴 패널과 같은 바탕색으로 꽉 채움 (뒤 그라디언트가 비치지 않게)
+        열림 여부는 햄버거 버튼(MobileMenu)의 aria-expanded 로 알아냄 · 패널과 같은 0.3초로 나타남
+      */}
+      <div
+        aria-hidden
+        className={classNames(
+          "pointer-events-none absolute inset-0 -z-10",
+          "bg-background",
+          "opacity-0 transition-opacity duration-300 group-has-[[aria-expanded=true]]/header:opacity-100",
         )}
       />
       <Link
