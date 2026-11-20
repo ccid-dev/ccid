@@ -1,7 +1,12 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import { PersonCard } from "@repo/blocks";
-import { JoinSection, PageHeader, Section } from "@/components/content";
+import {
+  JoinSection,
+  PageHeader,
+  RevealItem,
+  Section,
+} from "@/components/content";
 import { ROUTES } from "@/constants";
 import { hasLocale, localized } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
@@ -49,8 +54,9 @@ export default async function PeoplePage({
               "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
             )}
           >
-            {group.people.map((person) => (
-              <li key={person.id}>
+            {/* 카드마다 제각각 스르륵 (RevealItem) */}
+            {group.people.map((person, index) => (
+              <RevealItem key={person.id} index={index}>
                 <PersonCard
                   profileLabel={dict.people.profile}
                   closeLabel={dict.project.close}
@@ -63,7 +69,7 @@ export default async function PeoplePage({
                     imageFallback: person.image || "no image",
                   }}
                 />
-              </li>
+              </RevealItem>
             ))}
           </ul>
         </Section>

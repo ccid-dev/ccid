@@ -5,6 +5,7 @@ import { FOOTER_PEOPLE_GROUPS, ROUTES } from "@/constants";
 import { localePath } from "@/i18n";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { getThemes } from "@/libs/content";
+import { FooterBackground } from "./footer-background/FooterBackground";
 import Logo from "@/public/img/logo.svg";
 
 /**
@@ -22,18 +23,19 @@ export async function Footer() {
     <footer
       id="contact"
       className={classNames(
-        "md:min-h-[560px]",
+        "md:min-h-[500px]",
         "grid gap-12 md:grid-cols-[47fr_53fr] md:gap-x-0",
-        "px-5 py-16 md:px-10 md:py-20",
-        // 본문과 선 없이 배경 톤으로 구분
-        "bg-sheet/50",
+        "px-5 pt-20 pb-16 md:px-10 md:pt-14 md:pb-10",
+        // 배경: 위는 흰 본문과 이어지고 아래로 갈수록 일렁이는 그라디언트 (FooterBackground)
+        "relative isolate overflow-hidden",
         "font-neuehaas",
       )}
     >
+      <FooterBackground />
       <div
         className={classNames("flex flex-col justify-between gap-4 md:gap-12")}
       >
-        <p className={classNames("text-lg md:text-xl font-medium")}>
+        <p className={classNames("text-lg md:text-2xl font-medium")}>
           {APP_INFO.fullName}
         </p>
         <Link
@@ -41,7 +43,7 @@ export async function Footer() {
           aria-label={APP_INFO.name}
           className={classNames("self-start")}
         >
-          <Logo aria-hidden className={classNames("h-16 md:h-24 w-auto")} />
+          <Logo aria-hidden className={classNames("h-16 md:h-32 w-auto")} />
         </Link>
       </div>
 
@@ -52,11 +54,11 @@ export async function Footer() {
           )}
         >
           <nav className={classNames("flex gap-10 sm:gap-0")}>
-            <div className={classNames("w-30 sm:w-40")}>
+            <div className={classNames("flex flex-col gap-2", "w-30 sm:w-50")}>
               <p className={classNames("text-base leading-6 font-medium")}>
                 {dict.footer.people}
               </p>
-              <ul className={classNames("text-base leading-6 text-sub")}>
+              <ul className={classNames("text-base leading-7 text-sub")}>
                 {FOOTER_PEOPLE_GROUPS.map((group) => (
                   <li key={group}>
                     <Link
@@ -69,11 +71,11 @@ export async function Footer() {
                 ))}
               </ul>
             </div>
-            <div>
+            <div className={classNames("flex flex-col gap-2")}>
               <p className={classNames("text-base leading-6 font-medium")}>
                 {dict.footer.research}
               </p>
-              <ul className={classNames("text-base leading-6 text-sub")}>
+              <ul className={classNames("text-base leading-7 text-sub")}>
                 {themes.map((theme) => (
                   <li key={theme.id}>
                     <Link
@@ -117,17 +119,13 @@ export async function Footer() {
           <address
             className={classNames(
               "flex flex-col gap-3",
-              "not-italic text-[13px]",
+              "not-italic text-[14px]",
             )}
           >
             <p className={classNames("font-pretendard")}>
               {APP_INFO.address.ko}
             </p>
-            <p
-              className={classNames(
-                "leading-[18px] whitespace-pre-line text-sub",
-              )}
-            >
+            <p className={classNames("leading-[18px] text-sub")}>
               {APP_INFO.address.en}
             </p>
           </address>

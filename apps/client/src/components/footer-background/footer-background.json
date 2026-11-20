@@ -1,0 +1,58 @@
+{
+  "fade": 45,
+  "base": [
+    {
+      "position": 0,
+      "color": "#D5E1FF",
+      "opacity": 1
+    },
+    {
+      "position": 0.352,
+      "color": "#C79EFF",
+      "opacity": 1
+    },
+    {
+      "position": 0.733,
+      "color": "#BBC5FF",
+      "opacity": 1
+    },
+    {
+      "position": 1,
+      "color": "#ADECFF",
+      "opacity": 0.3
+    }
+  ],
+  "shader": {
+    "opacity": 0.6,
+    "blur": 48,
+    "intensity": 2.95,
+    "detail": 2.37,
+    "twist": 1.33,
+    "warp": 0.19,
+    "zoom": 20,
+    "rotationSpeed": 30,
+    "morphSpeed": 6,
+    "gradientBalance": -24,
+    "gradientMethod": 0,
+    "material": 0,
+    "colors": [
+      {
+        "position": 0,
+        "color": "#F0A6FF"
+      },
+      {
+        "position": 0.5,
+        "color": "#8178FF"
+      },
+      {
+        "position": 0.75,
+        "color": "#4FA7FF"
+      },
+      {
+        "position": 1,
+        "color": "#9E70FF"
+      }
+    ]
+  },
+  "glow": 1
+}

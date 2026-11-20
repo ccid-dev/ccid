@@ -4,6 +4,7 @@ import { getDictionary, getLocale } from "@/i18n/server";
 import { websiteJsonLd } from "@/libs/seo";
 import { Footer } from "./Footer";
 import { CustomCursor } from "./CustomCursor";
+import { PageVeil } from "./PageVeil";
 import { Header } from "./Header";
 import { JsonLd } from "./JsonLd";
 import { AgentBlob } from "./agent-blob";
@@ -40,6 +41,8 @@ export async function Layout({ children }: { children: ReactNode }) {
         size={56}
         className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
       />
+      {/* 페이지 전환: 유리처럼 흐려졌다가 새 페이지가 준비되면 선명해짐 */}
+      <PageVeil loadingLabel={dict.common.loading} />
       <CustomCursor />
     </div>
   );

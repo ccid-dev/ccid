@@ -28,7 +28,11 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      className={classNames(fontVariables)}
+      className={classNames(
+        fontVariables,
+        // 페이지 끝(푸터)에서 고무줄처럼 더 끌려가며 흰 바탕이 보이지 않게 — 푸터 배경으로 딱 끝남
+        "overscroll-y-none",
+      )}
       suppressHydrationWarning
     >
       <head>

@@ -49,10 +49,13 @@ export function ResearchNumber({
 }
 
 /**
- * Research 목록의 분야 카드: 회색 면 안에 글 · 대표 이미지. 칸 배치는 쓰는 쪽이 className 으로 정합니다.
- * 글은 세 덩어리로 묶습니다 (덩어리 안은 붙이고, 덩어리 사이는 크게 띄움):
- *   ① 제목(크게, 보통 굵기) + 영문 부제  ② 질문 + 요약  ③ 키워드 + 자세히 보기 (맨 아래)
- * 모션: 마우스를 올리면 바탕이 진해지고, 이미지가 살짝 확대되며, 화살표가 밀립니다.
+ * Research 목록의 분야 한 장 (박스 없이, 왼쪽 글 · 오른쪽 대표 이미지). 칸 배치는 쓰는 쪽이 className 으로 정합니다.
+ * 크기는 홈과 맞추고(가장 큰 글 = 홈 About 소개 문장 크기), 위계는 크기 · 간격 · 자리로 나눕니다:
+ *   ① 분야 이름(+ 영문 부제) — 작은 머리말, 바로 아래 ② 질문 — 가장 크게 (①②는 붙여 한 덩어리)
+ *   ③ 요약 — 작은 회색 본문 (조금 띄움)
+ *   ④ 키워드 · 자세히 보기 — 가장 작게, 이미지 아래 끝에 맞춰 맨 아래
+ * 질문이 없으면 분야 이름이 큰 글 자리로 올라갑니다.
+ * 모션: 마우스를 올리면 이미지가 살짝 확대되고, 화살표가 밀립니다.
  */
 export function ResearchCard({
   theme,
@@ -72,48 +75,54 @@ export function ResearchCard({
       className={classNames(
         className,
         "group grid gap-10 md:grid-cols-2 md:gap-12",
-        "p-6 md:p-12 2xl:p-16",
-        "rounded-3xl bg-sheet/60 transition-colors duration-300 hover:bg-sheet",
       )}
     >
-      <span className={classNames("flex flex-col gap-10 md:gap-14")}>
-        {/* ① 제목 + 영문 부제 */}
-        <span className={classNames("flex flex-col gap-2")}>
-          <span
-            className={classNames(
-              "text-3xl leading-tight break-keep md:text-4xl 2xl:text-5xl",
-            )}
-          >
-            {theme.title}
+      <span className={classNames("flex flex-col gap-10")}>
+        {/* ① 분야 이름 + ② 질문 (한 덩어리) → ③ 요약 */}
+        <span className={classNames("flex flex-col gap-6")}>
+          <span className={classNames("flex flex-col gap-3")}>
+            {theme.question ? (
+              <span
+                className={classNames(
+                  "flex flex-wrap items-baseline gap-x-2 gap-y-0.5",
+                )}
+              >
+                <span
+                  className={classNames("text-base font-medium break-keep")}
+                >
+                  {theme.title}
+                </span>
+                {theme.subtitle ? (
+                  <span
+                    className={classNames("font-neuehaas text-sm text-sub")}
+                  >
+                    {theme.subtitle}
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
+            <span
+              className={classNames(
+                "text-2xl leading-snug whitespace-pre-line break-keep md:text-3xl 2xl:text-4xl",
+              )}
+            >
+              {theme.question || theme.title}
+            </span>
           </span>
-          {theme.subtitle ? (
-            <span className={classNames("font-neuehaas text-sm text-sub")}>
-              {theme.subtitle}
+          {theme.summary ? (
+            <span
+              className={classNames(
+                "max-w-md",
+                "text-sm leading-6 break-keep text-sub",
+              )}
+            >
+              {theme.summary}
             </span>
           ) : null}
         </span>
-        {/* ② 질문 + 요약 */}
-        <span className={classNames("flex flex-col gap-3")}>
-          <span
-            className={classNames(
-              "text-lg leading-8 font-medium whitespace-pre-line break-keep 2xl:text-2xl 2xl:leading-10",
-            )}
-          >
-            {theme.question}
-          </span>
-          <span
-            className={classNames(
-              "text-sm leading-6 text-sub 2xl:text-base 2xl:leading-7",
-            )}
-          >
-            {theme.summary}
-          </span>
-        </span>
-        {/* ③ 키워드 + 자세히 보기 (맨 아래) */}
+        {/* ④ 키워드 · 자세히 보기 (가장 작게, 맨 아래) */}
         <span className={classNames("mt-auto flex flex-col gap-5")}>
-          {theme.keywords.length ? (
-            <Pills items={theme.keywords} tone="white" />
-          ) : null}
+          {theme.keywords.length ? <Pills items={theme.keywords} /> : null}
           <span
             className={classNames(
               "inline-flex items-center gap-1.5",
@@ -135,7 +144,7 @@ export function ResearchCard({
       {theme.image ? (
         <span
           className={classNames(
-            "block overflow-hidden rounded-2xl",
+            "block self-start overflow-hidden rounded-3xl",
             "[&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-[cubic-bezier(.22,1,.36,1)] group-hover:[&_img]:scale-105",
           )}
         >

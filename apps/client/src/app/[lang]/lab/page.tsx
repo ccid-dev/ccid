@@ -2,6 +2,7 @@ import classNames from "classnames";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ThemeDot } from "@repo/common";
+import { HeroBackground } from "@/components/home";
 import { ROUTES } from "@/constants";
 import { hasLocale, localePath } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
@@ -28,9 +29,17 @@ const DOT_DELAYS = [
   "[animation-delay:750ms]",
 ];
 
+/** 텍스트 버튼: 마우스를 올리면 밑줄 · 화살표가 밀림 (홈 '전체 보기' 와 같은 모양) */
+const textLink = classNames(
+  "group inline-flex items-center gap-1.5",
+  "font-neuehaas text-sm font-medium",
+  "underline-offset-4 hover:underline",
+);
+
 /**
  * Lab — 곧 공개 대문.
- * 홈 첫 화면과 같은 구성: 왼쪽 아래 큰 "Lab", 오른쪽 아래 Coming soon · 소개 · 리서치로 가는 버튼.
+ * 홈 첫 화면과 같은 틀: 움직이는 그라디언트 배경 위, 아래에 큰 "Lab" (홈 "cciD" 와 같은 크기),
+ * 바로 오른쪽 글자 윗선에 Coming soon · 소개 · 리서치로 가는 텍스트 버튼.
  */
 export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
   const { lang } = await params;
@@ -40,21 +49,23 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
   return (
     <div
       className={classNames(
-        "min-h-[calc(100svh-4.5rem)]",
+        "relative isolate min-h-[100svh]",
         "flex flex-col justify-end",
         "px-5 md:px-10",
         "pt-24 pb-14 md:pb-20",
       )}
     >
+      <HeroBackground />
       <div
         className={classNames(
-          // 큰 "Lab" 바로 오른쪽 글자 윗선에 설명 (큰 화면에서도 한 덩어리로)
-          "flex flex-col gap-10 md:flex-row md:items-start md:gap-12",
+          // 좁은 화면: 설명 → 글자 / 넓은 화면: 큰 "Lab" 바로 오른쪽 글자 윗선에 설명
+          "flex flex-col-reverse gap-8",
+          "md:flex-row md:items-start md:gap-12",
         )}
       >
         <h1
           className={classNames(
-            "font-neuehaas text-[28vw] leading-[0.8] whitespace-nowrap md:text-[22vw]",
+            "font-neuehaas text-[20vw] leading-[0.8] whitespace-nowrap md:text-[18vw]",
           )}
         >
           {dict.lab.title}
@@ -62,11 +73,11 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
 
         <div
           className={classNames(
-            "max-w-lg md:pt-[1.5vw]",
-            "flex flex-col gap-5",
+            "max-w-md md:pt-[1.5vw]",
+            "flex flex-col gap-3",
           )}
         >
-          <span className={classNames("flex items-center gap-3")}>
+          <span className={classNames("flex items-center gap-2.5")}>
             <span aria-hidden className={classNames("flex gap-1.5")}>
               {[1, 2, 3, 4].map((number, index) => (
                 <ThemeDot
@@ -88,38 +99,37 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
             </span>
           </span>
           <p
-            className={classNames(
-              "text-xl leading-snug font-medium break-keep md:text-2xl",
-            )}
+            className={classNames("font-medium break-keep text-lg 2xl:text-xl")}
           >
             {dict.lab.lead}
           </p>
-          <p className={classNames("leading-7 break-keep text-sub")}>
+          <p
+            className={classNames(
+              "text-sm md:text-base 2xl:text-lg",
+              "leading-snug break-keep text-sub",
+            )}
+          >
             {dict.lab.description}
           </p>
-          <div className={classNames("flex flex-wrap gap-2", "mt-2")}>
+          <div className={classNames("mt-4 flex flex-wrap gap-x-6 gap-y-2")}>
             <Link
               href={localePath(lang, ROUTES.research)}
               cursor-label="Open"
-              className={classNames(
-                "h-10",
-                "inline-flex items-center",
-                "px-5",
-                "rounded-full bg-black transition hover:opacity-85",
-                "font-neuehaas text-sm font-medium text-white",
-              )}
+              className={textLink}
             >
-              {dict.lab.research} →
+              {dict.lab.research}
+              <span
+                aria-hidden
+                className={classNames(
+                  "transition-transform duration-300 group-hover:translate-x-1",
+                )}
+              >
+                →
+              </span>
             </Link>
             <Link
               href={localePath(lang, ROUTES.home)}
-              className={classNames(
-                "h-10",
-                "inline-flex items-center",
-                "px-5",
-                "rounded-full bg-sheet/60 transition hover:bg-sheet",
-                "font-neuehaas text-sm font-medium",
-              )}
+              className={classNames(textLink, "text-sub hover:text-main")}
             >
               {dict.notFound.home}
             </Link>

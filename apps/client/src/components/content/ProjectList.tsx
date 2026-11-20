@@ -7,6 +7,7 @@ import { A11y, Keyboard, Mousewheel } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { ProjectCard, ProjectDetail } from "@repo/blocks";
+import { InView } from "./InView";
 import { SiteNextLink } from "./SiteNextLink";
 import { localePath, localized, type Dictionary, type Locale } from "@/i18n";
 import type { ProjectWithThemes } from "@/libs/content";
@@ -80,8 +81,9 @@ export function ProjectList({
       <p className={classNames("text-sm text-sub")}>{dict.project.empty}</p>
     );
 
-  const card = (project: ProjectWithThemes) => (
-    <li key={project.id}>
+  // 화면에 들어오면 위에서부터 차례로 떠오름 (묶음 안 순서 · 너무 늦어지지 않게 6번째까지만 늘림)
+  const card = (project: ProjectWithThemes, order: number) => (
+    <InView as="li" key={project.id} delay={Math.min(order, 6) * 0.06}>
       <ProjectCard
         project={{
           year: projectYear(project),
@@ -95,7 +97,7 @@ export function ProjectList({
         showYear={!groupByYear}
         onClick={() => open(projects.indexOf(project))}
       />
-    </li>
+    </InView>
   );
 
   const years = [...new Set(projects.map((p) => p.year_start))];
@@ -115,17 +117,21 @@ export function ProjectList({
                   "font-neuehaas text-2xl leading-none",
                 )}
               >
-                {year}
+                <InView as="span" className={classNames("block")}>
+                  {year}
+                </InView>
               </h2>
               <ul className={classNames("flex flex-col gap-3 lg:col-span-8")}>
-                {projects.filter((p) => p.year_start === year).map(card)}
+                {projects
+                  .filter((p) => p.year_start === year)
+                  .map((project, order) => card(project, order))}
               </ul>
             </section>
           ))}
         </div>
       ) : (
         <ul className={classNames("flex flex-col gap-3")}>
-          {projects.map(card)}
+          {projects.map((project, order) => card(project, order))}
         </ul>
       )}
       <ProjectDialog
@@ -177,15 +183,29 @@ function ProjectDialog({
   const isOpen = index !== null;
   /** 모달이 화면에 뜬 뒤에 캐러셀을 그립니다 (닫힌 상태에서는 크기를 잴 수 없어서) */
   const [shown, setShown] = useState(false);
+  /** 열림 모션 상태: false = 들어오기 전 · 나가는 중 / true = 다 보임 */
+  const [visible, setVisible] = useState(false);
+  /** 막 열리는 중 (옆 카드 · 위 막대를 한 박자 늦게 들이려고) */
+  const [entering, setEntering] = useState(false);
+  const closingRef = useRef(false);
 
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog || !isOpen) return;
     if (!dialog.open) dialog.showModal();
+    closingRef.current = false;
     setShown(true);
+    setEntering(true);
+    // 들어오기 전 모습이 한 번 그려진 다음에 보이게 (그래야 모션이 생김)
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => setVisible(true));
+    });
+    const settled = window.setTimeout(() => setEntering(false), 800);
     const overflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(settled);
       document.documentElement.style.overflow = overflow;
     };
   }, [isOpen]);
@@ -197,7 +217,22 @@ function ProjectDialog({
       swiper.slideTo(index);
   }, [index]);
 
-  const close = () => ref.current?.close();
+  /** 닫기: 카드가 가라앉으며 사라진 뒤에 실제로 닫음 */
+  const close = () => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    setVisible(false);
+    setEntering(false);
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    window.setTimeout(() => ref.current?.close(), reduce ? 0 : 320);
+  };
+
+  /** 열릴 때는 부드럽게 감속 · 닫힐 때는 빠르게 가속 */
+  const motion = visible
+    ? "duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
+    : "duration-300 ease-[cubic-bezier(.55,0,1,.45)]";
 
   const navButton = (by: -1 | 1) => (
     <button
@@ -238,16 +273,30 @@ function ProjectDialog({
     <dialog
       ref={ref}
       aria-label={dict.projects.title}
+      // Esc 도 모션을 거쳐서 닫기 (키에서 먼저 막고, 그래도 오는 cancel 도 막음)
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        close();
+      }}
+      onCancel={(event) => {
+        event.preventDefault();
+        close();
+      }}
       onClose={() => {
         setShown(false);
+        setVisible(false);
         swiperRef.current = null;
         onClose();
       }}
       className={classNames(
         "m-0 h-dvh max-h-none w-full max-w-none",
         "overflow-hidden bg-transparent p-0",
-        "transition-opacity duration-300 starting:open:opacity-0",
-        "backdrop:bg-black/40 backdrop:backdrop-blur-sm",
+        // 배경: 어두워지며 흐려짐
+        "backdrop:transition-[background-color,backdrop-filter] backdrop:duration-500",
+        visible
+          ? "backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+          : "backdrop:bg-black/0 backdrop:backdrop-blur-none",
       )}
     >
       {/* 위쪽 막대: 번호 · 이전 · 다음 · 닫기 */}
@@ -256,6 +305,11 @@ function ProjectDialog({
           "pointer-events-none absolute inset-x-0 top-0 z-10",
           "flex items-center justify-between gap-3",
           "px-5 pt-5 md:px-10 md:pt-6",
+          // 위에서 살짝 내려오며 나타남 (열릴 때는 카드보다 한 박자 늦게)
+          "transition-[opacity,translate] motion-reduce:transition-none",
+          motion,
+          entering && visible && "delay-150",
+          visible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0",
         )}
       >
         <div
@@ -342,16 +396,34 @@ function ProjectDialog({
                 */}
                 <div
                   data-project-card
+                  // 옆 카드에 올리면 커서에 넘기는 방향 안내
+                  cursor-label={
+                    i < index
+                      ? "Swipe to prev"
+                      : i > index
+                        ? "Swipe to next"
+                        : undefined
+                  }
                   className={classNames(
                     "w-full",
                     "aspect-[3/5] md:aspect-[5/3] h-auto md:w-[min(100cqw,calc(100cqh*4/3))]",
                     "overflow-y-auto overscroll-contain",
                     "rounded-3xl bg-background text-main shadow-2xl",
                     // 지금 카드: 크게 · 선명하게 / 이전 · 다음: 작게 · 흐리게 (누르면 그쪽으로)
-                    "transition-[scale,opacity] duration-500 ease-[cubic-bezier(.22,1,.36,1)]",
-                    active
-                      ? "scale-100 opacity-100"
-                      : "scale-90 cursor-pointer opacity-40",
+                    "transition-[scale,opacity,translate] motion-reduce:transition-none",
+                    motion,
+                    !active && "cursor-pointer",
+                    // 열고 닫을 때: 지금 카드는 아래에서 떠오르고 · 가라앉음, 옆 카드는 바깥에서 한 박자 늦게 들어옴
+                    entering && visible && !active && "delay-150",
+                    visible
+                      ? active
+                        ? "translate-0 scale-100 opacity-100"
+                        : "translate-0 scale-90 opacity-40"
+                      : active
+                        ? "translate-y-10 scale-95 opacity-0"
+                        : i < index
+                          ? "-translate-x-16 scale-90 opacity-0"
+                          : "translate-x-16 scale-90 opacity-0",
                   )}
                 >
                   {/* 옆 카드 안의 링크 · 버튼은 누를 수 없게 (카드를 누르면 그쪽으로 넘어감) */}

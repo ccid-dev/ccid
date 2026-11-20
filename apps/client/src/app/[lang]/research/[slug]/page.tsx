@@ -6,6 +6,7 @@ import { ThemeDot } from "@repo/common";
 import Link from "next/link";
 import {
   ImageBento,
+  InView,
   PageHeader,
   PillLink,
   Pills,
@@ -97,7 +98,11 @@ export default async function ResearchPage({
       />
 
       {theme.images.length ? (
-        <div className={classNames("px-5 md:px-10", "pt-12 md:pt-16")}>
+        <InView
+          delay={0.15}
+          y={40}
+          className={classNames("px-5 md:px-10", "pt-12 md:pt-16")}
+        >
           <ImageBento
             images={theme.images}
             alt={alt}
@@ -105,12 +110,12 @@ export default async function ResearchPage({
             prevLabel={dict.research.prevImage}
             nextLabel={dict.research.nextImage}
           />
-        </div>
+        </InView>
       ) : null}
 
       <div className={classNames("px-5 md:px-10", "pt-16 md:pt-24")}>
         <div className={classNames("grid gap-y-6 lg:grid-cols-10 lg:gap-x-10")}>
-          <div className={classNames("flex flex-col gap-5 lg:col-span-2")}>
+          <InView className={classNames("flex flex-col gap-5 lg:col-span-2")}>
             {keywords.length ? (
               <>
                 {/* 다른 구역 제목과 같은 크기 */}
@@ -122,7 +127,7 @@ export default async function ResearchPage({
                 <Pills items={keywords} />
               </>
             ) : null}
-          </div>
+          </InView>
           <div
             className={classNames(
               "max-w-3xl lg:col-span-8 2xl:max-w-4xl",
@@ -132,15 +137,18 @@ export default async function ResearchPage({
           >
             {/* 캐치프레이즈 (크게, 보통 굵기) → 한 칸 띄우고 요약 + 설명 (붙여서 한 덩어리) */}
             {catchphrase ? (
-              <p
-                className={classNames(
-                  "text-2xl leading-snug whitespace-pre-line md:text-3xl 2xl:text-4xl",
-                )}
-              >
-                {catchphrase}
-              </p>
+              <InView delay={0.1}>
+                <p
+                  className={classNames(
+                    "text-2xl leading-snug whitespace-pre-line md:text-3xl 2xl:text-4xl",
+                  )}
+                >
+                  {catchphrase}
+                </p>
+              </InView>
             ) : null}
-            <div className={classNames("flex flex-col gap-4")}>
+            {/* 캐치프레이즈 → 한 박자 늦게 요약 · 설명 */}
+            <InView delay={0.2} className={classNames("flex flex-col gap-4")}>
               <p
                 className={classNames(
                   "text-lg leading-8 2xl:text-xl 2xl:leading-9",
@@ -155,7 +163,7 @@ export default async function ResearchPage({
               >
                 {localized(theme, "description", lang)}
               </p>
-            </div>
+            </InView>
           </div>
         </div>
       </div>
@@ -181,8 +189,8 @@ export default async function ResearchPage({
           <ul
             className={classNames("grid gap-3 sm:grid-cols-2 xl:grid-cols-3")}
           >
-            {others.map((other) => (
-              <li key={other.id}>
+            {others.map((other, order) => (
+              <InView as="li" key={other.id} delay={order * 0.1}>
                 <Link
                   href={localePath(lang, `/research/${other.slug}`)}
                   cursor-label="Open"
@@ -229,7 +237,7 @@ export default async function ResearchPage({
                     </span>
                   </span>
                 </Link>
-              </li>
+              </InView>
             ))}
           </ul>
         </Section>

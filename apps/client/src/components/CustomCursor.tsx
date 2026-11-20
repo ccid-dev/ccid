@@ -80,7 +80,7 @@ function metaballNeck(r1: number, r2: number, c1: Point, c2: Point, v: number) {
  *   스크롤 중에는 스크롤 표현만 보여 주고(원은 기본 크기 · 설명 숨김),
  *   멈추면 그 자리의 요소를 다시 확인해 커짐 · 설명을 되살립니다.
  * 움직임 줄이기 설정이면 따라오는 지연 · 물방울 모양 없이 바로 움직입니다.
- * 모달(<dialog>)이 열려 있는 동안에는 커서를 최상위 층(popover)에 올려 모달 위에서도 보이게 합니다.
+ * 모달(<dialog>) · 팝오버가 열려 있는 동안에는 커서를 최상위 층(popover)에 올려 그 위에서도 보이게 합니다.
  *   (Safari 는 최상위 층에서 mix-blend 가 아래 페이지와 섞이지 않아서, 그동안은 반전 대신 검은 원으로)
  */
 export function CustomCursor() {
@@ -126,13 +126,18 @@ export function CustomCursor() {
     root.classList.add("has-custom-cursor");
 
     // 모달(<dialog>)이 열리고 닫히는 것을 지켜보고, 열려 있는 동안만 커서를 최상위 층에 올립니다.
+    // 팝오버(popover — 예: People 약력 창)도 최상위 층에 뜨므로 똑같이 지켜봅니다.
+    const anyLayerOpen = () =>
+      Boolean(document.querySelector("dialog[open]")) ||
+      [...document.querySelectorAll(":popover-open")].some(
+        (element) => element !== cursorRef.current,
+      );
     const dialogs = new MutationObserver((records) => {
       const opened = records.some(
         (record) =>
           record.target instanceof HTMLDialogElement && record.target.open,
       );
-      const anyOpen = Boolean(document.querySelector("dialog[open]"));
-      setLayered(anyOpen);
+      setLayered(anyLayerOpen());
       // 이미 올라가 있는데 모달이 또 열리면 그 위로 다시
       if (opened) raise();
     });
@@ -141,6 +146,13 @@ export function CustomCursor() {
       attributes: true,
       attributeFilter: ["open"],
     });
+    // 팝오버는 open 속성이 없어서 toggle 이벤트로 (퍼지지 않는 이벤트라 capture 로 받음)
+    const onToggle = (event: Event) => {
+      if (event.target === cursorRef.current) return;
+      setLayered(anyLayerOpen());
+      if ((event as ToggleEvent).newState === "open") raise();
+    };
+    document.addEventListener("toggle", onToggle, true);
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -271,6 +283,7 @@ export function CustomCursor() {
     return () => {
       root.classList.remove("has-custom-cursor");
       dialogs.disconnect();
+      document.removeEventListener("toggle", onToggle, true);
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
       window.removeEventListener("pointermove", onMove);

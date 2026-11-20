@@ -40,8 +40,8 @@ export function JoinButton({
           "h-11 shrink-0 self-start md:self-auto",
           "group inline-flex items-center gap-2",
           "px-6",
-          "rounded-full bg-white transition hover:bg-white/85",
-          "font-neuehaas text-sm font-medium text-black",
+          "rounded-full bg-black transition hover:bg-black/85",
+          "font-neuehaas text-sm font-medium text-white",
         )}
       >
         {label}
