@@ -1,0 +1,10 @@
+{
+  "name": "Font Replace (cciD)",
+  "id": "ccid-font-replace-local",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": { "allowedDomains": ["none"] }
+}

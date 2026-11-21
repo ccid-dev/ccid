@@ -1,0 +1,172 @@
+<style>
+  :root { font: 12px/1.4 Inter, system-ui, sans-serif; color: var(--figma-color-text, #111); background: var(--figma-color-bg, #fff); }
+  body { margin: 0; padding: 14px; display: flex; flex-direction: column; gap: 12px; height: 100vh; box-sizing: border-box; }
+  h1 { font-size: 13px; margin: 0; }
+  .muted { color: var(--figma-color-text-secondary, #888); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--figma-color-border, #ddd); background: var(--figma-color-bg, #fff); color: inherit; cursor: pointer; }
+  button.primary { background: var(--figma-color-bg-brand, #0d99ff); color: #fff; border-color: transparent; }
+  button:disabled { opacity: .5; cursor: default; }
+  .list { flex: 1; overflow: auto; border: 1px solid var(--figma-color-border, #e5e5e5); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--figma-color-border, #eee); vertical-align: middle; }
+  th { position: sticky; top: 0; background: var(--figma-color-bg-secondary, #f7f7f7); font-weight: 600; }
+  td.from b { font-weight: 600; }
+  input, select { font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--figma-color-border, #ddd); background: var(--figma-color-bg, #fff); color: inherit; width: 100%; box-sizing: border-box; }
+  .to { display: grid; grid-template-columns: 1.4fr 1fr; gap: 6px; }
+  .warn { color: var(--figma-color-text-danger, #e03); }
+  #status { min-height: 32px; white-space: pre-wrap; }
+</style>
+
+<h1>Font Replace</h1>
+
+<div class="row">
+  <span>범위</span>
+  <label><input type="radio" name="scope" value="selection" style="width:auto" /> 선택한 레이어</label>
+  <label><input type="radio" name="scope" value="page" style="width:auto" checked /> 현재 페이지</label>
+  <label><input type="radio" name="scope" value="all" style="width:auto" /> 파일 전체</label>
+  <button id="rescan">다시 읽기</button>
+</div>
+
+<div class="row">
+  <button id="preset">cciD 기본 매핑 (Inter → Neue Haas · Gothic A1 → Pretendard)</button>
+  <button id="clear">매핑 비우기</button>
+</div>
+
+<div class="list">
+  <table>
+    <thead><tr><th style="width:42%">지금 폰트 (텍스트 수)</th><th>바꿀 폰트 · 굵기 (비우면 그대로)</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="2" class="muted">불러오는 중…</td></tr></tbody>
+  </table>
+</div>
+<datalist id="families"></datalist>
+
+<div class="row">
+  <label><input type="checkbox" id="styles" style="width:auto" checked /> 텍스트 스타일 안의 폰트도 바꾸기</label>
+</div>
+<div class="row">
+  <button class="primary" id="apply">바꾸기</button>
+  <span class="muted">실행 전 File → Save to version history 로 저장해 두면 되돌리기 쉬워요.</span>
+</div>
+<div id="status" class="muted"></div>
+
+<script>
+  let fonts = {}; // { family: [styles] }
+  let used = [];  // [{ family, style, nodes, missing }]
+  const $ = (id) => document.getElementById(id);
+  const scope = () => document.querySelector('input[name=scope]:checked').value;
+  const keyOf = (f) => `${f.family}|${f.style}`;
+  const post = (msg) => parent.postMessage({ pluginMessage: msg }, "*");
+
+  // 사이트 굵기 기준 매핑 (폰트 이름은 설치된 이름에 맞춰 찾음)
+  const PRESET = [
+    [/^Inter$/, /Regular/, [/neue haas.*display/i], [/55.*Roman/i, /Roman/i]],
+    [/^Inter$/, /^Medium$/, [/neue haas.*display/i], [/65.*Medium/i, /Medium/i]],
+    [/^Inter$/, /Semi ?Bold/i, [/neue haas.*display/i], [/65.*Medium/i, /Medium/i]],
+    [/^Inter$/, /^Bold$/, [/neue haas.*display/i], [/75.*Bold/i, /Bold/i]],
+    [/^Gothic A1$/, /Regular/, [/^Pretendard$/i, /^Pretendard/i], [/^Regular$/i]],
+    [/^Gothic A1$/, /^Medium$/, [/^Pretendard$/i, /^Pretendard/i], [/^Medium$/i]],
+    [/^Gothic A1$/, /Semi ?Bold/i, [/^Pretendard$/i, /^Pretendard/i], [/^Semi ?Bold$/i]],
+    [/^Gothic A1$/, /^Bold$/, [/^Pretendard$/i, /^Pretendard/i], [/^Bold$/i]],
+  ];
+  const findFamily = (regs) => {
+    const names = Object.keys(fonts);
+    for (const r of regs) { const hit = names.find((n) => r.test(n)); if (hit) return hit; }
+    return null;
+  };
+  const findStyle = (family, regs) => {
+    const styles = (fonts[family] || []).filter((s) => !/italic|oblique/i.test(s));
+    for (const r of regs) { const hit = styles.find((s) => r.test(s)); if (hit) return hit; }
+    return null;
+  };
+
+  function styleOptions(select, family, current) {
+    const styles = fonts[family] || [];
+    select.innerHTML = '<option value="">굵기</option>' + styles.map((s) => `<option${s === current ? " selected" : ""}>${s}</option>`).join("");
+  }
+
+  function render() {
+    const tbody = $("rows");
+    if (!used.length) { tbody.innerHTML = '<tr><td colspan="2" class="muted">이 범위에는 텍스트가 없어요.</td></tr>'; return; }
+    tbody.innerHTML = "";
+    for (const f of used) {
+      const tr = document.createElement("tr");
+      tr.dataset.key = keyOf(f);
+      tr.innerHTML = `
+        <td class="from"><b>${f.family}</b> ${f.style} <span class="muted">(${f.nodes})</span>${f.missing ? ' <span class="warn">· 없는 폰트 포함</span>' : ""}</td>
+        <td><div class="to"><input list="families" placeholder="폰트 이름" /><select></select></div></td>`;
+      const input = tr.querySelector("input");
+      const select = tr.querySelector("select");
+      styleOptions(select, "", "");
+      input.addEventListener("change", () => styleOptions(select, input.value, f.style));
+      tbody.appendChild(tr);
+    }
+  }
+
+  function setRow(key, family, style) {
+    const tr = [...document.querySelectorAll("#rows tr")].find((r) => r.dataset.key === key);
+    if (!tr) return;
+    tr.querySelector("input").value = family;
+    styleOptions(tr.querySelector("select"), family, style);
+  }
+
+  $("preset").onclick = () => {
+    const missing = [];
+    for (const f of used) {
+      const rule = PRESET.find(([fr, sr]) => fr.test(f.family) && sr.test(f.style));
+      if (!rule) continue;
+      const family = findFamily(rule[2]);
+      const style = family && findStyle(family, rule[3]);
+      if (family && style) setRow(keyOf(f), family, style);
+      else missing.push(`${f.family} ${f.style}`);
+    }
+    $("status").textContent = missing.length
+      ? `설치된 폰트에서 짝을 못 찾은 항목: ${missing.join(", ")}`
+      : "기본 매핑을 채웠어요. 확인 후 '바꾸기'를 누르세요.";
+  };
+  $("clear").onclick = () => { render(); $("status").textContent = ""; };
+  $("rescan").onclick = () => { $("status").textContent = "읽는 중…"; post({ type: "scan", scope: scope() }); };
+  document.querySelectorAll("input[name=scope]").forEach((r) => r.addEventListener("change", () => $("rescan").onclick()));
+
+  $("apply").onclick = () => {
+    const mapping = {};
+    for (const tr of document.querySelectorAll("#rows tr[data-key]")) {
+      const family = tr.querySelector("input").value.trim();
+      const style = tr.querySelector("select").value;
+      if (!family && !style) continue;
+      if (!family || !style || !(fonts[family] || []).includes(style)) {
+        $("status").textContent = `설치된 폰트에 없는 조합이 있어요: ${family || "(이름 없음)"} ${style || "(굵기 없음)"}`;
+        return;
+      }
+      if (keyOf({ family, style }) !== tr.dataset.key) mapping[tr.dataset.key] = { family, style };
+    }
+    if (!Object.keys(mapping).length) { $("status").textContent = "바꿀 매핑이 없어요."; return; }
+    $("apply").disabled = true;
+    $("status").textContent = "바꾸는 중…";
+    post({ type: "replace", scope: scope(), mapping, includeStyles: $("styles").checked });
+  };
+
+  onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === "fonts") {
+      fonts = msg.fonts;
+      $("families").innerHTML = Object.keys(fonts).sort().map((f) => `<option value="${f}">`).join("");
+    }
+    if (msg.type === "scan") {
+      used = msg.fonts;
+      render();
+      if ($("status").textContent === "읽는 중…") $("status").textContent = `텍스트 ${msg.texts}개 · 폰트 ${used.length}종`;
+    }
+    if (msg.type === "done") {
+      $("apply").disabled = false;
+      if (msg.error) { $("status").textContent = msg.error; return; }
+      $("status").textContent =
+        `완료: 텍스트 ${msg.changedNodes}개 · 구간 ${msg.changedRanges}곳` +
+        (msg.changedStyles ? ` · 스타일 ${msg.changedStyles}개` : "") +
+        (msg.failedCount ? `\n실패 ${msg.failedCount}곳:\n${msg.failed.join("\n")}` : "");
+    }
+  };
+
+  post({ type: "init", scope: scope() });
+</script>

@@ -14,12 +14,21 @@
 
 ```bash
 yarn install
-cp .env.example .env.local   # 필요한 키 채우기
+cp .env.example .env.local   # 필요한 키 채우기 (전달받은 env 파일이 있으면 루트에 .env 또는 .env.local 로 두기)
 yarn dev
 ```
 
 - Client: [http://localhost:3000](http://localhost:3000)
-- Admin: [http://localhost:3001](http://localhost:3001)
+- Admin: [http://localhost:3001](http://localhost:3001) — `/signup` 으로 가입한 뒤 메인테이너가 승인하면 들어갈 수 있습니다.
+
+> **주의:** env 에 원격(운영) Supabase 주소를 넣으면 로컬 개발도 실제 DB를 씁니다. admin 에서 저장 · 삭제하면 사이트에 바로 반영됩니다. 따로 연습하려면 아래 로컬 Supabase 를 쓰세요.
+
+### 협업
+
+- Claude Code 로 작업하면 루트 [CLAUDE.md](CLAUDE.md)의 규칙(스타일 · 모션 · DB 주의사항)을 자동으로 읽습니다. 사람도 작업 전에 한 번 읽어 주세요.
+- 끝내기 전에 `yarn lint` · `yarn check-types` 를 통과시킵니다.
+- 커밋 메시지: `[style]` · `[fix]` · `[feature]` 뒤에 영어 소문자로 짧게. 예: `[fix]fix cursor position when scrolling`
+- 레포는 public 입니다. env · 키 · 확인용 스크린샷을 커밋하지 마세요.
 
 ### Supabase 연결
 
@@ -119,7 +128,9 @@ SVG는 `@svgr/webpack`(Turbopack 로더)으로 React 컴포넌트가 됩니다.
 
 ### 스타일 작성 규칙
 
-CSS 파일에 스타일을 쓰지 않고 Tailwind 클래스만 씁니다. 모든 태그의 `className`은 [`classnames`](https://github.com/JedWatson/classnames)로 **5개 묶음을 이 순서대로** 나눠 씁니다. 해당하는 클래스가 없는 묶음은 생략합니다.
+CSS 파일에 스타일을 쓰지 않고 Tailwind 클래스만 씁니다. 스타일을 공유하려고 CSS 변수 · 커스텀 유틸리티(`text-title`) · className 상수를 만들지 않고, 필요한 곳마다 클래스를 그대로 씁니다. (예외: `@keyframes`, 조절용 값 JSON, 움직이는 값의 inline `style`)
+
+모든 태그의 `className`은 [`classnames`](https://github.com/JedWatson/classnames)로 **5개 묶음을 이 순서대로** 나눠 씁니다. 해당하는 클래스가 없는 묶음은 생략합니다.
 
 ```tsx
 import classNames from "classnames";
@@ -130,7 +141,7 @@ import classNames from "classnames";
     "flex items-center justify-between gap-6", // 2. 레이아웃: display · flex/grid · 정렬 · gap · position · z · overflow
     "px-5 sm:px-8", // 3. 여백: padding · margin
     "border-b bg-paper backdrop-blur", // 4. 배경·효과: bg · border · rounded · shadow · blur · opacity · transition
-    "text-sm font-medium text-sub", // 5. 글자: text · font · leading · tracking · whitespace
+    "text-sm font-medium text-sub", // 5. 글자: text · font · leading · whitespace
   )}
 />;
 ```
@@ -138,15 +149,27 @@ import classNames from "classnames";
 - 반응형 · 상태 변형(`sm:` `hover:` `disabled:`)은 원래 클래스의 묶음에 넣습니다.
 - 조건부 클래스는 해당 묶음 안에서 배열 · 객체로 씁니다. `["text-sm", { "font-semibold": active }]`
 - 컴포넌트가 밖에서 `className`을 받으면 맨 뒤에 붙입니다. `classNames(..., className)`
+- **자간(`tracking-*`)은 쓰지 않습니다.** 디자인에 자간이 없습니다. 필요하면 `apps/client/src/styles/global.css` 의 `--letter-spacing-pretendard` · `--letter-spacing-neuehaas` 한 곳에서 바꿉니다.
+- Swiper 의 CSS 는 Tailwind 레이어 밖에 있어 Tailwind 클래스보다 셉니다. Swiper 요소의 크기 · 여백은 `w-auto!` 처럼 `!` 를 붙여 덮습니다.
 
 ### 폰트
 
 | 클래스            | 폰트                         | 용도                         | 불러오는 곳                                  |
 | ----------------- | ---------------------------- | ---------------------------- | -------------------------------------------- |
 | `font-pretendard` | Pretendard Variable (45–920) | 본문·설명 등 한글 (**기본**) | `public/fonts` + `next/font/local`           |
-| `font-neuehaas`   | Neue Haas Grotesk Display    | UI 요소 (400 · 500 · 700)    | Adobe Fonts (`packages/styles/src/fonts.ts`) |
+| `font-neuehaas`   | Neue Haas Grotesk Display    | UI 요소 · 영문 제목          | Adobe Fonts (`packages/styles/src/fonts.ts`) |
 
 클래스를 지정하지 않으면 Pretendard가 적용됩니다. `font-neuehaas` 안의 한글은 Pretendard로 대체됩니다.
+
+`font-neuehaas` 의 굵기 클래스는 **폰트 이름 그대로** 나오도록 맞춰 뒀습니다. (`packages/styles/src/global.css` 의 `.font-neuehaas`) 이 네 가지만 씁니다.
+
+| 클래스               | Neue Haas |
+| -------------------- | --------- |
+| `font-light`         | 45 Light  |
+| `font-normal` (기본) | 55 Roman  |
+| `font-medium`        | 65 Medium |
+| `font-bold`          | 75 Bold   |
+
 Adobe Fonts 웹 프로젝트의 허용 도메인에 배포 도메인과 `localhost`가 등록되어 있어야 합니다.
 
 ### 색 체계
@@ -174,10 +197,37 @@ Adobe Fonts 웹 프로젝트의 허용 도메인에 배포 도메인과 `localho
 | `Spinner`           | `<Spinner size="lg" />` — 글자색을 따라감. `className="text-primary"` 로 색 변경                                   |
 | `LoadingOverlay`    | `<LoadingOverlay open message detail />` — 끝날 때까지 화면을 막는 로딩 팝업                                       |
 | `Container`         | 가운데 정렬 · 최대 폭                                                                                              |
+| `RulerSlider`       | 눈금자 모양 슬라이더 (`size="sm \| md"`). 조절 페이지(`/agent-tune`)에서 사용                                      |
 | `ThemeDot`          | `<ThemeDot number={theme.number} />` — 리서치 분야 컬러칩. 01 purple · 02 pink · 03 gold · 04 skyblue (`theme-0N`) |
 
 - 모서리: 담는 면일수록 둥글게, 안에 놓이는 것일수록 덜 둥글게. 패널 · 카드 · 모달 `rounded-3xl` → 안의 상자 · 이미지 · 알림 `rounded-2xl` → 버튼 · 입력칸 `rounded-lg`(작은 버튼 `rounded-md`)
-- client 는 선(border) 없이 면으로 구분합니다. 카드 `bg-sheet/60`, 카드 안의 알약 `bg-white`.
+- client 는 선(border) 없이 면으로 구분합니다. 카드 `bg-sheet/60`, 카드 안의 알약 `bg-white`. 구역 사이도 구분선 대신 넉넉한 여백으로 나눕니다.
+
+### 모션 · 인터랙션 (client)
+
+라이브러리: `motion`(motion/react) · `swiper` · `react-type-animation` · `leva`(조절 페이지 전용). 아래 부품은 `apps/client/src/components/` 에 있습니다.
+
+| 부품            | 하는 일                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| `InView`        | `content/InView.tsx` — 화면에 들어오면 아래에서 떠오르며 나타남. `as` · `delay` · `y`                        |
+| `RevealItem`    | `content/RevealItem.tsx` — 목록 항목이 무작위 같은 순서로 천천히 나타남 (People)                             |
+| `Reveal`        | `content/Reveal.tsx` — CSS 로 만든 등장 상자 (예전 부품, 일부 화면에서 사용)                                 |
+| `TypedText`     | `content/TypedText.tsx` — 타이핑 효과. 홈의 랩 이름에만 씁니다                                               |
+| `ImageCarousel` | `content/ImageCarousel.tsx` — Swiper 가로 캐러셀. 화면 끝까지 넓고, 좌우 영역에서 커서가 prev / next 로 바뀜 |
+| `CustomCursor`  | `CustomCursor.tsx` — 사이트 커서. 요소에 `cursor-label="설명"` 을 달면 커서 아래에 설명이 뜹니다             |
+| `PageVeil`      | `PageVeil.tsx` — 페이지 이동 때 유리 베일. `app/[lang]/loading.tsx` 의 `data-page-loading` 이 사라지면 걷힘  |
+
+### 배경 그래픽과 조절 페이지
+
+홈 히어로 · 푸터 배경 · 에이전트 구는 WebGPU/WebGL 셰이더입니다. 값은 JSON 파일에 있고, 조절 페이지에서 바꿉니다. 패널(Leva)에서 조절한 뒤 **JSON 복사**로 값 파일에 통째로 붙여 넣으세요.
+
+| 조절 페이지    | 값 파일                                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `/hero-tune`   | `apps/client/src/components/home/hero-background.json`                                |
+| `/footer-tune` | `apps/client/src/components/footer-background/footer-background.json`                 |
+| `/agent-tune`  | 에이전트 구 — [agent-blob/README.md](apps/client/src/components/agent-blob/README.md) |
+
+조절 페이지는 검색엔진에 노출되지 않습니다(`noindex`).
 
 ### admin 전용 UI
 
@@ -263,9 +313,9 @@ alternates: localeAlternates(lang, "/people"),
 
 ### 동적 페이지와 404 상태 코드
 
-루트에 `app/loading.tsx`가 있으면 페이지가 스트리밍됩니다. 이때 상세 페이지에서 `notFound()`를 호출하면 화면은 404지만 HTTP 상태는 **200**으로 나갑니다. 대신 `noindex`가 붙어 검색엔진에는 노출되지 않습니다.
+client 는 `app/[lang]/loading.tsx`(admin 은 `app/loading.tsx`)가 있어 페이지가 스트리밍됩니다. 이때 상세 페이지에서 `notFound()`를 호출하면 화면은 404지만 HTTP 상태는 **200**으로 나갑니다. 대신 `noindex`가 붙어 검색엔진에는 노출되지 않습니다.
 
-정확한 404 상태 코드가 필요하면 `loading.tsx`를 루트 대신 필요한 경로에만 두세요.
+정확한 404 상태 코드가 필요하면 `loading.tsx`를 필요한 경로에만 두세요. client 의 `loading.tsx` 는 페이지 전환(`PageVeil`)이 로딩이 끝났는지 알아보는 데에도 쓰입니다(`data-page-loading`). 옮기면 함께 확인하세요.
 
 ## 주요 명령어
 
@@ -285,5 +335,4 @@ yarn db:types       # DB 타입 재생성 → apps/*/src/types/database.ts
 
 ## 아직 포함하지 않은 것
 
-- 디자인: 지금 화면은 데이터 구조만 보이는 와이어프레임입니다.
 - admin 저장 즉시 client 반영: 지금은 client 페이지가 최대 60초 뒤 갱신됩니다(`revalidate = 60`).
