@@ -74,6 +74,15 @@ yarn check-types
 
 패널(Leva)에서 조절한 뒤 'JSON 복사'로 값 파일에 통째로 붙여 넣습니다.
 
+## 피드백 코멘트 반영
+
+사이트 위에서 남긴 코멘트는 루트 `.feedback/comments.json` 에 있습니다. (README "사이트 위 피드백 코멘트") "피드백 반영해줘" 라고 하면:
+
+- `status: "open"` 인 코멘트만 처리합니다. `page` (주소창 경로, 한국어는 `/ko` 없이) → `app/[lang]/…`, `target.components` (안쪽 → 바깥) · `target.text` · `target.selector` 로 고칠 코드를 찾습니다. `viewport` 너비로 모바일 · 데스크톱 중 어느 화면 얘기인지 봅니다.
+- 고친 뒤 그 코멘트의 `status` 를 `"done"` 으로, `note` 에 무엇을 바꿨는지 한 줄(한국어)을 적습니다. 코멘트를 지우거나 `comment` 를 바꾸지 않습니다.
+- 뜻이 애매하거나 큰 변경이면 고치지 말고 `open` 으로 두고 물어봅니다.
+- 이 파일은 커밋하지 않습니다. (`.gitignore`) 끝나면 `yarn lint` · `yarn check-types` 를 돌립니다.
+
 ## 하지 말 것
 
 - 확인용 스크린샷 · 임시 파일을 레포 안에 저장하지 않습니다. (레포가 public 입니다)

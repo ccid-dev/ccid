@@ -8,6 +8,10 @@ import { PageVeil } from "./PageVeil";
 import { Header } from "./Header";
 import { JsonLd } from "./JsonLd";
 import { AgentBlob } from "./agent-blob";
+import { FeedbackLayer } from "./feedback";
+
+// NODE_ENV 는 next dev/build 가 직접 설정하므로 turbo env 선언이 필요 없습니다.
+const isDev = process.env.NODE_ENV === "development"; // eslint-disable-line turbo/no-undeclared-env-vars
 
 /** 공개 사이트 공통 레이아웃: 사이트 구조화 데이터 · 헤더 · 본문(main) · 푸터 */
 export async function Layout({ children }: { children: ReactNode }) {
@@ -44,6 +48,8 @@ export async function Layout({ children }: { children: ReactNode }) {
       {/* 페이지 전환: 유리처럼 흐려졌다가 새 페이지가 준비되면 선명해짐 */}
       <PageVeil />
       <CustomCursor />
+      {/* 디자인 피드백 코멘트 (개발 서버에서만) — 루트 .feedback/comments.json 에 저장 */}
+      {isDev ? <FeedbackLayer /> : null}
     </div>
   );
 }
