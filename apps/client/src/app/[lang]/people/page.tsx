@@ -43,11 +43,13 @@ export default async function PeoplePage({
     <>
       <PageHeader title={dict.people.title} />
 
+      {/* 같은 형식의 구역이 이어지므로 아래 여백을 줄여 가깝게 (tight) */}
       {groups.map((group) => (
         <Section
           key={group.category}
           id={group.category}
           title={dict.people.categories[group.category]}
+          tight
         >
           <ul
             className={classNames(

@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { ComponentType, ReactNode } from "react";
-import { IMAGE_RATIOS, ThemeDot, type ImageRatio } from "@repo/common";
+import { IMAGE_RATIOS, type ImageRatio } from "@repo/common";
 import { CroppedImage } from "./CroppedImage";
 
 /**
@@ -35,8 +35,6 @@ export const PlainLink: SiteLink = ({
     {children}
   </a>
 );
-
-export const twoDigits = (n: number) => String(n).padStart(2, "0");
 
 /** 작은 알약 목록 (키워드 · 해시태그). tone 으로 바탕을 고릅니다. */
 export function Pills({
@@ -126,24 +124,6 @@ export function NdaBadge({ label }: { label: string }) {
       )}
     >
       {label}
-    </span>
-  );
-}
-
-/** 분야 번호 알약 (컬러칩 + 번호) */
-export function ThemeChip({ number }: { number: number }) {
-  return (
-    <span
-      className={classNames(
-        "h-7",
-        "inline-flex items-center gap-1.5",
-        "px-2.5",
-        "rounded-full bg-white",
-        "font-neuehaas text-xs font-medium",
-      )}
-    >
-      <ThemeDot number={number} size="sm" />
-      {twoDigits(number)}
     </span>
   );
 }

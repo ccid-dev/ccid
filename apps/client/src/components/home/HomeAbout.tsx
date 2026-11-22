@@ -6,8 +6,6 @@ import type { Dictionary } from "@/i18n";
 import { StrategySteps } from "./StrategySteps";
 import { scrollToStep, useScrollStep } from "./useScrollStep";
 
-const twoDigits = (n: number) => String(n).padStart(2, "0");
-
 /**
  * 홈 About: 큰 한 줄 소개 · 짧은 본문 두 단 · 역량 목록.
  * 역량은 흐린 큰 글자 목록이고, 고른 것만 진해지며 옆에 설명이 나옵니다.
@@ -172,13 +170,6 @@ export function HomeAbout({ dict }: { dict: Dictionary }) {
                   "starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none",
                 )}
               >
-                <span
-                  className={classNames(
-                    "font-neuehaas text-sm font-medium text-sub",
-                  )}
-                >
-                  {twoDigits(active + 1)}
-                </span>
                 <p className={classNames("text-xl font-medium")}>
                   {current.name}
                 </p>

@@ -61,13 +61,15 @@
 
 /*
  * 자간 (letter-spacing): 디자인에는 자간을 따로 넣지 않으므로, 컴포넌트에는 tracking-* 를 쓰지 않습니다.
- * 바꿔야 하면 여기 한 곳에서 폰트별로 정합니다. (지금은 0 = 폰트 기본 자간)
+ * 바꿔야 하면 여기 한 곳에서 폰트별로 정합니다. (Pretendard 는 0 = 폰트 기본 자간)
  * 모든 요소가 자기 글자 크기 기준으로 계산하도록 * 에 겁니다. (em 값을 넣어도 크기별로 맞게 적용)
+ * Neue Haas: 작은 글자일수록 살짝 벌리고 큰 글자는 기본 그대로 (14px ≈ 0.03em · 24px ≈ 0.0125em · 48px 이상 0)
+ *   → 앞의 px 값을 키우면 전체적으로 더 벌어지고, em 값을 키우면 더 작은 크기에서 0 이 됩니다.
  */
 @layer base {
   :root {
     --letter-spacing-pretendard: 0;
-    --letter-spacing-neuehaas: 0;
+    --letter-spacing-neuehaas: max(0px, calc(0.6px - 0.0125em));
     --letter-spacing: var(--letter-spacing-pretendard);
   }
   .font-pretendard {

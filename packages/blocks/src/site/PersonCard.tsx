@@ -39,7 +39,7 @@ export function PersonCard({
       />
       <p className={classNames("mt-2", "font-semibold")}>{person.name}</p>
       {person.role ? (
-        <p className={classNames("text-sm leading-6 whitespace-pre-line")}>
+        <p className={classNames("text-sm leading-5 whitespace-pre-line")}>
           {person.role}
         </p>
       ) : null}

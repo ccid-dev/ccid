@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
-import { ResearchCard, ResearchNumber } from "@repo/blocks";
+import { ResearchCard } from "@repo/blocks";
 import { InView, PageHeader, SiteNextLink } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { hasLocale, localePath, localized } from "@/i18n";
@@ -24,7 +24,7 @@ export async function generateMetadata({
   };
 }
 
-/** 리서치 분야 전체: 분야마다 한 장 (왼쪽 번호 · 컬러칩 / 오른쪽 큰 질문 → 대표 이미지 · 설명) — 장 사이는 넓은 여백으로 */
+/** 리서치 분야 전체: 분야마다 한 장 (큰 질문 → 대표 이미지 · 설명, 넓은 화면은 오른쪽 8칸) — 장 사이는 넓은 여백으로 */
 export default async function ResearchIndexPage({
   params,
 }: PageProps<"/[lang]/research">) {
@@ -49,18 +49,11 @@ export default async function ResearchIndexPage({
             key={theme.id}
             className={classNames("grid gap-y-6 lg:grid-cols-10 lg:gap-x-10")}
           >
-            {/* 넓은 화면: 번호가 그 장을 읽는 동안 따라옴 */}
-            <div
-              className={classNames(
-                "lg:sticky lg:top-24 lg:col-span-2 lg:self-start",
-              )}
+            {/* 화면에 들어오면 글 · 이미지가 떠오름 */}
+            <InView
+              y={40}
+              className={classNames("lg:col-span-8 lg:col-start-3")}
             >
-              <InView>
-                <ResearchNumber number={theme.number} />
-              </InView>
-            </div>
-            {/* 번호 → 한 박자 늦게 글 · 이미지가 떠오름 */}
-            <InView delay={0.12} y={40} className={classNames("lg:col-span-8")}>
               <ResearchCard
                 Link={SiteNextLink}
                 moreLabel={dict.research.more}

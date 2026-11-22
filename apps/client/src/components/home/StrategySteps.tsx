@@ -7,9 +7,9 @@ import { useEffect, useRef } from "react";
 const STEPS = ["Research", "Strategy", "Systems", "Prototypes"] as const;
 
 /** 한 바퀴 시간표 (초) */
-const DROP = 0.7; // 위에서 01 로 떨어짐
+const DROP = 0.7; // 위에서 첫 칸(Research)으로 떨어짐
 const HOP = 0.55; // 계단 한 칸 튀어 내려감
-const REST = 1.4; // 04 에서 머묾
+const REST = 1.4; // 마지막 칸(Prototypes)에서 머묾
 const FADE = 0.45; // 사라짐
 const PAUSE = 0.5; // 다음 바퀴 전 쉼
 const SQUASH = 0.16; // 착지 때 눌림 시간
@@ -56,8 +56,8 @@ function layout(width: number, height: number) {
 
 /**
  * 디자인 전략 단계 (2D canvas).
- * 오른쪽 아래로 내려가는 계단 4칸 위로 검은 공이 떨어져 01 → 04 를 차례로 튀며 내려가고,
- * 닿은 단계 글자가 차례로 진해집니다. 04 에서 잠깐 머문 뒤 사라지고 다시 시작합니다.
+ * 오른쪽 아래로 내려가는 계단 4칸 위로 검은 공이 떨어져 Research → Prototypes 를 차례로 튀며 내려가고,
+ * 닿은 단계 글자가 차례로 진해집니다. 마지막 칸에서 잠깐 머문 뒤 사라지고 다시 시작합니다.
  * - 칸 크기는 실제 너비 · 높이에 맞춰 다시 계산합니다. (반응형)
  * - 화면에 보일 때만 움직이고, 움직임 줄이기 설정이면 멈춘 그림(모두 진하게)만 그립니다.
  */
@@ -103,21 +103,8 @@ export function StrategySteps() {
         const pad = g.font * 0.85;
         ctx.fillStyle = on || reduce.matches ? theme.main : theme.mute;
         ctx.textBaseline = "top";
-        ctx.globalAlpha = 0.6;
-        ctx.font = `500 ${Math.round(g.font * 0.72)}px ${theme.font}`;
-        ctx.fillText(
-          String(i + 1).padStart(2, "0"),
-          step.x + pad,
-          step.y + pad,
-        );
-        ctx.globalAlpha = 1;
         ctx.font = `500 ${Math.round(g.font)}px ${theme.font}`;
-        ctx.fillText(
-          STEPS[i]!,
-          step.x + pad,
-          step.y + pad + g.font * 1.15,
-          step.w - pad * 1.5,
-        );
+        ctx.fillText(STEPS[i]!, step.x + pad, step.y + pad, step.w - pad * 1.5);
       });
 
       if (reduce.matches) return;
