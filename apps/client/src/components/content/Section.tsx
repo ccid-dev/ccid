@@ -14,7 +14,7 @@ import { Reveal } from "./Reveal";
  * 넓은 화면에서는 제목이 스크롤을 따라옵니다.
  * 모션: 화면에 들어오면 제목이 떠오르고 → 내용이 조금 늦게 따라옵니다.
  * hold: 넓은 화면에서 구역이 화면에 꽉 찬 채 한 번 멈췄다가 내려갑니다. (내용이 한 화면에 들어가는 구역에만)
- * tight: 아래 여백을 줄여 다음 구역과 가깝게 (People 페이지처럼 같은 형식의 구역이 이어질 때)
+ * tight: 아래 여백(+ 좁은 화면은 위 여백도)을 줄여 앞뒤 구역과 가깝게 (People 페이지처럼 같은 형식의 구역이 이어질 때)
  */
 export function Section({
   id,
@@ -30,7 +30,7 @@ export function Section({
   action?: { href: string; label: string };
   /** 넓은 화면에서 한 번 멈췄다 내려가기 (구역을 화면 1.6배로 길게 + 안쪽을 화면에 고정) */
   hold?: boolean;
-  /** 아래 여백 줄이기 */
+  /** 아래 여백(+ 좁은 화면은 위 여백) 줄이기 */
   tight?: boolean;
   children: ReactNode;
 }) {
@@ -46,7 +46,7 @@ export function Section({
       <div
         className={classNames(
           "grid gap-y-8 lg:grid-cols-10 lg:gap-x-10",
-          tight ? "pt-24 pb-8 md:pt-40 md:pb-12" : "py-24 md:py-40",
+          tight ? "pt-16 pb-8 md:pt-40 md:pb-12" : "py-24 md:py-40",
           hold
             ? "lg:sticky lg:top-0 lg:min-h-svh lg:content-center lg:py-24"
             : tight
