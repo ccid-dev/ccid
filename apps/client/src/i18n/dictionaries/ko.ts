@@ -113,7 +113,8 @@ export const ko = {
   join: {
     eyebrow: "Recruitment",
     title: "새로운 관점을 기다립니다.",
-    description: "cciD의 인턴십과 참여 기회를 안내합니다.",
+    description:
+      "cciD와 함께 새로운 가능성을 탐구하고 만들어갈 분들을 기다립니다.",
     cta: "참여 및 채용 안내",
     closedTitle: "지금은 모집 기간이 아닙니다",
   },
