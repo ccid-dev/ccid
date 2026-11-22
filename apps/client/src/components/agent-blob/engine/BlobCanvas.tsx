@@ -27,11 +27,11 @@ export interface BlobCanvasProps {
    * 없으면 listening · speaking 에서 가짜 음성 곡선을 씁니다.
    */
   level?: number | (() => number);
-  /** true = 구가 납작한 그라데이션 패널로 녹아듭니다 (모달 배경). */
+  /** true = 구가 커지며 창(모달 배경)을 덮고, 창 모양으로 잘립니다. */
   expanded?: boolean;
   /** 전체 또는 일부 설정. 없으면 presets/*.json */
   config?: DeepPartial<BlobConfig>;
-  /** 가장자리가 바깥으로 일렁일 수 있게 캔버스를 구보다 넓게 그리는 여백 (구 크기 대비 비율, 0.08 = 8%) */
+  /** 둘레 빛번짐이 잘리지 않게 캔버스를 구보다 넓게 그리는 여백 (구 크기 대비 비율, 0.5 = 양쪽 50%) */
   bleed?: number;
   /** 마우스 올림 · 누름에 반응할지 (기본 true) */
   interactive?: boolean;
@@ -61,7 +61,7 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       level,
       expanded = false,
       config,
-      bleed = 0.08,
+      bleed = 0.5,
       interactive = true,
       force,
       className,
@@ -142,8 +142,8 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       if (rendererRef.current && interactive && !force)
         rendererRef.current[k] = v;
     };
-    const [c0 = "#fff", c1 = c0, c2 = c0, c3 = c0] = cfg.colors;
-    const radius = cfg.panel.radius;
+    const { colorA, colorB, colorC, colorWarm } = cfg.flow;
+    const { radius, veil } = cfg.panel;
 
     return (
       <div
@@ -153,8 +153,6 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
           position: "relative",
           width: "100%",
           height: "100%",
-          // 안쪽 번짐 빛 흐림을 블롭 크기 비율(cqw)로 쓰기 위해
-          containerType: "size",
           ...style,
         }}
         onPointerEnter={() => set("hover", true)}
@@ -167,23 +165,7 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
         onFocus={() => set("hover", true)}
         onBlur={() => set("hover", false)}
       >
-        {/* 바깥 번짐 빛 */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            // 번짐 빛: 블롭 크기에 비례 (작은 블롭 · 큰 미리보기가 같은 비율로 보이도록)
-            inset: expanded ? -30 : "-7%",
-            borderRadius: expanded ? radius + 12 : "50%",
-            background: `radial-gradient(closest-side, ${c1}, ${c2} 45%, ${c3} 70%, transparent)`,
-            filter: expanded ? "blur(14px)" : "blur(7cqw)",
-            opacity: "var(--blob-glow, .35)",
-            transform: "scale(var(--blob-glow-scale, 1))",
-            transition: `inset .7s ${EASE}, border-radius .7s ${EASE}`,
-            pointerEvents: "none",
-          }}
-        />
-        {/* 그라데이션 면 */}
+        {/* 구 · 펼치면 창 모양으로 잘림 */}
         <div
           aria-hidden
           style={{
@@ -204,7 +186,7 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
                 // 넓힌 면(1 + 2 × bleed) 안에서 원래 구 자리
                 inset: expanded ? 0 : `${(bleed / (1 + 2 * bleed)) * 100}%`,
                 borderRadius: expanded ? radius : "50%",
-                background: `radial-gradient(40% 45% at 30% 70%, ${c2}, transparent 70%), radial-gradient(35% 40% at 70% 30%, ${c1}, transparent 70%), radial-gradient(40% 40% at 78% 78%, ${c3}, transparent 70%), ${c0}`,
+                background: `radial-gradient(45% 40% at 50% 75%, ${colorB}, transparent 70%), radial-gradient(40% 40% at 75% 50%, ${colorWarm}, transparent 70%), radial-gradient(40% 45% at 25% 60%, ${colorC}, transparent 70%), ${colorA}`,
               }}
             />
           )}
@@ -215,6 +197,16 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
               width: "100%",
               height: "100%",
               display: "block",
+            }}
+          />
+          {/* 펼친 창: 글자가 잘 보이도록 덮는 흰색 */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "#fff",
+              opacity: expanded ? veil : 0,
+              transition: `opacity .5s ${EASE}`,
             }}
           />
         </div>

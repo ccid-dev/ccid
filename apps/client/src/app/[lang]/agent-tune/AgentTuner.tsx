@@ -29,18 +29,23 @@ const isState = (s: BlobSituation): s is BlobState =>
   (BLOB_STATES as readonly string[]).includes(s);
 
 const baseOf = (config: BlobConfig): BlobBase => ({
-  colors: config.colors,
+  flow: config.flow,
   panel: config.panel,
   voice: config.voice,
   motion: config.motion,
 });
 
-/** 파일에 그대로 붙여 넣을 JSON (prettier 와 같은 모양: 색 배열은 한 줄) */
-const toJson = (value: unknown) =>
-  `${JSON.stringify(value, null, 2).replace(
-    /"colors": \[\s*([^\]]*?)\s*\]/,
-    (_, items: string) => `"colors": [${items.split(/,\s*/).join(", ")}]`,
-  )}\n`;
+/** flow 구의 색 (원본 flow-cursor.json 이름 · 패널 이름) */
+const FLOW_COLORS = [
+  ["colorA", "위"],
+  ["colorB", "아래"],
+  ["colorC", "옆"],
+  ["colorWarm", "가운데"],
+  ["rim", "테두리"],
+] as const;
+
+/** 파일에 그대로 붙여 넣을 JSON (prettier 와 같은 모양) */
+const toJson = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
 /** 프리셋 파일이 있는 곳 */
 const PRESET_DIR = "apps/client/src/components/agent-blob/presets";
@@ -58,7 +63,7 @@ const PREVIEW = {
   ease: "cubic-bezier(.22,1,.36,1)",
 };
 
-/** Leva 패널 이름(평평한 이름) — 상황 값 p_<키> · 공통 값 b_<구역>_<키> · 색 color<번호> */
+/** Leva 패널 이름(평평한 이름) — 상황 값 p_<키> · 공통 값 b_<구역>_<키> · 색 · 스타일 f_<키> */
 const presetKey = (key: string) => `p_${key}`;
 const baseKey = (section: BaseSection, key: string) => `b_${section}_${key}`;
 
@@ -66,7 +71,8 @@ const presetValues = (preset: BlobPreset) =>
   Object.fromEntries(BLOB_PRESET_KEYS.map((k) => [presetKey(k), preset[k]]));
 
 const baseValues = (base: BlobBase) => ({
-  ...Object.fromEntries(base.colors.map((c, i) => [`color${i}`, c])),
+  f_style: base.flow.style,
+  ...Object.fromEntries(FLOW_COLORS.map(([k]) => [`f_${k}`, base.flow[k]])),
   ...Object.fromEntries(
     BASE_GROUPS.flatMap((group) =>
       group.fields.map((f) => [
@@ -132,11 +138,13 @@ export function AgentTuner({ labels }: { labels: AgentBlobLabels }) {
         ? d
         : { ...d, [section]: { ...d[section], [key]: value } },
     );
-  const updateColor = (index: number, value: string) =>
+  /** 색 · 스타일 (숫자 값은 updateBase) */
+  const updateFlow = <K extends keyof BlobConfig["flow"]>(
+    key: K,
+    value: BlobConfig["flow"][K],
+  ) =>
     setDraft((d) =>
-      d.colors[index] === value
-        ? d
-        : { ...d, colors: d.colors.map((c, i) => (i === index ? value : c)) },
+      d.flow[key] === value ? d : { ...d, flow: { ...d.flow, [key]: value } },
     );
 
   const [panel, setPanel] = useControls(() => ({
@@ -164,20 +172,26 @@ export function AgentTuner({ labels }: { labels: AgentBlobLabels }) {
       ]),
     ),
     // ── 공통 값 (모든 상황) ──
-    "공통 · 색": folder(
-      Object.fromEntries(
-        DEFAULT_BLOB_CONFIG.colors.map((c, i) => [
-          `color${i}`,
+    "공통 · 색": folder({
+      f_style: {
+        value: DEFAULT_BLOB_CONFIG.flow.style,
+        options: ["plasma", "glass", "liquid"],
+        label: "스타일",
+        onChange: (v: string) => updateFlow("style", v),
+        transient: false,
+      },
+      ...Object.fromEntries(
+        FLOW_COLORS.map(([k, label]) => [
+          `f_${k}`,
           {
-            value: c,
-            label: `색 ${i + 1}`,
-            onChange: (v: string) => updateColor(i, v),
+            value: DEFAULT_BLOB_CONFIG.flow[k],
+            label: `색 · ${label}`,
+            onChange: (v: string) => updateFlow(k, v),
             transient: false,
           },
         ]),
       ),
-      { collapsed: true },
-    ),
+    }),
     ...Object.fromEntries(
       BASE_GROUPS.map((group) => [
         `공통 · ${group.title}`,

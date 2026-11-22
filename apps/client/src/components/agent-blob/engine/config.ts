@@ -1,6 +1,7 @@
 // AgentBlob 설정: 값의 모양(타입) + presets/*.json 을 합친 기본값.
 // 값 자체는 ../presets/*.json 에 상황별로 나뉘어 있습니다. /agent-tune 페이지에서 조절한 뒤
 // 내보낸 JSON 을 같은 이름의 파일에 그대로 붙여 넣으면 됩니다.
+// 그림은 보내주신 flow cursor 셰이더(engine/flow-orb.ts)이고, 값 이름도 원본을 따릅니다.
 
 import base from "../presets/base.json";
 import hover from "../presets/hover.json";
@@ -30,65 +31,80 @@ export const BLOB_SITUATIONS = [
 ] as const;
 export type BlobSituation = (typeof BLOB_SITUATIONS)[number];
 
-/** 한 상황의 모션 · 셰이더 값. 상황이 바뀌면 지금 값에서 이 값으로 부드럽게 옮겨 갑니다. */
+/** 한 상황의 값. 상황이 바뀌면 지금 값에서 이 값으로 부드럽게 옮겨 갑니다. */
 export interface BlobPreset {
-  /** 흐름 빠르기 (시간 배속) */
-  speed: number;
-  /** 0–1. 파랑-보라 덩어리의 진하기 */
-  energy: number;
-  /** 0–1. 소용돌이처럼 비틀림 (thinking 에 어울림) */
-  swirl: number;
-  /** 파랑 · 라벤더 영역이 도는 빠르기 (색 회전) */
-  colorOrbit: number;
+  /** 흐름 시간 배속 (원본 spin) */
+  spin: number;
+  /** 0–1. 물결 · 색 움직임의 세기 (원본 셰이더 boost, cursor 에서는 1) */
+  boost: number;
+  /** 0–1. 채도 · 대비 (원본 셰이더 intensityBoost, cursor 에서는 0) */
+  intensity: number;
+  /** 테두리 · 안쪽 빛 (원본 glow) */
+  glow: number;
+  /** 구 둘레 빛번짐 (원본 haze) */
+  haze: number;
+  /** 밝기 (원본 brightness) */
+  brightness: number;
+  /** 0–1. 색 경계가 녹아드는 정도 (원본 softness) */
+  softness: number;
+  /** 0–1. 색 경계의 불규칙함 (원본 colorRandom) */
+  colorRandom: number;
+  /** 물결 크기 (원본 flowScale) */
+  flowScale: number;
   /** 크기 배율 (1 = 원래 크기) */
   scale: number;
   /** 숨쉬듯 커졌다 작아지는 폭 */
   breathe: number;
-  /** 가장자리 일렁임 (0 = 완전한 원) */
-  morph: number;
-  /** 노이즈 확대 정도. 낮을수록 색 덩어리가 크고 부드러움 */
-  noiseScale: number;
-  /** 1차 비틀기 세기 */
-  warp1: number;
-  /** 2차 비틀기 세기. 높을수록 액체 · 마블 느낌 */
-  warp2: number;
-  /** 0–1. 렌즈처럼 볼록한 정도 (구의 입체감) */
-  bulge: number;
-  /** 테두리 빛 세기 */
-  rim: number;
-  /** 하이라이트(반사광) 세기 */
-  specular: number;
-  /** 0–1. 바깥 번짐 빛의 진하기 */
-  glow: number;
-  /** 바깥 번짐 빛의 크기 배율 */
-  glowScale: number;
 }
 
 /** 상황과 상관없이 공통인 값 (presets/base.json) */
 export interface BlobBase {
-  /** 팔레트 5색 (밝은 색 → 강조색) */
-  colors: string[];
-  /** 모달로 펼쳐졌을 때 */
+  /** 색 · 색 영역 · 불투명도 (원본 flow-cursor.json 과 같은 이름) */
+  flow: {
+    /** 위 */
+    colorA: string;
+    /** 아래 */
+    colorB: string;
+    /** 옆 */
+    colorC: string;
+    /** 가운데 */
+    colorWarm: string;
+    /** 테두리 */
+    rim: string;
+    areaA: number;
+    areaB: number;
+    areaC: number;
+    areaWarm: number;
+    areaRim: number;
+    opacity: number;
+    /** 물결 속도 (원본 flowSpeed) */
+    flowSpeed: number;
+    /** plasma · glass · liquid */
+    style: string;
+  };
+  /** 모달(대화 창)로 펼쳐졌을 때 */
   panel: {
-    /** 펼쳐졌을 때 노이즈 확대 정도 */
-    noiseScale: number;
     /** 모서리 둥글기 (px) */
     radius: number;
+    /** 구가 창을 채우는 크기 (창 대각선 대비, 1 = 대각선과 같은 지름) */
+    fill: number;
+    /** 0–1. 글자가 잘 보이도록 위에 덮는 흰색 */
+    veil: number;
   };
   /** 음성 크기(0–1)에 따른 반응 — listening · speaking 일 때 */
   voice: {
     /** 크기가 커지는 정도 */
     levelScale: number;
-    /** 번짐 빛이 커지는 정도 */
-    levelGlow: number;
-    /** 가장자리 일렁임이 커지는 정도 */
-    levelMorph: number;
-    /** 색이 밝아지는 정도 */
+    /** 빛번짐이 커지는 정도 */
+    levelHaze: number;
+    /** 밝아지는 정도 */
     levelBrightness: number;
+    /** 채도 · 대비가 올라가는 정도 */
+    levelIntensity: number;
   };
   /** 상황이 바뀔 때 따라가는 빠르기 (클수록 빠릿함) */
   motion: {
-    /** 흐름 · 색 · 질감 값 */
+    /** 흐름 · 빛 · 질감 값 */
     ease: number;
     /** 크기 */
     scaleEase: number;
@@ -101,21 +117,17 @@ export interface BlobConfig extends BlobBase {
 
 /** BlobPreset 의 키 (순서 = 튜닝 패널 순서) */
 export const BLOB_PRESET_KEYS = [
-  "speed",
-  "energy",
-  "swirl",
-  "colorOrbit",
+  "spin",
+  "boost",
+  "intensity",
+  "glow",
+  "haze",
+  "brightness",
+  "softness",
+  "colorRandom",
+  "flowScale",
   "scale",
   "breathe",
-  "morph",
-  "noiseScale",
-  "warp1",
-  "warp2",
-  "bulge",
-  "rim",
-  "specular",
-  "glow",
-  "glowScale",
 ] as const satisfies readonly (keyof BlobPreset)[];
 
 const situations: Record<BlobSituation, BlobPreset> = {
@@ -129,7 +141,7 @@ const situations: Record<BlobSituation, BlobPreset> = {
 
 /** presets/*.json 을 합친 기본 설정 */
 export const DEFAULT_BLOB_CONFIG: BlobConfig = {
-  colors: base.colors,
+  flow: base.flow,
   panel: base.panel,
   voice: base.voice,
   motion: base.motion,
