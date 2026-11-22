@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@repo/common";
 import type { FeedbackComment, FeedbackInput, FeedbackTarget } from "./types";
 
@@ -129,6 +130,22 @@ function findElement(selector: string) {
   }
 }
 
+/**
+ * 코멘트 레이어를 넣을 곳: 열린 모달 dialog · popover 가 있으면 그 안, 없으면 body.
+ * 모달 · popover 는 브라우저 맨 위 층(top layer)에 그려져 z-index 로는 넘을 수 없고,
+ * 모달이 열리면 그 바깥은 누를 수도 없어서(inert) 레이어가 그 안으로 따라 들어갑니다.
+ * (안에 넣어도 fixed 위치는 화면 기준 그대로)
+ */
+function layerHost(): Element {
+  const modal = [...document.querySelectorAll("dialog:modal")].at(-1);
+  if (modal) return modal;
+  // 자동으로 닫히는 popover(약력 창 등)만 — manual popover 는 커스텀 커서처럼 화면 위에 얹는 장식이라 제외
+  const popovers = document.querySelectorAll(
+    ':is([popover=""], [popover="auto"]):popover-open',
+  );
+  return [...popovers].at(-1) ?? document.body;
+}
+
 /** 기준점 옆에 코멘트 창을 띄울 자리 — 오른쪽 · 아래가 좁으면 반대쪽으로 */
 function popoverPlace(anchor: Point, viewport: Layout["viewport"]) {
   const { gap, edge } = POPOVER;
@@ -171,6 +188,7 @@ const targetLabel = (target: FeedbackTarget) =>
  *   페이지 · 요소 선택자 · 컴포넌트 이름 · 글자가 함께 남아서 Claude 가 읽고 고칠 수 있습니다.
  * - 이 페이지의 코멘트는 번호 핀으로 보이고, 누르면 완료 표시 · 삭제를 할 수 있습니다.
  * - 창으로 돌아올 때마다 파일을 다시 읽어서, Claude 가 반영하며 남긴 메모가 바로 보입니다.
+ * - 프로젝트 창 같은 모달 · popover 가 열려 있으면 그 안으로 옮겨 그려서 항상 맨 위에 보이고 누를 수 있습니다. (layerHost)
  */
 export function FeedbackLayer() {
   const pathname = usePathname();
@@ -193,6 +211,8 @@ export function FeedbackLayer() {
     draft: null,
     pins: {},
   });
+  /** 레이어를 그리는 곳 (layerHost) — 서버 렌더에서는 비워 둠 */
+  const [host, setHost] = useState<Element | null>(null);
   /** 마우스가 가리키는 요소 — 그리기 루프가 읽음 */
   const hoverRef = useRef<Element | null>(null);
   /** 쓰던 글이 있으면 다른 곳을 눌러도 창을 바꾸지 않으려고 (이벤트 처리기가 읽음) */
@@ -232,6 +252,23 @@ export function FeedbackLayer() {
       setError((reason as Error).message);
     }
   }, [request]);
+
+  // 모달 dialog 가 열리고 닫힐 때(open 속성) · popover 가 열리고 닫힐 때(toggle) 레이어를 맨 위 층으로 옮깁니다.
+  useEffect(() => {
+    const update = () => setHost(layerHost());
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["open"],
+    });
+    document.addEventListener("toggle", update, { capture: true });
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("toggle", update, { capture: true });
+    };
+  }, []);
 
   // 처음 한 번 + 창으로 돌아올 때마다 (그사이 Claude 가 파일을 고쳤을 수 있어서) 다시 읽습니다.
   useEffect(() => {
@@ -400,6 +437,7 @@ export function FeedbackLayer() {
   };
 
   // Esc: 쓰던 창 → 펼친 핀 → 목록 → 코멘트 모드 순서로 닫습니다.
+  // 레이어가 Esc 를 쓰면 페이지(열린 모달 · popover)로 넘기지 않아, 한 번에 하나씩만 닫힙니다.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || event.isComposing) return;
@@ -409,9 +447,13 @@ export function FeedbackLayer() {
       } else if (openId) setOpenId(null);
       else if (listOpen) setListOpen(false);
       else if (active) setActive(false);
+      else return;
+      event.preventDefault();
+      event.stopPropagation();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", onKey, { capture: true });
   }, [active, draft, listOpen, openId]);
 
   const save = async () => {
@@ -495,7 +537,8 @@ export function FeedbackLayer() {
       })
     : null;
 
-  return (
+  if (!host) return null;
+  return createPortal(
     <div data-feedback-ui className={classNames("contents")}>
       {active && layout.highlight ? (
         <div
@@ -861,6 +904,7 @@ export function FeedbackLayer() {
           </p>
         ) : null}
       </div>
-    </div>
+    </div>,
+    host,
   );
 }
