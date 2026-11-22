@@ -16,7 +16,7 @@ export type PersonCardData = {
  * People 페이지의 구성원 카드: 사진(흑백) · 이름 · 직함 · 짧은 약력 · 약력 전체 보기.
  * - 기본: 좁은 화면(sm 미만)은 왼쪽에 작은 사진, 오른쪽에 글 / sm 이상은 사진 위 · 글 아래
  *   작은 사진 높이는 이름부터 약력 셋째 줄 끝까지에 맞춤 (사진 위 = 이름 위, 사진 아래 = 약력 3번째 줄 아래)
- * - wide: 좁은 화면에서도 사진 위 · 글 아래로 화면 폭 전체 (디렉터)
+ * - wide: 좁은 화면에서도 사진 위 · 글 아래로 화면 폭 전체 (디렉터). 약력이 빈 줄로 나뉘어 있으면 좁은 화면에서 2단
  * 약력 전체는 카드 폭에 갇히지 않도록 팝오버 창으로 엽니다 (브라우저 기본 popover — 스크립트 없이 동작).
  *   넓은 화면: 가운데 넓은 창 · 좁은 화면: 아래에서 올라오는 화면 폭 전체 창. 바깥 · Esc · 닫기로 닫힘.
  */
@@ -34,6 +34,10 @@ export function PersonCard({
   wide?: boolean;
 }) {
   const profileId = `profile-${encodeURIComponent(person.name)}`;
+  const bioBlocks = person.bio
+    .split(/\r?\n[ \t]*\r?\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
   return (
     <div
       className={classNames(
@@ -90,14 +94,26 @@ export function PersonCard({
             {person.role}
           </p>
         ) : null}
-        {person.bio ? (
-          <p
+        {bioBlocks.length ? (
+          // 약력은 빈 줄로 묶음을 나눔: 디렉터 좁은 화면은 묶음을 2단으로 나란히, 그 밖에는 위아래로 (빈 줄 한 줄만큼 띄움)
+          <div
             className={classNames(
-              "text-[13px] leading-5 whitespace-pre-line text-sub",
+              wide && bioBlocks.length > 1
+                ? "grid grid-cols-2 gap-x-4 sm:flex sm:flex-col sm:gap-5"
+                : "flex flex-col gap-5",
             )}
           >
-            {person.bio}
-          </p>
+            {bioBlocks.map((block) => (
+              <p
+                key={block}
+                className={classNames(
+                  "text-[13px] leading-5 whitespace-pre-line text-sub",
+                )}
+              >
+                {block}
+              </p>
+            ))}
+          </div>
         ) : null}
         {person.profile ? (
           <>
