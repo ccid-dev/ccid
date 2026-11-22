@@ -51,7 +51,10 @@ export default async function PeoplePage({
           title={dict.people.categories[group.category]}
           tight
         >
-          {/* 좁은 화면은 한 줄에 한 사람: 디렉터는 사진 위 · 글 아래로 화면 폭 전체, 나머지는 작은 사진 옆에 글 */}
+          {/*
+            좁은 화면은 한 줄에 한 사람: 디렉터는 사진 위 · 글 아래로 화면 폭 전체, 나머지는 작은 사진 옆에 글
+            디렉터는 넓은 화면에서도 한 줄 전체를 씀 (사진 · 글 2단)
+          */}
           <ul
             className={classNames(
               "grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-y-10 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
@@ -59,7 +62,13 @@ export default async function PeoplePage({
           >
             {/* 카드마다 제각각 스르륵 (RevealItem) */}
             {group.people.map((person, index) => (
-              <RevealItem key={person.id} index={index}>
+              <RevealItem
+                key={person.id}
+                index={index}
+                className={classNames({
+                  "col-span-full": group.category === "director",
+                })}
+              >
                 <PersonCard
                   wide={group.category === "director"}
                   profileLabel={dict.people.profile}

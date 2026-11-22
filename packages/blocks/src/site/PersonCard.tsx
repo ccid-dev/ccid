@@ -15,8 +15,8 @@ export type PersonCardData = {
 /**
  * People 페이지의 구성원 카드: 사진(흑백) · 이름 · 직함 · 짧은 약력 · 약력 전체 보기.
  * - 기본: 좁은 화면(sm 미만)은 왼쪽에 작은 사진, 오른쪽에 글 / sm 이상은 사진 위 · 글 아래
- *   작은 사진 높이는 이름부터 약력 셋째 줄 끝까지에 맞춤 (사진 위 = 이름 위, 사진 아래 = 약력 3번째 줄 아래)
- * - wide: 좁은 화면에서도 사진 위 · 글 아래로 화면 폭 전체 (디렉터). 약력이 빈 줄로 나뉘어 있으면 좁은 화면에서 2단
+ *   작은 사진은 모든 구역이 같은 크기 — 직함이 있으면 이름 위부터 약력 3번째 줄 아래까지에 딱 맞음
+ * - wide (디렉터): 한 줄 전체를 씀 — 좁은 화면은 16:9 사진 위 · 글 아래, sm 이상은 사진 · 글 2단(사진 높이 = 글 높이). 직함은 입력한 줄바꿈대로
  * 약력 전체는 카드 폭에 갇히지 않도록 팝오버 창으로 엽니다 (브라우저 기본 popover — 스크립트 없이 동작).
  *   넓은 화면: 가운데 넓은 창 · 좁은 화면: 아래에서 올라오는 화면 폭 전체 창. 바깥 · Esc · 닫기로 닫힘.
  */
@@ -42,37 +42,52 @@ export function PersonCard({
     <div
       className={classNames(
         wide
-          ? "flex flex-col gap-1.5"
+          ? // 디렉터: 좁은 화면은 사진 위 · 글 아래 / sm 이상은 사진 · 글 2단 (가운데 간격이 아래 4 · 6칸 격자 선과 맞음)
+            "flex flex-col gap-1.5 sm:grid sm:grid-cols-2 sm:gap-x-4"
           : [
-              // 좁은 화면 사진 폭 (3:4) — 높이 = 이름 20 + 간격 2 + (직함 20 + 간격 6) + 약력 3줄 60
-              //   직함 있음: 108px → 폭 81px · 직함 없음: 82px → 폭 61.5px
-              person.role
-                ? "grid-cols-[81px_minmax(0,1fr)]"
-                : "grid-cols-[61.5px_minmax(0,1fr)]",
-              "grid items-start gap-x-4 sm:flex sm:flex-col sm:items-stretch sm:gap-1.5",
+              // 좁은 화면 사진: 모든 구역 같은 크기 81 × 108px (3:4)
+              //   높이 108 = 이름 20 + 간격 2 + 직함 20 + 간격 6 + 약력 3줄 60 (직함이 없는 학생은 글보다 조금 김)
+              "grid grid-cols-[81px_minmax(0,1fr)] items-start gap-x-4 sm:flex sm:flex-col sm:items-stretch sm:gap-1.5",
             ],
       )}
     >
       {wide ? (
-        // 디렉터 좁은 화면: 다른 사진을 넣을 자리로 16:9 빈 카드만 둠 (sm 이상은 기존 사진)
-        <div className={classNames("sm:hidden")}>
-          <SiteImage src={null} alt="" ratio="banner" fallback="" />
+        // 디렉터: 다른 사진을 넣을 자리로 빈 카드만 둠
+        //   좁은 화면 16:9 / sm 이상은 비율 대신 오른쪽 글 단 높이에 맞춤 (칸을 채우고 줄 높이는 글이 정함)
+        <div className={classNames("sm:relative")}>
+          <SiteImage
+            src={null}
+            alt=""
+            ratio="banner"
+            fallback=""
+            className={classNames("sm:absolute sm:inset-0 sm:aspect-auto")}
+          />
         </div>
-      ) : null}
-      <div className={classNames({ "hidden sm:block": wide })}>
-        <SiteImage
-          src={person.image}
-          alt={person.name}
-          ratio="profile"
-          fallback={person.imageFallback}
-          imageClassName={classNames("grayscale")}
-        />
-      </div>
+      ) : (
+        <div>
+          {/*
+            넓은 화면: 사진을 아래 가운데 기준으로 살짝 줄여(85%) 배경 비중을 늘림
+            - 상자는 4:5 로 낮추고, 3:4 사진 면(크롭 기준)은 아래에 붙여 남는 위쪽만 잘라냄 (사람 크기는 그대로)
+            - 늘어난 위 · 옆 자리는 사진 배경과 같은 회색(#ccc)이라 이어져 보임 (좁은 화면은 그대로 3:4)
+          */}
+          <SiteImage
+            src={person.image}
+            alt={person.name}
+            ratio="profile"
+            fallback={person.imageFallback}
+            imageClassName={classNames("grayscale")}
+            className={classNames("sm:aspect-4/5 sm:bg-[#ccc]")}
+            contentClassName={classNames(
+              "sm:top-auto sm:aspect-3/4 sm:origin-bottom sm:scale-85",
+            )}
+          />
+        </div>
+      )}
       <div
         className={classNames(
           "min-w-0",
           "flex flex-col gap-1.5",
-          wide ? "mt-2" : "sm:mt-2",
+          wide ? "mt-2 sm:mt-0" : "sm:mt-2",
         )}
       >
         {/* 좁은 화면: 이름 줄 높이 20px · 아래 간격 2px 로 줄여 직함 · 약력에 붙임 (sm 이상은 24px · 6px) */}
@@ -86,23 +101,21 @@ export function PersonCard({
         </p>
         {person.role ? (
           // 좁은 화면은 줄바꿈 없이 한 줄로 이어 씀 (sm 이상은 입력한 줄바꿈대로)
+          // 디렉터는 늘 입력한 줄바꿈대로 — 직함은 한 줄로 입력하고, 다음 줄에 FRSA 등을 둠
           <p
             className={classNames(
-              "text-sm leading-5 whitespace-normal sm:whitespace-pre-line",
+              "text-sm leading-5",
+              wide
+                ? "whitespace-pre-line"
+                : "whitespace-normal sm:whitespace-pre-line",
             )}
           >
             {person.role}
           </p>
         ) : null}
         {bioBlocks.length ? (
-          // 약력은 빈 줄로 묶음을 나눔: 디렉터 좁은 화면은 묶음을 2단으로 나란히, 그 밖에는 위아래로 (빈 줄 한 줄만큼 띄움)
-          <div
-            className={classNames(
-              wide && bioBlocks.length > 1
-                ? "grid grid-cols-2 gap-x-4 sm:flex sm:flex-col sm:gap-5"
-                : "flex flex-col gap-5",
-            )}
-          >
+          // 약력은 빈 줄로 묶음을 나눠 위아래로 쌓음 (빈 줄 한 줄만큼 띄움)
+          <div className={classNames("flex flex-col gap-5")}>
             {bioBlocks.map((block) => (
               <p
                 key={block}

@@ -78,6 +78,8 @@ export function SiteImage({
   ratio = "thumbnail",
   fallback = "no image",
   imageClassName,
+  className,
+  contentClassName,
 }: {
   src: string | null | undefined;
   alt: string;
@@ -85,6 +87,10 @@ export function SiteImage({
   fallback?: string;
   /** 이미지에 더할 클래스 (예: 흑백 grayscale) */
   imageClassName?: string;
+  /** 상자에 더할 클래스 (예: 비율 대신 부모 높이에 맞출 때 h-full aspect-auto) */
+  className?: string;
+  /** 이미지를 담은 안쪽 면(상자를 꽉 채움)에 더할 클래스 — 크롭은 그대로 두고 통째로 줄일 때 (예: scale-85 origin-bottom) */
+  contentClassName?: string;
 }) {
   return (
     <div
@@ -92,10 +98,13 @@ export function SiteImage({
         ["w-full", IMAGE_RATIOS[ratio]],
         "relative overflow-hidden",
         "rounded-2xl bg-sheet",
+        className,
       )}
     >
       {src ? (
-        <CroppedImage src={src} alt={alt} className={imageClassName} />
+        <span className={classNames("absolute inset-0", contentClassName)}>
+          <CroppedImage src={src} alt={alt} className={imageClassName} />
+        </span>
       ) : (
         <span
           className={classNames(
