@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ThemeDot } from "@repo/common";
 import { HeroBackground } from "@/components/home";
 import { ROUTES } from "@/constants";
 import { hasLocale, localePath } from "@/i18n";
@@ -21,14 +20,6 @@ export async function generateMetadata({
   };
 }
 
-/** 컬러칩이 차례로 깜빡이는 시차 (Tailwind 가 읽을 수 있게 그대로 적음) */
-const DOT_DELAYS = [
-  "[animation-delay:0ms]",
-  "[animation-delay:250ms]",
-  "[animation-delay:500ms]",
-  "[animation-delay:750ms]",
-];
-
 /** 텍스트 버튼: 마우스를 올리면 밑줄 · 화살표가 밀림 (홈 '전체 보기' 와 같은 모양) */
 const textLink = classNames(
   "group inline-flex items-center gap-1.5",
@@ -39,7 +30,7 @@ const textLink = classNames(
 /**
  * Lab — 곧 공개 대문.
  * 홈 첫 화면과 같은 틀: 움직이는 그라디언트 배경 위, 아래에 큰 "Lab" (홈 "cciD" 와 같은 크기),
- * 바로 오른쪽 글자 윗선에 Coming soon · 소개 · 리서치로 가는 텍스트 버튼.
+ * 바로 오른쪽에 소개 · 리서치로 가는 텍스트 버튼.
  */
 export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
   const { lang } = await params;
@@ -73,31 +64,11 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
 
         <div
           className={classNames(
-            "max-w-md md:pt-[1.5vw]",
+            // 예전 Coming soon 한 줄(20px) + 간격(12px) 자리를 비워 두어 첫 문장 높이를 그대로 유지
+            "max-w-md md:pt-[calc(1.5vw+32px)]",
             "flex flex-col gap-3",
           )}
         >
-          <span className={classNames("flex items-center gap-2.5")}>
-            <span aria-hidden className={classNames("flex gap-1.5")}>
-              {[1, 2, 3, 4].map((number, index) => (
-                <ThemeDot
-                  key={number}
-                  number={number}
-                  className={classNames(
-                    "animate-pulse motion-reduce:animate-none",
-                    DOT_DELAYS[index],
-                  )}
-                />
-              ))}
-            </span>
-            <span
-              className={classNames(
-                "font-neuehaas text-sm font-medium uppercase",
-              )}
-            >
-              {dict.lab.eyebrow}
-            </span>
-          </span>
           <p
             className={classNames("font-medium break-keep text-lg 2xl:text-xl")}
           >

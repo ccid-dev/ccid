@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import { useEffect, useState } from "react";
-import { ThemeDot } from "@repo/common";
 import { localized, type Dictionary, type Locale } from "@/i18n";
 import type { ProjectWithThemes } from "@/libs/content";
 import type { Theme } from "@/types";
@@ -110,7 +109,6 @@ export function ProjectBrowser({
                 "font-neuehaas text-sm font-medium whitespace-nowrap",
               )}
             >
-              <ThemeDot number={theme.number} />
               {localized(theme, "title", locale)}
             </button>
           ))}

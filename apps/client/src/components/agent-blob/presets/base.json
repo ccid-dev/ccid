@@ -1,7 +1,7 @@
 {
   "colors": ["#dce2ff", "#c79eff", "#9b8cff", "#7db3ee", "#b9c4f7"],
   "panel": {
-    "noiseScale": 0.42,
+    "noiseScale": 0.26,
     "radius": 28
   },
   "voice": {

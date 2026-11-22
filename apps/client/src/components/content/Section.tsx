@@ -14,12 +14,14 @@ import { Reveal } from "./Reveal";
  * 넓은 화면에서는 제목이 스크롤을 따라옵니다.
  * 모션: 화면에 들어오면 제목이 떠오르고 → 내용이 조금 늦게 따라옵니다.
  * hold: 넓은 화면에서 구역이 화면에 꽉 찬 채 한 번 멈췄다가 내려갑니다. (내용이 한 화면에 들어가는 구역에만)
+ * tight: 아래 여백(+ 좁은 화면은 위 여백도)을 줄여 앞뒤 구역과 가깝게 (People 페이지처럼 같은 형식의 구역이 이어질 때)
  */
 export function Section({
   id,
   title,
   action,
   hold = false,
+  tight = false,
   children,
 }: {
   id?: string;
@@ -28,6 +30,8 @@ export function Section({
   action?: { href: string; label: string };
   /** 넓은 화면에서 한 번 멈췄다 내려가기 (구역을 화면 1.6배로 길게 + 안쪽을 화면에 고정) */
   hold?: boolean;
+  /** 아래 여백(+ 좁은 화면은 위 여백) 줄이기 */
+  tight?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -42,10 +46,12 @@ export function Section({
       <div
         className={classNames(
           "grid gap-y-8 lg:grid-cols-10 lg:gap-x-10",
-          "py-24 md:py-40",
+          tight ? "pt-16 pb-8 md:pt-40 md:pb-12" : "py-24 md:py-40",
           hold
             ? "lg:sticky lg:top-0 lg:min-h-svh lg:content-center lg:py-24"
-            : "lg:py-48",
+            : tight
+              ? "lg:pt-48 lg:pb-16"
+              : "lg:py-48",
         )}
       >
         <header
@@ -140,20 +146,26 @@ export function PillLink({
  * 페이지 머리 (구역과 같은 왼쪽 2칸 · 오른쪽 8칸 틀).
  * - 목록 페이지: 왼쪽에 큰 제목, 오른쪽에 설명 (titleSide="left", 기본)
  * - 상세 페이지: 왼쪽에 top(뒤로 가기 · 번호), 오른쪽에 큰 제목 · 설명 (titleSide="right")
+ * - descriptionDesktopOnly: 좁은 화면(md 미만)에서는 설명을 숨김 (Research 목록)
  */
 export function PageHeader({
   title,
   description,
+  descriptionDesktopOnly = false,
   top,
   titleSide = "left",
   children,
 }: {
   title: ReactNode;
   description?: ReactNode;
+  /** 좁은 화면에서 설명 숨기기 */
+  descriptionDesktopOnly?: boolean;
   top?: ReactNode;
   titleSide?: "left" | "right";
   children?: ReactNode;
 }) {
+  // 오른쪽 칸에 설명만 있으면 설명을 숨길 때 칸도 같이 숨겨, 빈 칸 몫의 간격이 생기지 않게 함
+  const hideRight = descriptionDesktopOnly && titleSide === "left" && !children;
   const heading = (
     <h1
       className={classNames(
@@ -175,13 +187,17 @@ export function PageHeader({
           {titleSide === "left" ? heading : null}
         </div>
         <div
-          className={classNames("min-w-0 lg:col-span-8", "flex flex-col gap-4")}
+          className={classNames("min-w-0 lg:col-span-8", [
+            "flex flex-col gap-4",
+            { "max-md:hidden": hideRight },
+          ])}
         >
           {titleSide === "right" ? heading : null}
           {description ? (
             <div
               className={classNames(
                 "max-w-2xl",
+                { "max-md:hidden": descriptionDesktopOnly },
                 "text-base leading-7 text-sub",
               )}
             >

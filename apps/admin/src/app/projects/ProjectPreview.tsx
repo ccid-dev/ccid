@@ -62,11 +62,14 @@ export function ProjectPreview({
 
   return (
     <>
+      {/* 사이트 Projects 페이지는 2단 격자 → 한 칸 너비 정도로 */}
       <PreviewScene label="Projects 목록">
-        <ProjectCard
-          ndaLabel={text.nda}
-          project={{ ...base, themeNumbers: linked.map((t) => t.number) }}
-        />
+        <div className={classNames("max-w-xl")}>
+          <ProjectCard ndaLabel={text.nda} project={base} tile />
+        </div>
+      </PreviewScene>
+      <PreviewScene label="Research 상세의 프로젝트 목록">
+        <ProjectCard ndaLabel={text.nda} project={base} />
       </PreviewScene>
       <PreviewScene label="눌렀을 때 (모달)">
         <div
@@ -82,7 +85,6 @@ export function ProjectPreview({
               ...base,
               tags: pickList(values, "tags", lang),
               research: linked.map((theme) => ({
-                number: theme.number,
                 title: theme[`title_${lang}`] || theme[`title_${other}`],
                 summary: theme[`summary_${lang}`] || theme[`summary_${other}`],
                 href: `/research/${theme.slug}`,

@@ -43,21 +43,25 @@ export default async function PeoplePage({
     <>
       <PageHeader title={dict.people.title} />
 
+      {/* 같은 형식의 구역이 이어지므로 구역 사이 여백을 줄여 가깝게 (tight) */}
       {groups.map((group) => (
         <Section
           key={group.category}
           id={group.category}
           title={dict.people.categories[group.category]}
+          tight
         >
+          {/* 좁은 화면은 한 줄에 한 사람: 디렉터는 사진 위 · 글 아래로 화면 폭 전체, 나머지는 작은 사진 옆에 글 */}
           <ul
             className={classNames(
-              "grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
+              "grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-y-10 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
             )}
           >
             {/* 카드마다 제각각 스르륵 (RevealItem) */}
             {group.people.map((person, index) => (
               <RevealItem key={person.id} index={index}>
                 <PersonCard
+                  wide={group.category === "director"}
                   profileLabel={dict.people.profile}
                   closeLabel={dict.project.close}
                   person={{

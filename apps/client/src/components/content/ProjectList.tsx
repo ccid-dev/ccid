@@ -21,7 +21,8 @@ export const projectYear = (project: ProjectWithThemes) =>
  * 프로젝트 목록 (한 줄 카드). 누르면 모달에서
  * 왼쪽: 프로젝트 자세한 정보 / 오른쪽: 관련 리서치 요약 · 자세히 보러 가기
  * 모달 위쪽의 이전 · 다음 버튼(또는 ← → 키)으로 목록 순서대로 계속 넘겨 볼 수 있습니다.
- * groupByYear 면 시작 연도별로 묶어서 보여 줍니다. (넘기기는 묶음과 상관없이 전체 순서)
+ * groupByYear 면 시작 연도별로 묶고, 카드를 2단 격자의 2:1 카드(tile)로 보여 줍니다. (Projects 페이지)
+ * (넘기기는 묶음과 상관없이 전체 순서)
  */
 export function ProjectList({
   projects,
@@ -32,7 +33,7 @@ export function ProjectList({
   projects: ProjectWithThemes[];
   locale: Locale;
   dict: Dictionary;
-  /** 연도별로 묶기 (왼쪽 2칸에 연도, 카드에는 연도를 빼고) */
+  /** 연도별로 묶기 (왼쪽 2칸에 연도, 카드에는 연도를 빼고 2단 격자로) */
   groupByYear?: boolean;
 }) {
   const [index, setIndex] = useState<number | null>(null);
@@ -82,8 +83,14 @@ export function ProjectList({
     );
 
   // 화면에 들어오면 위에서부터 차례로 떠오름 (묶음 안 순서 · 너무 늦어지지 않게 6번째까지만 늘림)
+  // 2단 격자에서는 같은 줄 카드 높이를 맞추려고 li 를 flex 로 (카드가 줄 높이만큼 늘어남)
   const card = (project: ProjectWithThemes, order: number) => (
-    <InView as="li" key={project.id} delay={Math.min(order, 6) * 0.06}>
+    <InView
+      as="li"
+      key={project.id}
+      delay={Math.min(order, 6) * 0.06}
+      className={classNames({ flex: groupByYear })}
+    >
       <ProjectCard
         project={{
           year: projectYear(project),
@@ -91,10 +98,10 @@ export function ProjectList({
           client: localized(project, "client", locale),
           description: localized(project, "description", locale),
           nda: project.is_nda,
-          themeNumbers: project.themes.map((theme) => theme.number),
         }}
         ndaLabel={dict.project.nda}
         showYear={!groupByYear}
+        tile={groupByYear}
         onClick={() => open(projects.indexOf(project))}
       />
     </InView>
@@ -121,7 +128,11 @@ export function ProjectList({
                   {year}
                 </InView>
               </h2>
-              <ul className={classNames("flex flex-col gap-3 lg:col-span-8")}>
+              <ul
+                className={classNames(
+                  "grid gap-3 md:grid-cols-2 lg:col-span-8",
+                )}
+              >
                 {projects
                   .filter((p) => p.year_start === year)
                   .map((project, order) => card(project, order))}
@@ -450,7 +461,6 @@ function ProjectDialog({
                         tags: localized(project, "tags", locale),
                         nda: project.is_nda,
                         research: project.themes.map((theme) => ({
-                          number: theme.number,
                           title: localized(theme, "title", locale),
                           summary: localized(theme, "summary", locale),
                           href: localePath(locale, `/research/${theme.slug}`),

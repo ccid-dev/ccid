@@ -89,16 +89,7 @@ async function HomeDataSections({
   return (
     <>
       <Section id="research" title={dict.home.research}>
-        {/* 전체 보기는 목록 바로 아래에 (스크롤 구역이 길어서 섹션 끝에 두면 떨어져 보임) */}
-        <HomeResearch
-          themes={themes}
-          locale={lang}
-          dict={dict}
-          viewAll={{
-            href: localePath(lang, ROUTES.research),
-            label: dict.home.viewAll,
-          }}
-        />
+        <HomeResearch themes={themes} locale={lang} dict={dict} />
       </Section>
 
       <Section

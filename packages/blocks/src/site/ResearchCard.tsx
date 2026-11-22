@@ -1,12 +1,5 @@
 import classNames from "classnames";
-import { ThemeDot } from "@repo/common";
-import {
-  Pills,
-  PlainLink,
-  SiteImage,
-  twoDigits,
-  type SiteLink,
-} from "./shared";
+import { Pills, PlainLink, SiteImage, type SiteLink } from "./shared";
 
 /** Research 목록의 분야 한 줄에 들어가는 값 (이미 고른 언어) */
 export type ResearchCardData = {
@@ -20,33 +13,6 @@ export type ResearchCardData = {
   imageAlt: string;
   href: string;
 };
-
-/** Research 목록 왼쪽의 큰 번호 · 컬러칩. 칸 배치는 쓰는 쪽이 className 으로 정합니다. */
-export function ResearchNumber({
-  number,
-  className,
-}: {
-  number: number;
-  className?: string;
-}) {
-  return (
-    <div
-      className={classNames(
-        "flex items-center gap-3 lg:items-start",
-        className,
-      )}
-    >
-      <span
-        className={classNames(
-          "font-neuehaas text-4xl leading-none md:text-5xl",
-        )}
-      >
-        {twoDigits(number)}
-      </span>
-      <ThemeDot number={number} size="lg" className={classNames("lg:mt-2")} />
-    </div>
-  );
-}
 
 /**
  * Research 목록의 분야 한 장 (박스 없이, 왼쪽 글 · 오른쪽 대표 이미지). 칸 배치는 쓰는 쪽이 className 으로 정합니다.
@@ -77,7 +43,8 @@ export function ResearchCard({
         "group grid gap-10 md:grid-cols-2 md:gap-12",
       )}
     >
-      <span className={classNames("flex flex-col gap-10")}>
+      {/* 요약 ↔ 키워드 간격: 좁은 화면은 24px 로 줄여 붙임 (md 이상 40px) */}
+      <span className={classNames("flex flex-col gap-6 md:gap-10")}>
         {/* ① 분야 이름 + ② 질문 (한 덩어리) → ③ 요약 */}
         <span className={classNames("flex flex-col gap-6")}>
           <span className={classNames("flex flex-col gap-3")}>

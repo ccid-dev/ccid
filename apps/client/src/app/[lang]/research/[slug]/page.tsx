@@ -2,7 +2,6 @@ import classNames from "classnames";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteImage } from "@repo/blocks";
-import { ThemeDot } from "@repo/common";
 import Link from "next/link";
 import {
   ImageBento,
@@ -68,21 +67,10 @@ export default async function ResearchPage({
       <PageHeader
         titleSide="right"
         top={
-          <div className={classNames("flex flex-col items-start gap-5")}>
+          <div className={classNames("flex flex-col items-start")}>
             <PillLink href={localePath(lang, ROUTES.research)} arrow="left">
               {dict.research.title}
             </PillLink>
-            <span className={classNames("flex items-center gap-2.5")}>
-              <ThemeDot number={theme.number} size="lg" />
-              <span
-                className={classNames(
-                  "font-neuehaas text-sm font-medium text-sub",
-                )}
-              >
-                {String(theme.number).padStart(2, "0")}
-                {lang === "ko" && theme.title_en ? ` · ${theme.title_en}` : ""}
-              </span>
-            </span>
           </div>
         }
         title={localized(theme, "title", lang)}
@@ -211,16 +199,6 @@ export default async function ResearchPage({
                       "px-3 pb-3",
                     )}
                   >
-                    <span className={classNames("flex items-center gap-2")}>
-                      <ThemeDot number={other.number} size="sm" />
-                      <span
-                        className={classNames(
-                          "font-neuehaas text-xs font-medium text-sub",
-                        )}
-                      >
-                        {String(other.number).padStart(2, "0")}
-                      </span>
-                    </span>
                     <span
                       className={classNames(
                         "text-lg leading-snug font-medium break-keep",

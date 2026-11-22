@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import Link from "next/link";
-import { ThemeDot } from "@repo/common";
 import { Reveal } from "@/components/content";
 import { ROUTES } from "@/constants";
 import { localePath, localized, type Locale } from "@/i18n";
@@ -12,7 +11,7 @@ export const projectHref = (locale: Locale, project: ProjectWithThemes) =>
 
 /**
  * 홈 Projects: 큰 글자 목록. 누르면 Projects 페이지로 가서 그 프로젝트 모달이 열립니다.
- * 넓은 화면에서는 내용 8칸에 맞춥니다: 연도 1 · 제목(+ 아래 회사명) 6 · 점 · 화살표 1.
+ * 넓은 화면에서는 내용 8칸에 맞춥니다: 연도 1 · 제목(+ 아래 회사명) 6 · 화살표 1.
  * 모션: 화면에 들어올 때 위에서부터 차례로 떠오르고, 한 줄에 마우스를 올리면 나머지 줄이 흐려집니다.
  */
 export function HomeProjects({
@@ -59,24 +58,16 @@ export function HomeProjects({
                   {localized(project, "client", locale)}
                 </span>
               </span>
+              {/* 좁은 화면은 줄 전체가 눌리는 걸로 충분해 화살표를 숨김 */}
               <span
+                aria-hidden
                 className={classNames(
-                  "flex items-center gap-1.5 md:justify-end",
+                  "hidden md:block",
+                  "transition group-hover:translate-x-1",
+                  "text-right font-neuehaas text-sub group-hover:text-main",
                 )}
               >
-                {project.themes.map((theme) => (
-                  <ThemeDot key={theme.slug} number={theme.number} />
-                ))}
-                <span
-                  aria-hidden
-                  className={classNames(
-                    "hidden md:inline",
-                    "ml-2",
-                    "font-neuehaas text-sub transition group-hover:translate-x-1 group-hover:text-main",
-                  )}
-                >
-                  →
-                </span>
+                →
               </span>
             </Link>
           </Reveal>

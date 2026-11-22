@@ -1,6 +1,5 @@
 import classNames from "classnames";
-import { ThemeDot } from "@repo/common";
-import { NdaBadge, Pills, PlainLink, twoDigits, type SiteLink } from "./shared";
+import { NdaBadge, Pills, PlainLink, type SiteLink } from "./shared";
 
 /** 프로젝트 모달 내용에 들어가는 값 (이미 고른 언어) */
 export type ProjectDetailData = {
@@ -10,7 +9,7 @@ export type ProjectDetailData = {
   description: string;
   tags: string[];
   nda: boolean;
-  research: { number: number; title: string; summary: string; href: string }[];
+  research: { title: string; summary: string; href: string }[];
 };
 
 export type ProjectDetailLabels = {
@@ -130,16 +129,6 @@ export function ProjectDetail({
                   "rounded-2xl bg-sheet/60 transition hover:bg-sheet",
                 )}
               >
-                <span className={classNames("flex items-center gap-2.5")}>
-                  <ThemeDot number={theme.number} size="lg" />
-                  <span
-                    className={classNames(
-                      "font-neuehaas text-sm font-medium text-sub",
-                    )}
-                  >
-                    {twoDigits(theme.number)}
-                  </span>
-                </span>
                 <span
                   className={classNames(
                     "text-lg leading-snug font-medium break-keep",

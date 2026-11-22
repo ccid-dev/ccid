@@ -1,17 +1,15 @@
 "use client";
 
 import classNames from "classnames";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { type CSSProperties, useRef, useState } from "react";
-import { ThemeDot } from "@repo/common";
 import { CroppedImage } from "@repo/blocks";
 import { Pills, Reveal } from "@/components/content";
 import { localePath, localized, type Dictionary, type Locale } from "@/i18n";
 import { mediaUrl } from "@/libs/media";
 import type { Theme } from "@/types";
 import { useScrollStep } from "./useScrollStep";
-
-const twoDigits = (n: number) => String(n).padStart(2, "0");
 
 /**
  * 홈 Research 쇼케이스: 왼쪽 분야 목록 · 오른쪽 큰 이미지 · 질문 · 키워드. 누르면 분야 페이지로.
@@ -25,13 +23,10 @@ export function HomeResearch({
   themes,
   locale,
   dict,
-  viewAll,
 }: {
   themes: Theme[];
   locale: Locale;
   dict: Dictionary;
-  /** 목록 바로 아래 '전체 보기' 링크 */
-  viewAll?: { href: string; label: string };
 }) {
   /** 스크롤로 고른 분야 */
   const [active, setActive] = useState(0);
@@ -60,11 +55,7 @@ export function HomeResearch({
         <div
           className={classNames("grid w-full gap-8 lg:grid-cols-8 lg:gap-x-10")}
         >
-          <div
-            className={classNames(
-              "flex flex-col gap-10 lg:col-span-4 lg:gap-8",
-            )}
-          >
+          <div className={classNames("lg:col-span-4")}>
             <ol
               // 목록을 떠나면 스크롤 위치의 분야로
               onMouseLeave={() => setHovered(null)}
@@ -112,18 +103,6 @@ export function HomeResearch({
                           )}
                         >
                           <span
-                            className={classNames("flex items-center gap-2.5")}
-                          >
-                            <ThemeDot number={theme.number} />
-                            <span
-                              className={classNames(
-                                "font-neuehaas text-sm font-medium text-sub",
-                              )}
-                            >
-                              {twoDigits(theme.number)}
-                            </span>
-                          </span>
-                          <span
                             className={classNames(
                               "text-xl leading-snug break-keep md:text-2xl",
                             )}
@@ -161,27 +140,6 @@ export function HomeResearch({
                 );
               })}
             </ol>
-            {/* 전체 보기: 목록 바로 아래 (긴 스크롤 구역 끝이 아니라) */}
-            {viewAll ? (
-              <Link
-                href={viewAll.href}
-                className={classNames(
-                  "group inline-flex items-center gap-1.5 self-start lg:ml-6",
-                  "font-neuehaas text-sm font-medium",
-                  "underline-offset-4 hover:underline",
-                )}
-              >
-                {viewAll.label}
-                <span
-                  aria-hidden
-                  className={classNames(
-                    "transition-transform duration-300 group-hover:translate-x-1",
-                  )}
-                >
-                  →
-                </span>
-              </Link>
-            ) : null}
           </div>
 
           <Link
@@ -211,28 +169,62 @@ export function HomeResearch({
                 </span>
               ) : null;
             })}
-            <span
-              className={classNames(
-                "max-w-md",
-                "absolute bottom-5 left-5 flex flex-col gap-3",
-                "p-5",
-                "rounded-2xl bg-white/85 backdrop-blur-md",
-              )}
-            >
-              <span
+            {/* 분야가 바뀌면 상자는 새로 그리지 않고 크기만 이어서 바뀌고(morph), 글은 잠깐 흐려졌다 나타남 (blink)
+                움직임 줄이기 설정이면 크기는 바로 바뀌고 글만 흐려졌다 나타남 */}
+            <MotionConfig reducedMotion="user">
+              <motion.span
+                layout
+                transition={{
+                  layout: { type: "spring", duration: 0.5, bounce: 0.15 },
+                }}
+                // 모서리는 크기가 바뀌는 동안 찌그러지지 않게 style 로 (motion 이 보정, rounded-2xl 과 같은 값)
+                style={{ borderRadius: 16 }}
                 className={classNames(
-                  "text-lg leading-7 font-medium whitespace-pre-line break-keep",
+                  "max-w-md",
+                  "absolute bottom-5 left-5 flex flex-col",
+                  "p-5",
+                  // 유리 프로스트: 뒤 이미지가 흐리게 비치고, 위쪽 가장자리에 빛 한 줄
+                  "bg-white/45 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.7),0_8px_32px_-12px_rgb(0_0_0/0.25)] backdrop-blur-2xl backdrop-saturate-150",
                 )}
               >
-                {localized(current, "question", locale)}
-              </span>
-              {localized(current, "keywords", locale).length ? (
-                <Pills items={localized(current, "keywords", locale)} />
-              ) : null}
-              <span className={classNames("font-neuehaas text-sm font-medium")}>
-                {dict.research.more} →
-              </span>
-            </span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={current.id}
+                    layout="position"
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={{
+                      opacity: 1,
+                      filter: "blur(0px)",
+                      transition: { duration: 0.28, ease: [0.23, 1, 0.32, 1] },
+                    }}
+                    exit={{
+                      opacity: 0,
+                      filter: "blur(4px)",
+                      transition: { duration: 0.14, ease: [0.23, 1, 0.32, 1] },
+                    }}
+                    className={classNames("flex flex-col gap-3")}
+                  >
+                    <span
+                      className={classNames(
+                        "text-lg leading-7 font-medium whitespace-pre-line break-keep",
+                      )}
+                    >
+                      {localized(current, "question", locale)}
+                    </span>
+                    {localized(current, "keywords", locale).length ? (
+                      <Pills items={localized(current, "keywords", locale)} />
+                    ) : null}
+                    <span
+                      className={classNames(
+                        "font-neuehaas text-sm font-medium",
+                      )}
+                    >
+                      {dict.research.more} →
+                    </span>
+                  </motion.span>
+                </AnimatePresence>
+              </motion.span>
+            </MotionConfig>
           </Link>
         </div>
       </div>
