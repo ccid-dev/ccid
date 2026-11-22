@@ -8,8 +8,8 @@
     "areaA": 0.76,
     "areaB": 0.57,
     "areaC": 0.42,
-    "areaWarm": 0.22,
-    "areaRim": 0.12,
+    "areaWarm": 1,
+    "areaRim": 1,
     "opacity": 0.92,
     "flowSpeed": 0.32,
     "style": "plasma"

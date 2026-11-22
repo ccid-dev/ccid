@@ -6,6 +6,7 @@ import { Footer } from "./Footer";
 import { CustomCursor } from "./CustomCursor";
 import { PageVeil } from "./PageVeil";
 import { Header } from "./Header";
+import { HideOnTunePages } from "./HideOnTunePages";
 import { JsonLd } from "./JsonLd";
 import { AgentBlob } from "./agent-blob";
 import { FeedbackLayer } from "./feedback";
@@ -38,13 +39,15 @@ export async function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer />
-      {/* 에이전트 구: 누르면 대화 창(모달)으로 커짐 */}
-      <AgentBlob
-        mode="agent"
-        labels={dict.agent}
-        size={56}
-        className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
-      />
+      {/* 에이전트 구: 누르면 대화 창(모달)으로 커짐 · 튜닝 페이지에서는 숨김 */}
+      <HideOnTunePages>
+        <AgentBlob
+          mode="agent"
+          labels={dict.agent}
+          size={56}
+          className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
+        />
+      </HideOnTunePages>
       {/* 페이지 전환: 유리처럼 흐려졌다가 새 페이지가 준비되면 선명해짐 */}
       <PageVeil />
       <CustomCursor />
