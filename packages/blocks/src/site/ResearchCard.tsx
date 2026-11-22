@@ -43,7 +43,8 @@ export function ResearchCard({
         "group grid gap-10 md:grid-cols-2 md:gap-12",
       )}
     >
-      <span className={classNames("flex flex-col gap-10")}>
+      {/* 요약 ↔ 키워드 간격: 좁은 화면은 24px 로 줄여 붙임 (md 이상 40px) */}
+      <span className={classNames("flex flex-col gap-6 md:gap-10")}>
         {/* ① 분야 이름 + ② 질문 (한 덩어리) → ③ 요약 */}
         <span className={classNames("flex flex-col gap-6")}>
           <span className={classNames("flex flex-col gap-3")}>

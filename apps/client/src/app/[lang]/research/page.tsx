@@ -37,6 +37,7 @@ export default async function ResearchIndexPage({
       <PageHeader
         title={dict.research.title}
         description={dict.research.description}
+        descriptionDesktopOnly
       />
       <ol
         className={classNames(

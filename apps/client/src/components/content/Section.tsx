@@ -146,20 +146,26 @@ export function PillLink({
  * 페이지 머리 (구역과 같은 왼쪽 2칸 · 오른쪽 8칸 틀).
  * - 목록 페이지: 왼쪽에 큰 제목, 오른쪽에 설명 (titleSide="left", 기본)
  * - 상세 페이지: 왼쪽에 top(뒤로 가기 · 번호), 오른쪽에 큰 제목 · 설명 (titleSide="right")
+ * - descriptionDesktopOnly: 좁은 화면(md 미만)에서는 설명을 숨김 (Research 목록)
  */
 export function PageHeader({
   title,
   description,
+  descriptionDesktopOnly = false,
   top,
   titleSide = "left",
   children,
 }: {
   title: ReactNode;
   description?: ReactNode;
+  /** 좁은 화면에서 설명 숨기기 */
+  descriptionDesktopOnly?: boolean;
   top?: ReactNode;
   titleSide?: "left" | "right";
   children?: ReactNode;
 }) {
+  // 오른쪽 칸에 설명만 있으면 설명을 숨길 때 칸도 같이 숨겨, 빈 칸 몫의 간격이 생기지 않게 함
+  const hideRight = descriptionDesktopOnly && titleSide === "left" && !children;
   const heading = (
     <h1
       className={classNames(
@@ -181,13 +187,17 @@ export function PageHeader({
           {titleSide === "left" ? heading : null}
         </div>
         <div
-          className={classNames("min-w-0 lg:col-span-8", "flex flex-col gap-4")}
+          className={classNames("min-w-0 lg:col-span-8", [
+            "flex flex-col gap-4",
+            { "max-md:hidden": hideRight },
+          ])}
         >
           {titleSide === "right" ? heading : null}
           {description ? (
             <div
               className={classNames(
                 "max-w-2xl",
+                { "max-md:hidden": descriptionDesktopOnly },
                 "text-base leading-7 text-sub",
               )}
             >

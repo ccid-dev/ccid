@@ -40,11 +40,11 @@ export function PersonCard({
         wide
           ? "flex flex-col gap-1.5"
           : [
-              // 좁은 화면 사진 폭 (3:4) — 높이 = 이름 24 + 간격 6 + (직함 20 + 간격 6) + 약력 3줄 60
-              //   직함 있음: 116px → 폭 87px · 직함 없음: 90px → 폭 67.5px
+              // 좁은 화면 사진 폭 (3:4) — 높이 = 이름 20 + 간격 2 + (직함 20 + 간격 6) + 약력 3줄 60
+              //   직함 있음: 108px → 폭 81px · 직함 없음: 82px → 폭 61.5px
               person.role
-                ? "grid-cols-[87px_minmax(0,1fr)]"
-                : "grid-cols-[67.5px_minmax(0,1fr)]",
+                ? "grid-cols-[81px_minmax(0,1fr)]"
+                : "grid-cols-[61.5px_minmax(0,1fr)]",
               "grid items-start gap-x-4 sm:flex sm:flex-col sm:items-stretch sm:gap-1.5",
             ],
       )}
@@ -71,7 +71,15 @@ export function PersonCard({
           wide ? "mt-2" : "sm:mt-2",
         )}
       >
-        <p className={classNames("font-semibold")}>{person.name}</p>
+        {/* 좁은 화면: 이름 줄 높이 20px · 아래 간격 2px 로 줄여 직함 · 약력에 붙임 (sm 이상은 24px · 6px) */}
+        <p
+          className={classNames(
+            "-mb-1 sm:mb-0",
+            "leading-5 font-semibold sm:leading-6",
+          )}
+        >
+          {person.name}
+        </p>
         {person.role ? (
           // 좁은 화면은 줄바꿈 없이 한 줄로 이어 씀 (sm 이상은 입력한 줄바꿈대로)
           <p
