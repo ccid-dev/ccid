@@ -13,7 +13,12 @@ import {
 import { flushSync } from "react-dom";
 import type { Locale } from "@/i18n";
 import { BlobCanvas } from "./engine/BlobCanvas";
-import type { BlobConfig, BlobState, DeepPartial } from "./engine/config";
+import {
+  DEFAULT_BLOB_CONFIG,
+  type BlobConfig,
+  type BlobState,
+  type DeepPartial,
+} from "./engine/config";
 import type { Morph } from "./engine/renderer";
 import { useMicLevel } from "./engine/useMicLevel";
 import { TalkChat } from "./talk/chat";
@@ -125,6 +130,9 @@ function AgentModeBlob({
   labels,
   lang,
 }: CommonProps & { labels: AgentBlobLabels; lang: Locale }) {
+  // 열고 닫는 시간 (presets/base.json 의 morph.duration · 튜닝 페이지 값이 있으면 그 값)
+  const morphSeconds =
+    config?.morph?.duration ?? DEFAULT_BLOB_CONFIG.morph.duration;
   const [open, setOpen] = useState(false);
   /** 제자리를 떠나 떠 있는 동안 (열림 + 닫히는 중) */
   const [floating, setFloating] = useState(false);
@@ -223,10 +231,13 @@ function AgentModeBlob({
     if (open) {
       openedRef.current = true;
       closeButtonRef.current?.focus();
-    } else if (openedRef.current) {
-      orbButtonRef.current?.focus();
     }
   }, [open]);
+
+  // 닫히면 구가 제자리로 돌아와 버튼이 다시 나타난 뒤 거기로 포커스를 옮깁니다.
+  useEffect(() => {
+    if (!floating && openedRef.current) orbButtonRef.current?.focus();
+  }, [floating]);
 
   // Esc 로 닫기 · Tab 포커스를 대화 창 안에 가두기
   useEffect(() => {
@@ -271,15 +282,15 @@ function AgentModeBlob({
       {/* 뒤 배경: 흐리게 덮고, 누르면 닫힘 */}
       {/*
         열린 대화 창의 자리 · 크기. 보이지 않고, 열 때 이 상자를 재서 그 자리로 커집니다.
-        크기는 이 Tailwind 클래스로 정합니다 — 너비 · 높이를 같은 비율로 두면 창이 브라우저 비율을 따릅니다
-        (가로로 넓은 화면 → 가로로 넓은 창, 세로로 긴 화면 → 세로로 긴 창).
+        위치 · 크기는 이 Tailwind 클래스로 정합니다 — 지금은 오른쪽 사이드바(top-20 right-5 bottom-5, 폭 28rem).
       */}
       <div
         ref={targetRef}
         aria-hidden
         className={classNames(
-          "h-[74dvh] w-[74vw] max-md:h-[86dvh] max-md:w-[calc(100vw-2.5rem)]",
-          "pointer-events-none invisible fixed inset-0 m-auto",
+          // 오른쪽 사이드바: 헤더(h-18) 아래부터 아래 여백까지 세로로 길게, 폭은 28rem (좁은 화면은 좌우 여백만 남기고 꽉 차게)
+          "top-20 right-5 bottom-5 w-[min(28rem,calc(100vw-2.5rem))]",
+          "pointer-events-none invisible fixed",
         )}
       />
       <AnimatePresence>
@@ -295,6 +306,11 @@ function AgentModeBlob({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            // 모핑과 같은 시간 · 같은 곡선(ease-in-out): 사각형이 줄어드는 동안 따로 남지 않게
+            transition={{
+              duration: morphSeconds,
+              ease: [0.45, 0, 0.55, 1],
+            }}
           />
         )}
       </AnimatePresence>
@@ -317,7 +333,7 @@ function AgentModeBlob({
           interactive={!open}
           config={config}
         >
-          {!open ? (
+          {!floating ? (
             <button
               ref={orbButtonRef}
               type="button"
@@ -340,7 +356,7 @@ function AgentModeBlob({
               className={classNames(
                 "absolute",
                 "flex flex-col gap-3 p-4",
-                "pointer-events-auto",
+                open ? "pointer-events-auto" : "pointer-events-none",
               )}
               style={
                 morph
@@ -352,9 +368,21 @@ function AgentModeBlob({
                     }
                   : undefined
               }
-              // 창이 거의 다 퍼질 즈음 내용이 나타납니다.
+              // 열 때: 창이 거의 다 퍼질 즈음 내용이 나타남 · 닫을 때: 창이 줄어들기 전에 먼저 사라짐 (열기의 거울)
+              // 닫히는 동안에도 창은 그대로 두고(floating) 내용만 페이드 — 안 그러면 닫는 첫 프레임에 뚝 사라짐
               initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+              animate={
+                open
+                  ? {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        delay: morphSeconds * 0.62,
+                        duration: 0.3,
+                      },
+                    }
+                  : { opacity: 0, y: 8, transition: { duration: 0.18 } }
+              }
             >
               <header
                 className={classNames(

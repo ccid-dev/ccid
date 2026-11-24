@@ -8,6 +8,11 @@ export { HomeHeroOrb } from "./HomeHeroOrb";
 export { HomeGradientLayer } from "./HomeGradientLayer";
 export { HomeAbout } from "./HomeAbout";
 export { HomeProjects, projectHref } from "./HomeProjects";
+export {
+  HomeProjectsBackground,
+  PROJECTS_BACKGROUND_DEFAULTS,
+  type ProjectsBackgroundConfig,
+} from "./HomeProjectsBackground";
 export { HomeResearch } from "./HomeResearch";
 export { ScrollHint } from "./ScrollHint";
 export { SectionIndicator } from "./SectionIndicator";

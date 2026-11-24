@@ -221,11 +221,12 @@ Adobe Fonts 웹 프로젝트의 허용 도메인에 배포 도메인과 `localho
 
 홈 히어로 · 푸터 배경 · 에이전트 구는 WebGPU/WebGL 셰이더입니다. 값은 JSON 파일에 있고, 조절 페이지에서 바꿉니다. 패널(Leva)에서 조절한 뒤 **JSON 복사**로 값 파일에 통째로 붙여 넣으세요.
 
-| 조절 페이지    | 값 파일                                                                               |
-| -------------- | ------------------------------------------------------------------------------------- |
-| `/hero-tune`   | `apps/client/src/components/home/hero-background.json`                                |
-| `/footer-tune` | `apps/client/src/components/footer-background/footer-background.json`                 |
-| `/agent-tune`  | 에이전트 구 — [agent-blob/README.md](apps/client/src/components/agent-blob/README.md) |
+| 조절 페이지      | 값 파일                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| `/hero-tune`     | `apps/client/src/components/home/hero-background.json`                                |
+| `/footer-tune`   | `apps/client/src/components/footer-background/footer-background.json`                 |
+| `/projects-tune` | `apps/client/src/components/home/projects-background.json`                            |
+| `/agent-tune`    | 에이전트 구 — [agent-blob/README.md](apps/client/src/components/agent-blob/README.md) |
 
 조절 페이지는 검색엔진에 노출되지 않습니다(`noindex`).
 

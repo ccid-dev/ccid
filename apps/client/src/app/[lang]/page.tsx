@@ -7,6 +7,7 @@ import {
   HomeGradientLayer,
   HomeHeroOrb,
   HomeProjects,
+  HomeProjectsBackground,
   HomeResearch,
   ScrollHint,
 } from "@/components/home";
@@ -79,25 +80,25 @@ async function HomeDataSections({
         <HomeResearch themes={themes} locale={lang} dict={dict} />
       </Section>
 
-      <Section
-        id="projects"
-        title={dict.home.projects}
-        // 위 두 구역은 항목마다 스크롤이 걸리는데 여기서 바로 흘러가 버려서, 한 번 멈췄다 내려가게
-        hold
-        action={{
-          href: localePath(lang, ROUTES.projects),
-          label: dict.home.viewAll,
-        }}
-        className="relative"
-      >
-        <div className=" absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-full">
-          <img src="img/projects.webp" className=" mx-auto md:w-full h-full" />
-        </div>
-        <HomeProjects
-          projects={projects.slice(0, HOME_PROJECT_COUNT)}
-          locale={lang}
-        />
-      </Section>
+      {/* Projects: 연보라 안개 배경 (코드 그라디언트 · 천천히 흐름, Figma Vector 22 느낌) */}
+      <div className="relative isolate">
+        <HomeProjectsBackground />
+        <Section
+          id="projects"
+          title={dict.home.projects}
+          // 위 두 구역은 항목마다 스크롤이 걸리는데 여기서 바로 흘러가 버려서, 한 번 멈췄다 내려가게
+          hold
+          action={{
+            href: localePath(lang, ROUTES.projects),
+            label: dict.home.viewAll,
+          }}
+        >
+          <HomeProjects
+            projects={projects.slice(0, HOME_PROJECT_COUNT)}
+            locale={lang}
+          />
+        </Section>
+      </div>
 
       <PartnerMarquee title={dict.home.partners} partners={PARTNERS} />
 

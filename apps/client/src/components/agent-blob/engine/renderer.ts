@@ -38,11 +38,6 @@ interface Spring {
   v: number;
 }
 const spring = (x: number): Spring => ({ x, v: 0 });
-/** 용수철 + 감쇠 한 걸음 (반암시적 오일러) */
-const step = (s: Spring, target: number, k: number, c: number, dt: number) => {
-  s.v += (-k * (s.x - target) - c * s.v) * dt;
-  s.x += s.v * dt;
-};
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** 모양: 중심 · 반쪽 크기 스프링 */
 type MorphShape = { x: Spring; y: Spring; hw: Spring; hh: Spring };
@@ -97,6 +92,9 @@ export class BlobRenderer {
   private T = Math.random() * 100;
   private visible = true;
   private io?: IntersectionObserver;
+  /** 구 크기를 잴 상자의 크기. 매 프레임 clientWidth 를 읽으면 그때마다 레이아웃이 강제로 돌아서, 크기가 바뀔 때만 ResizeObserver 로 갱신 */
+  private box = { w: 1, h: 1 };
+  private ro?: ResizeObserver;
   private mq?: MediaQueryList;
 
   state: BlobState = "idle";
@@ -114,6 +112,8 @@ export class BlobRenderer {
   /** 모양 스프링: 중심 · 반쪽 크기 */
   private shape: MorphShape | null = null;
   private settled = true;
+  /** 열림 시간 u (선형 0 = 닫힌 구, 1 = 창). 곡선을 걸어 진행도로 바꿈 — 위치 · 크기를 한 몸으로 움직이는 기준 */
+  private progress = spring(0);
 
   private cur: Animated;
 
@@ -132,6 +132,15 @@ export class BlobRenderer {
       this.reduce = this.mq.matches;
       this.mq.addEventListener?.("change", this.onMq);
     }
+
+    const sizeBox = this.sizeRef ?? this.canvas;
+    const measure = () => {
+      this.box.w = sizeBox.clientWidth;
+      this.box.h = sizeBox.clientHeight;
+    };
+    measure();
+    this.ro = new ResizeObserver(measure);
+    this.ro.observe(sizeBox);
 
     this.orb = createFlowOrb(this.canvas, this.cfg.flow);
     this.supported = this.orb !== null;
@@ -158,6 +167,7 @@ export class BlobRenderer {
       return;
     }
     if (!this.shape) {
+      this.progress = spring(0);
       const r = morph.closed;
       this.shape = {
         x: spring(r.x + r.width / 2),
@@ -182,6 +192,7 @@ export class BlobRenderer {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.io?.disconnect();
+    this.ro?.disconnect();
     this.mq?.removeEventListener?.("change", this.onMq);
     document.removeEventListener("visibilitychange", this.onVis);
     this.orb?.destroy();
@@ -266,9 +277,7 @@ export class BlobRenderer {
       this.drawMorph(look, dt, now, this.morphTarget, this.shape, c.scale);
     } else {
       // 구 지름: 닫힌 구 = 상자 크기 · 펼친 창 = 창 대각선 × fill
-      const box = this.sizeRef ?? this.canvas;
-      const w = box.clientWidth;
-      const h = box.clientHeight;
+      const { w, h } = this.box;
       const closed = Math.min(w, h);
       const open = Math.hypot(w, h) * panel.fill;
       this.orb?.draw({ ...look, diameter: open + (closed - open) * c.sphere });
@@ -292,24 +301,47 @@ export class BlobRenderer {
     const thw = to.width / 2;
     const thh = to.height / 2;
 
+    // 위치 · 가로 · 세로를 따로 움직이면 서로 속도가 달라, 닫힐 때 사각형이 길쭉하게 남은 채 구가 따로 자라나
+    // 둘이 겹쳤다 합쳐져 보임. 그래서 진행도 하나(0 = 닫힌 구, 1 = 창)로 위치 · 크기를 한 몸으로 움직임.
+    // 진행도는 "시간 u"(선형 0~1)에 앞뒤 대칭 곡선(ease-in-out)을 건 값: u 가 0 → 1 로 가면 열기, 1 → 0 으로 가면
+    // 닫기라 같은 곡선을 정확히 거꾸로 재생함. (스프링은 열 때도 닫을 때도 "빨리 시작 · 천천히 끝"이라 닫기가 거울이 아님)
+    // 중간에 다시 눌러도 u 가 있던 자리에서 곧장 반대로 가서 끊기지 않음.
+    const goal = m.open ? 1 : 0;
+    const clock = this.progress;
     if (this.reduce) {
       // 움직임 줄이기: 바로 그 자리로
-      Object.assign(sh.x, spring(tx));
-      Object.assign(sh.y, spring(ty));
-      Object.assign(sh.hw, spring(thw));
-      Object.assign(sh.hh, spring(thh));
+      clock.x = goal;
     } else {
-      // 짧게 나눠 계산해야 단단한 스프링도 튀지 않습니다.
-      const n = Math.max(1, Math.ceil(dt / (1 / 240)));
-      const h = dt / n;
-      for (let i = 0; i < n; i++) {
-        step(sh.x, tx, morph.stiffness, morph.damping, h);
-        step(sh.y, ty, morph.stiffness, morph.damping, h);
-        // 가로 · 세로를 조금 다르게 — 젤리처럼 엇갈려 출렁입니다.
-        step(sh.hw, thw, morph.sizeStiffness, morph.sizeDamping, h);
-        step(sh.hh, thh, morph.sizeStiffness * 0.86, morph.sizeDamping, h);
-      }
+      const du = dt / Math.max(0.1, morph.duration);
+      clock.x =
+        goal > clock.x
+          ? Math.min(goal, clock.x + du)
+          : Math.max(goal, clock.x - du);
     }
+    clock.v = 0;
+    const u = clock.x;
+    // ease-in-out (2제곱, 앞뒤 대칭): 3제곱은 시작이 너무 느려 누른 뒤 0.2초 동안 안 움직이는 듯 보임
+    const t = u < 0.5 ? 2 * u ** 2 : 1 - (-2 * u + 2) ** 2 / 2;
+    const mix = (from: number, toward: number) => from + (toward - from) * t;
+    const nextX = mix(
+      m.closed.x + m.closed.width / 2,
+      m.panel.x + m.panel.width / 2,
+    );
+    const nextY = mix(
+      m.closed.y + m.closed.height / 2,
+      m.panel.y + m.panel.height / 2,
+    );
+    const nextHw = Math.max(1, mix(m.closed.width / 2, m.panel.width / 2));
+    const nextHh = Math.max(1, mix(m.closed.height / 2, m.panel.height / 2));
+    const inv = dt > 0 ? 1 / dt : 0;
+    sh.x.v = (nextX - sh.x.x) * inv;
+    sh.y.v = (nextY - sh.y.x) * inv;
+    sh.hw.v = (nextHw - sh.hw.x) * inv;
+    sh.hh.v = (nextHh - sh.hh.x) * inv;
+    sh.x.x = nextX;
+    sh.y.x = nextY;
+    sh.hw.x = nextHw;
+    sh.hh.x = nextHh;
 
     // 다 옮겨 갔는지 (멈추면 딱 맞춰 두고 알림)
     const off =
@@ -329,16 +361,20 @@ export class BlobRenderer {
 
     // 얼마나 열렸는지 (0 = 닫힌 구, 1 = 창). 출렁일 때 1 을 넘기도 합니다.
     const rc = Math.min(m.closed.width, m.closed.height) / 2;
-    const rp = (m.panel.width + m.panel.height) / 2;
-    const raw = (sh.hw.x + sh.hh.x - 2 * rc) / Math.max(1, rp - 2 * rc);
+    // 짧은 쪽 기준: 가로 + 세로 합으로 재면 세로로 긴 창(사이드바)에서는 폭이 이미 좁아졌는데도
+    // 세로 때문에 "아직 많이 열림"으로 계산되어, 마스크 없이 큰 구 본체가 창 옆에 반투명 원으로 드러남
+    const rp = Math.min(m.panel.width, m.panel.height) / 2;
+    const raw = (Math.min(sh.hw.x, sh.hh.x) - rc) / Math.max(1, rp - rc);
     const prog = clamp01(raw);
 
     // 구: 모양 중심에, 닫힌 구 지름 → 창 대각선 × fill
     const closedD = 2 * rc * scale;
-    const openD = Math.hypot(m.panel.width, m.panel.height) * panel.fill;
+    // 구 지름: 지금 사각형을 채우는 크기(현재 대각선 × fill)를 따라가며, 구 크기에 가까워질수록 닫힌 구 크기로 모음.
+    // (창 최종 크기 기준으로 재면 줄어드는 사각형 안에 구가 따로 들어 있거나 옆에 옅은 원으로 비침)
+    const fillD = Math.hypot(2 * sh.hw.x, 2 * sh.hh.x) * panel.fill;
     const diameter = Math.max(
       1,
-      closedD + (openD - closedD) * Math.max(0, raw),
+      closedD + (fillD - closedD) * clamp01(raw * 3),
     );
 
     // 방향으로 늘어남: 빨리 움직일수록 (부피는 그대로)
@@ -352,7 +388,9 @@ export class BlobRenderer {
     const sizeSpeed = Math.abs(sh.hw.v) + Math.abs(sh.hh.v);
     const wobble = Math.min(28, sizeSpeed * 0.012 * morph.wobble);
     // 떠난 자리의 물방울: 열릴수록 작아져 목이 가늘어지다 끊어집니다.
-    const tail = morph.neck > 0 ? rc * scale * (1 - prog) ** 1.5 : 0;
+    // 닫을 때는 만들지 않음: 닫히는 창이 돌아오는 자리에 이 물방울이 먼저 남아 있으면, 끈적한 목(neck)으로 이어져
+    // 창 옆에 큰 반투명 구가 부풀어 나왔다 사라져 보임 (열 때만 쓰는 연출)
+    const tail = morph.neck > 0 && m.open ? rc * scale * (1 - prog) ** 1.5 : 0;
 
     this.orb?.draw({
       ...look,
@@ -376,7 +414,8 @@ export class BlobRenderer {
         ],
         neck: morph.neck,
         // 닫힌 구일 때는 자르지 않아 둘레 빛번짐이 그대로 보이고, 열리기 시작하면 바로 모양을 따릅니다.
-        amount: clamp01(raw * 4),
+        // 거의 끝(구 크기)까지 모양을 따르다 마지막에만 풀림 — 일찍 풀리면 구 본체가 사각형 옆에 따로 보임
+        amount: clamp01(raw * 10),
         veil: panel.veil * prog,
         edge: morph.edge * prog,
       },

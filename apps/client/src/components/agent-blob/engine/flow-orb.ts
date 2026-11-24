@@ -227,6 +227,14 @@ export function createFlowOrb(
   const viewHeight = 2 * Math.tan((CAMERA.fov * Math.PI) / 360) * CAMERA.z;
   let width = 0;
   let height = 0;
+  // 캔버스 CSS 크기: 매 프레임 clientWidth 를 읽으면 그때마다 레이아웃이 강제로 돌아서, 바뀔 때만 ResizeObserver 로 갱신
+  let cssW = canvas.clientWidth || 1;
+  let cssH = canvas.clientHeight || 1;
+  const sizeObserver = new ResizeObserver(() => {
+    cssW = canvas.clientWidth || 1;
+    cssH = canvas.clientHeight || 1;
+  });
+  sizeObserver.observe(canvas);
   let fade = 0;
 
   // 모양 셰이더: 구를 따로 그린 그림(target)을 한 번 더 그립니다. 처음 모핑할 때 만듭니다.
@@ -270,8 +278,8 @@ export function createFlowOrb(
     },
     draw(f) {
       // 캔버스 크기 (대화 창으로 펼칠 때 계속 바뀜)
-      const w = canvas.clientWidth || 1;
-      const h = canvas.clientHeight || 1;
+      const w = cssW;
+      const h = cssH;
       const ratio = Math.min(
         window.devicePixelRatio || 1,
         f.maxPixelRatio ?? 2,
@@ -361,6 +369,7 @@ export function createFlowOrb(
       renderer.render(maskScene, maskCamera);
     },
     destroy() {
+      sizeObserver.disconnect();
       target?.dispose();
       for (const root of [scene, maskScene])
         root.traverse((node) => {

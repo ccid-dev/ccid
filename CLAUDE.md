@@ -64,13 +64,14 @@ yarn check-types
 
 ## 배경 그래픽 조절
 
-홈 히어로 · 푸터 배경은 WebGPU/WebGL 셰이더이고, 값은 JSON 파일에 있습니다. 숫자를 코드에서 직접 고치지 말고 조절 페이지를 씁니다.
+홈 히어로 · 푸터 배경은 WebGPU/WebGL 셰이더, 홈 Projects 배경은 CSS 그라디언트(`motion/react`)이고, 값은 JSON 파일에 있습니다. 숫자를 코드에서 직접 고치지 말고 조절 페이지를 씁니다.
 
-| 페이지 (dev)   | 값 파일                                                               |
-| -------------- | --------------------------------------------------------------------- |
-| `/hero-tune`   | `apps/client/src/components/home/hero-background.json`                |
-| `/footer-tune` | `apps/client/src/components/footer-background/footer-background.json` |
-| `/agent-tune`  | 에이전트 구 — `apps/client/src/components/agent-blob/README.md` 참고  |
+| 페이지 (dev)     | 값 파일                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| `/hero-tune`     | `apps/client/src/components/home/hero-background.json`                |
+| `/footer-tune`   | `apps/client/src/components/footer-background/footer-background.json` |
+| `/projects-tune` | `apps/client/src/components/home/projects-background.json`            |
+| `/agent-tune`    | 에이전트 구 — `apps/client/src/components/agent-blob/README.md` 참고  |
 
 패널(Leva)에서 조절한 뒤 'JSON 복사'로 값 파일에 통째로 붙여 넣습니다.
 

@@ -97,6 +97,8 @@ export function CustomCursor() {
   const neckRef = useRef<SVGPathElement>(null);
   /** 원의 기본 지름 (평소 · 누를 수 있는 요소 위) — 그리기 루프가 읽음 */
   const sizeRef = useRef<number>(SIZE.base);
+  /** 그리기 루프를 깨우는 함수 (루프는 멈춰 있을 때 쉼) */
+  const wakeRef = useRef<(() => void) | null>(null);
 
   /** 최상위 층으로 (이미 올라가 있으면 다시 올려 새로 열린 모달보다 위로) */
   const raise = () => {
@@ -168,6 +170,11 @@ export function CustomCursor() {
     const wheel = { x: 0, y: 0, used: false };
     let frameScrollY = window.scrollY;
     let frame = 0;
+    /** 움직임이 멈추면(쉬면) 루프를 끄고, 마우스 · 스크롤 · 크기 변화가 생기면 다시 깨움 — 가만히 있을 때 매 프레임 돌지 않게 */
+    const wake = () => {
+      if (!frame) frame = requestAnimationFrame(loop);
+    };
+    wakeRef.current = wake;
     const spring = (
       key: keyof typeof blob,
       goal: number,
@@ -182,6 +189,7 @@ export function CustomCursor() {
       blob[key] += blobVel[key];
     };
     const loop = () => {
+      frame = 0;
       const ease = reduce ? 1 : FOLLOW;
       pos.x += (target.x - pos.x) * ease;
       pos.y += (target.y - pos.y) * ease;
@@ -223,7 +231,17 @@ export function CustomCursor() {
         "d",
         metaballNeck(r1, r2, c1, c2, MORPH.neck),
       );
-      frame = requestAnimationFrame(loop);
+      // 다 멈췄으면 쉼 (위치 · 용수철 · 스크롤 속도 모두 목표에 닿음)
+      const resting =
+        Math.abs(target.x - pos.x) < 0.05 &&
+        Math.abs(target.y - pos.y) < 0.05 &&
+        Math.abs(blobVel.r) + Math.abs(blobVel.x) + Math.abs(blobVel.y) <
+          0.005 &&
+        Math.abs(blob.r - sizeRef.current / 2) < 0.05 &&
+        Math.abs(blob.x - goalX) < 0.05 &&
+        Math.abs(blob.y - goalY) < 0.05 &&
+        Math.abs(scrollVel.x) + Math.abs(scrollVel.y) < 0.01;
+      if (!resting) frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
 
@@ -231,6 +249,7 @@ export function CustomCursor() {
       target.x = event.clientX;
       target.y = event.clientY;
       setVisible(true);
+      wake();
     };
     /** 커서 아래 요소로 커짐 · 설명 정하기 */
     const inspect = (element: Element | null) => {
@@ -259,6 +278,7 @@ export function CustomCursor() {
       const y = window.scrollY;
       if (y !== lastY) markScrolling();
       lastY = y;
+      wake();
     };
     // 휠 · 트랙패드 (스와이퍼처럼 이벤트를 막는 곳도 먼저 받으려고 capture)
     const onWheel = (event: WheelEvent) => {
@@ -272,6 +292,7 @@ export function CustomCursor() {
       wheel.x += event.deltaX * unit;
       wheel.y += event.deltaY * unit;
       wheel.used = true;
+      wake();
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) markScrolling();
     };
 
@@ -285,6 +306,7 @@ export function CustomCursor() {
       dialogs.disconnect();
       document.removeEventListener("toggle", onToggle, true);
       cancelAnimationFrame(frame);
+      wakeRef.current = null;
       window.clearTimeout(timer);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerover", onOver);
@@ -298,6 +320,8 @@ export function CustomCursor() {
   const size = hover && !scrolling ? SIZE.hover : SIZE.base;
   useEffect(() => {
     sizeRef.current = size;
+    // 커짐 · 작아짐 용수철을 다시 움직이려면 루프를 깨워야 함
+    wakeRef.current?.();
   }, [size]);
 
   if (!enabled) return null;
