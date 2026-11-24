@@ -102,6 +102,28 @@ export interface BlobBase {
     /** 채도 · 대비가 올라가는 정도 */
     levelIntensity: number;
   };
+  /**
+   * 구 ↔ 대화 창 모핑 (열고 닫을 때). 위치 · 크기는 스프링(용수철 + 감쇠)으로 움직입니다.
+   * 위치가 크기보다 단단하면(빨리 따라가면) 물방울이 먼저 끌려 나온 뒤 퍼집니다.
+   */
+  morph: {
+    /** 위치 스프링 단단함 (클수록 빨리 날아감) */
+    stiffness: number;
+    /** 위치 스프링 감쇠 (작을수록 도착해서 더 출렁임) */
+    damping: number;
+    /** 크기 스프링 단단함 */
+    sizeStiffness: number;
+    /** 크기 스프링 감쇠 (작을수록 말랑하게 출렁임) */
+    sizeDamping: number;
+    /** 0–1. 움직이는 방향으로 늘어나는 정도 (squash & stretch) */
+    stretch: number;
+    /** 0–1. 가장자리가 젤리처럼 출렁이는 정도 */
+    wobble: number;
+    /** 떠난 자리와 이어지는 끈적한 목의 굵기 (px, 0 = 없음) */
+    neck: number;
+    /** 0–1. 창 가장자리 안쪽 빛 */
+    edge: number;
+  };
   /** 상황이 바뀔 때 따라가는 빠르기 (클수록 빠릿함) */
   motion: {
     /** 흐름 · 빛 · 질감 값 */
@@ -143,6 +165,7 @@ const situations: Record<BlobSituation, BlobPreset> = {
 export const DEFAULT_BLOB_CONFIG: BlobConfig = {
   flow: base.flow,
   panel: base.panel,
+  morph: base.morph,
   voice: base.voice,
   motion: base.motion,
   situations,

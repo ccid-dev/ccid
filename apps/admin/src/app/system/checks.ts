@@ -205,6 +205,16 @@ export async function schemaChecks(): Promise<Check[]> {
       "20261116180000_notices_system.sql",
       () => supabase.rpc("system_usage"),
     ),
+    probe(
+      "에이전트 문의 (inquiries)",
+      "20261124053750_talk_inquiries.sql",
+      () => supabase.from("inquiries").select("id").limit(1),
+    ),
+    probe(
+      "에이전트 하루 사용량 (talk_usage)",
+      "20261124053750_talk_inquiries.sql",
+      () => supabase.from("talk_usage").select("day").limit(1),
+    ),
   ]);
 }
 

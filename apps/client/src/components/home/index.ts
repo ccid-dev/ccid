@@ -4,6 +4,8 @@ export {
   type HeroBackgroundConfig,
 } from "./HeroBackground";
 export { HomeHero } from "./HomeHero";
+export { HomeHeroOrb } from "./HomeHeroOrb";
+export { HomeGradientLayer } from "./HomeGradientLayer";
 export { HomeAbout } from "./HomeAbout";
 export { HomeProjects, projectHref } from "./HomeProjects";
 export { HomeResearch } from "./HomeResearch";

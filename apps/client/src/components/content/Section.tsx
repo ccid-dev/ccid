@@ -23,6 +23,7 @@ export function Section({
   hold = false,
   tight = false,
   children,
+  className,
 }: {
   id?: string;
   title: string;
@@ -33,6 +34,7 @@ export function Section({
   /** 아래 여백(+ 좁은 화면은 위 여백) 줄이기 */
   tight?: boolean;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <section
@@ -41,6 +43,7 @@ export function Section({
         "scroll-mt-20",
         "px-5 md:px-10",
         hold && "lg:h-[160svh]",
+        className,
       )}
     >
       <div

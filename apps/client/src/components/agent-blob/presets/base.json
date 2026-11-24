@@ -28,5 +28,15 @@
   "motion": {
     "ease": 4,
     "scaleEase": 9
+  },
+  "morph": {
+    "stiffness": 210,
+    "damping": 20,
+    "sizeStiffness": 120,
+    "sizeDamping": 11,
+    "stretch": 0.25,
+    "wobble": 0.5,
+    "neck": 56,
+    "edge": 0.18
   }
 }

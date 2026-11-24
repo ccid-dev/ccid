@@ -3,13 +3,12 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { JoinSection, PartnerMarquee, Section } from "@/components/content";
 import {
-  HeroBackground,
   HomeAbout,
-  HomeHero,
+  HomeGradientLayer,
+  HomeHeroOrb,
   HomeProjects,
   HomeResearch,
   ScrollHint,
-  SectionIndicator,
 } from "@/components/home";
 import { PARTNERS, ROUTES } from "@/constants";
 import { type Dictionary, hasLocale, type Locale, localePath } from "@/i18n";
@@ -39,30 +38,18 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
   return (
     <>
-      {/* 첫 화면 · 배경 값은 components/home/hero-background.json (/hero-tune 에서 조절) */}
-      <HomeHero
-        description={dict.meta.description}
-        background={<HeroBackground />}
-      />
+      {/* 첫 화면 ~ About: 진보라 그라디언트 · 큰 원 배경 한 장을 함께 깔고, 구역은 각자 그대로 (Figma home-gradient-layer) */}
+      <HomeGradientLayer>
+        {/* 첫 화면: "cciD." · 정식 명칭 · 소개 (Figma Frame 222) */}
+        <HomeHeroOrb description={dict.meta.description} />
+
+        <Section id="about" title={dict.about.title}>
+          <HomeAbout dict={dict} />
+        </Section>
+      </HomeGradientLayer>
 
       {/* 첫 화면만 보일 때 브라우저 아래에 뜨는 스크롤 안내 */}
       <ScrollHint targetId="about" label={dict.home.scrollHint} />
-
-      {/* 넓은 화면 오른쪽: 지금 보고 있는 섹션 · 누르면 그 섹션으로 이동 */}
-      <SectionIndicator
-        label={dict.home.sections}
-        items={[
-          { id: "about", label: dict.about.title },
-          { id: "research", label: dict.home.research },
-          { id: "projects", label: dict.home.projects },
-          { id: "partners", label: dict.home.partners },
-          { id: "join", label: dict.join.eyebrow },
-        ]}
-      />
-
-      <Section id="about" title={dict.about.title}>
-        <HomeAbout dict={dict} />
-      </Section>
 
       {/* 데이터가 오기 전에는 화면 높이만큼 자리를 잡아 둬서 아래 푸터가 끌어올려지지 않게 */}
       <Suspense fallback={<div className={classNames("min-h-svh")} />}>
@@ -101,7 +88,11 @@ async function HomeDataSections({
           href: localePath(lang, ROUTES.projects),
           label: dict.home.viewAll,
         }}
+        className="relative"
       >
+        <div className=" absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-full">
+          <img src="img/projects.webp" className=" mx-auto md:w-full h-full" />
+        </div>
         <HomeProjects
           projects={projects.slice(0, HOME_PROJECT_COUNT)}
           locale={lang}

@@ -301,6 +301,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      inquiries: {
+        Row: {
+          id: string;
+          key: string;
+          topic: string;
+          message: string;
+          name: string;
+          email: string;
+          organization: string;
+          lang: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          topic?: string;
+          message: string;
+          name: string;
+          email: string;
+          organization?: string;
+          lang?: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          topic?: string;
+          message?: string;
+          name?: string;
+          email?: string;
+          organization?: string;
+          lang?: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       recruit: {
         Row: {
           apply_url: string;
@@ -355,6 +397,33 @@ export type Database = {
           title_en?: string;
           title_ko?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      talk_usage: {
+        Row: {
+          day: string;
+          chats: number;
+          listens: number;
+          speaks: number;
+          speak_chars: number;
+          inquiries: number;
+        };
+        Insert: {
+          day: string;
+          chats?: number;
+          listens?: number;
+          speaks?: number;
+          speak_chars?: number;
+          inquiries?: number;
+        };
+        Update: {
+          day?: string;
+          chats?: number;
+          listens?: number;
+          speaks?: number;
+          speak_chars?: number;
+          inquiries?: number;
         };
         Relationships: [];
       };
@@ -439,6 +508,10 @@ export type Database = {
       is_master: { Args: never; Returns: boolean };
       can_edit_own_profile: { Args: never; Returns: boolean };
       system_usage: { Args: never; Returns: Json };
+      talk_usage_bump: {
+        Args: { kind: string; amount?: number };
+        Returns: number;
+      };
     };
     Enums: {
       [_ in never]: never;

@@ -166,7 +166,7 @@ export const PRESET_GROUPS: {
   },
 ];
 
-export type BaseSection = "flow" | "panel" | "voice" | "motion";
+export type BaseSection = "flow" | "panel" | "morph" | "voice" | "motion";
 export const BASE_GROUPS: {
   title: string;
   section: BaseSection;
@@ -258,6 +258,76 @@ export const BASE_GROUPS: {
         key: "veil",
         label: "흰 덮개",
         hint: "글자가 잘 보이도록 (0–1)",
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+    ],
+  },
+  {
+    title: "열고 닫는 모션 (구 ↔ 대화 창)",
+    section: "morph",
+    fields: [
+      {
+        key: "stiffness",
+        label: "날아가는 빠르기",
+        hint: "위치 스프링 단단함 — 클수록 빨리 가운데로",
+        min: 40,
+        max: 600,
+        step: 5,
+      },
+      {
+        key: "damping",
+        label: "도착할 때 멈춤",
+        hint: "위치 스프링 감쇠 — 작을수록 도착해서 출렁임",
+        min: 4,
+        max: 60,
+        step: 0.5,
+      },
+      {
+        key: "sizeStiffness",
+        label: "퍼지는 빠르기",
+        hint: "크기 스프링 단단함 — 위치보다 작으면 물방울이 먼저 끌려 나온 뒤 퍼짐",
+        min: 40,
+        max: 600,
+        step: 5,
+      },
+      {
+        key: "sizeDamping",
+        label: "말랑함",
+        hint: "크기 스프링 감쇠 — 작을수록 크기가 말랑하게 출렁임",
+        min: 4,
+        max: 60,
+        step: 0.5,
+      },
+      {
+        key: "stretch",
+        label: "늘어남",
+        hint: "움직이는 방향으로 늘어나는 정도 (squash & stretch)",
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        key: "wobble",
+        label: "젤리 출렁임",
+        hint: "가장자리가 출렁이는 정도",
+        min: 0,
+        max: 1.5,
+        step: 0.01,
+      },
+      {
+        key: "neck",
+        label: "끈적한 목",
+        hint: "떠난 자리와 이어지는 목의 굵기 (px, 0 = 없음)",
+        min: 0,
+        max: 160,
+        step: 1,
+      },
+      {
+        key: "edge",
+        label: "가장자리 빛",
+        hint: "창 가장자리 안쪽이 밝아지는 정도",
         min: 0,
         max: 1,
         step: 0.01,

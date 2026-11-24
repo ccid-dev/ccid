@@ -1,37 +1,41 @@
 "use client";
 
 import classNames from "classnames";
-import { AnimatePresence, motion, useAnimate } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { usePathname } from "next/navigation";
+import {
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { flushSync } from "react-dom";
+import type { Locale } from "@/i18n";
 import { BlobCanvas } from "./engine/BlobCanvas";
 import type { BlobConfig, BlobState, DeepPartial } from "./engine/config";
+import type { Morph } from "./engine/renderer";
 import { useMicLevel } from "./engine/useMicLevel";
+import { TalkChat } from "./talk/chat";
+import { noteOpened, notePage, watchHuman } from "./talk/human";
+import { type TalkLabels, TalkPanel } from "./TalkPanel";
 
-/** 열고 닫힐 때 크기 · 위치가 바뀌는 스프링 */
-const SPRING = {
-  type: "spring",
-  stiffness: 260,
-  damping: 30,
-  mass: 0.9,
-} as const;
-/** 열린 대화 창 최대 크기 (px) · 화면 대비 최대 높이 비율 · 화면 가장자리 최소 여백 */
-const PANEL = { width: 480, height: 600, maxHeightRatio: 0.88, edge: 20 };
-
-export type AgentBlobLabels = {
+export type AgentBlobLabels = TalkLabels & {
   open: string;
+  /** 구에 마우스를 올리면 커서 아래에 뜨는 안내 */
+  hover: string;
   title: string;
   close: string;
   talk: string;
-  send: string;
 };
 
 type CommonProps = {
   /** 구 지름 (px). 기본 40 (헤더 버튼 크기) */
   size?: number;
   /**
-   * 실제 음성 인식 반응 켜기 (기본 false = 마이크를 쓰지 않음).
+   * design 모드: 실제 음성 인식 반응 켜기 (기본 false = 마이크를 쓰지 않음).
    * 켜면 listening 일 때 마이크 크기에 맞춰 반응합니다. 끄면 가짜 음성 곡선으로 보여 줍니다.
+   * (agent 모드는 대화 창의 마이크 버튼으로 켜고, 실제 소리를 따라갑니다)
    */
   voice?: boolean;
   /** 설정 일부 덮어쓰기 (없으면 presets/*.json) */
@@ -58,6 +62,8 @@ export type AgentBlobProps = CommonProps &
         state?: never;
         /** 버튼 · 대화 창 문구 (dict.agent) */
         labels: AgentBlobLabels;
+        /** 대화 언어 (지금 페이지 언어) */
+        lang: Locale;
       }
   );
 
@@ -107,74 +113,93 @@ const boxOf = (el: Element): Box => {
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 };
 
-/** 화면 가운데 대화 창 자리 (스크롤바를 뺀 화면 = fixed 기준) */
-const panelBox = (): Box => {
-  const vw = document.documentElement.clientWidth;
-  const vh = document.documentElement.clientHeight;
-  const width = Math.min(PANEL.width, vw - PANEL.edge * 2);
-  const height = Math.min(PANEL.height, vh * PANEL.maxHeightRatio);
-  return { top: (vh - height) / 2, left: (vw - width) / 2, width, height };
-};
-
-const BOX_KEYS = ["top", "left", "width", "height"] as const;
-
 /**
- * 닫혀 있을 때는 제자리(헤더 등)에 그대로 있고, 열면 같은 요소를 position: fixed 로 띄워
- * 제자리 → 화면 가운데로 키웁니다. 닫으면 다시 제자리로 줄어든 뒤 원래대로 돌아갑니다.
- * 같은 요소 · 같은 캔버스라 다시 마운트되지 않고, transform 이 아닌 width/height 를 움직여 원이 늘어나지 않습니다.
+ * 닫혀 있을 때는 제자리(헤더 등)에 그대로 있고, 열면 같은 요소를 화면 전체(position: fixed)로 띄워
+ * 구가 직접 창 모양으로 바뀝니다(모핑 — engine/renderer.ts). 닫으면 다시 구로 돌아가 제자리에 내려앉습니다.
+ * 같은 요소 · 같은 캔버스라 다시 마운트되지 않습니다. 모핑 값은 presets/base.json 의 morph (/agent-tune).
  */
 function AgentModeBlob({
   size = 40,
-  voice = false,
   config,
   className,
   labels,
-}: CommonProps & { labels: AgentBlobLabels }) {
+  lang,
+}: CommonProps & { labels: AgentBlobLabels; lang: Locale }) {
   const [open, setOpen] = useState(false);
   /** 제자리를 떠나 떠 있는 동안 (열림 + 닫히는 중) */
   const [floating, setFloating] = useState(false);
-  const [state, setState] = useState<BlobState>("idle");
+  // 대화 흐름 (talk/chat.ts). 페이지를 옮겨도 공통 레이아웃에 있어 대화가 이어집니다.
+  const [talk] = useState(() => new TalkChat(lang));
+  const view = useSyncExternalStore(
+    talk.subscribe,
+    talk.getSnapshot,
+    talk.getSnapshot,
+  );
+  // 구의 모습: 열려 있을 때 대화 상태를 따라갑니다. (방문자가 말하는 중 hearing 도 듣기 모습)
+  const state: BlobState = !open
+    ? "idle"
+    : view.phase === "hearing"
+      ? "listening"
+      : view.phase;
+  const pathname = usePathname();
   const slotRef = useRef<HTMLDivElement>(null);
-  const [scope, animate] = useAnimate<HTMLDivElement>();
+  /** 열린 대화 창 자리 (보이지 않는 요소 — 크기는 아래 JSX 의 Tailwind 클래스) */
+  const targetRef = useRef<HTMLDivElement>(null);
+  /** 모핑: 닫힌 구 자리 · 열린 창 자리 (화면 기준). 떠 있는 동안만 있습니다. */
+  const [morph, setMorph] = useState<Morph | null>(null);
+  const openRef = useRef(false);
   const orbButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  /** 마지막으로 시작한 열기/닫기 (닫히는 중에 다시 열면 이전 닫기 마무리를 건너뜀) */
-  const runRef = useRef(0);
   /** 한 번이라도 열렸었는지 (처음 그릴 때 오브 버튼으로 포커스를 옮기지 않도록) */
   const openedRef = useRef(false);
 
-  const listening = voice && open && state === "listening";
-  const micLevel = useMicLevel(listening);
+  // 사람 확인용 입력 요약은 사이트를 둘러보는 동안 조용히 모읍니다 (talk/human.ts)
+  useEffect(() => watchHuman(), []);
+  useEffect(() => notePage(pathname), [pathname]);
+  useEffect(() => talk.setLang(lang), [talk, lang]);
+  useEffect(() => () => talk.destroy(), [talk]);
 
-  const openAgent = () => {
-    const el = scope.current;
+  const rects = () => {
     const slot = slotRef.current;
-    if (!el || !slot) return;
-    runRef.current += 1;
-    if (!floating) {
-      // 제자리 위치에서 시작하도록 fixed 로 바꾸기 전에 자리를 재고, 바로 그 자리에 띄웁니다.
-      const from = boxOf(slot);
-      flushSync(() => setFloating(true));
-      animate(el, from, { duration: 0 });
-    }
+    const target = targetRef.current;
+    if (!slot || !target) return null;
+    const toRect = (b: Box) => ({
+      x: b.left,
+      y: b.top,
+      width: b.width,
+      height: b.height,
+    });
+    return { closed: toRect(boxOf(slot)), panel: toRect(boxOf(target)) };
+  };
+
+  const openAgent = (event: MouseEvent) => {
+    noteOpened(event.isTrusted);
+    talk.greet();
+    const r = rects();
+    if (!r) return;
+    openRef.current = true;
+    // 화면 전체 무대로 바꾸는 것과 모핑 시작을 한 번에 (구가 제자리에서 그대로 이어지도록)
+    flushSync(() => {
+      setFloating(true);
+      setMorph({ open: true, ...r });
+    });
     setOpen(true);
-    setState("listening");
-    animate(el, panelBox(), SPRING);
   };
 
   const closeAgent = () => {
-    const el = scope.current;
-    const slot = slotRef.current;
-    if (!el || !slot) return;
-    const run = ++runRef.current;
+    openRef.current = false;
+    talk.close();
     setOpen(false);
-    setState("idle");
-    void Promise.resolve(animate(el, boxOf(slot), SPRING)).then(() => {
-      if (runRef.current !== run) return;
-      for (const k of BOX_KEYS) el.style.removeProperty(k);
-      setFloating(false);
-    });
+    const r = rects();
+    setMorph((m) => (m && r ? { open: false, ...r } : m));
+  };
+
+  /** 모핑이 멈췄을 때: 닫힌 구로 돌아왔으면 제자리로 내려앉습니다. */
+  const onMorphSettle = (settledOpen: boolean) => {
+    if (settledOpen || openRef.current) return;
+    setFloating(false);
+    setMorph(null);
   };
 
   // 열려 있는 동안: 뒤 화면 스크롤 막기 · 화면 크기가 바뀌면 창 자리 다시 맞추기
@@ -183,14 +208,15 @@ function AgentModeBlob({
     const overflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     const onResize = () => {
-      if (scope.current) animate(scope.current, panelBox(), { duration: 0 });
+      const r = rects();
+      if (r) setMorph({ open: true, ...r });
     };
     window.addEventListener("resize", onResize);
     return () => {
       document.documentElement.style.overflow = overflow;
       window.removeEventListener("resize", onResize);
     };
-  }, [open, animate, scope]);
+  }, [open]);
 
   // 열리면 대화 창(닫기 버튼)으로, 닫히면 오브 버튼으로 포커스를 옮깁니다.
   useEffect(() => {
@@ -243,6 +269,19 @@ function AgentModeBlob({
       style={{ width: size, height: size }}
     >
       {/* 뒤 배경: 흐리게 덮고, 누르면 닫힘 */}
+      {/*
+        열린 대화 창의 자리 · 크기. 보이지 않고, 열 때 이 상자를 재서 그 자리로 커집니다.
+        크기는 이 Tailwind 클래스로 정합니다 — 너비 · 높이를 같은 비율로 두면 창이 브라우저 비율을 따릅니다
+        (가로로 넓은 화면 → 가로로 넓은 창, 세로로 긴 화면 → 세로로 긴 창).
+      */}
+      <div
+        ref={targetRef}
+        aria-hidden
+        className={classNames(
+          "h-[74dvh] w-[74vw] max-md:h-[86dvh] max-md:w-[calc(100vw-2.5rem)]",
+          "pointer-events-none invisible fixed inset-0 m-auto",
+        )}
+      />
       <AnimatePresence>
         {open && (
           <motion.div
@@ -260,14 +299,21 @@ function AgentModeBlob({
         )}
       </AnimatePresence>
 
+      {/* 떠 있는 동안은 화면 전체가 무대 (클릭은 대화 창 내용과 뒤 배경만 받음) */}
       <div
-        ref={scope}
-        className={classNames(floating ? "fixed z-50" : "relative size-full")}
+        className={classNames(
+          floating
+            ? "pointer-events-none fixed inset-0 z-50"
+            : "relative size-full",
+        )}
       >
         <BlobCanvas
           state={state}
-          level={listening ? micLevel : undefined}
+          // 마이크가 켜져 있으면 실제 소리(방문자 목소리 · 에이전트 목소리)를 따라갑니다. 아니면 가짜 곡선.
+          level={view.voice ? talk.readLevel : undefined}
           expanded={open}
+          morph={morph}
+          onMorphSettle={onMorphSettle}
           interactive={!open}
           config={config}
         >
@@ -276,6 +322,7 @@ function AgentModeBlob({
               ref={orbButtonRef}
               type="button"
               aria-label={labels.open}
+              cursor-label={labels.hover}
               aria-haspopup="dialog"
               aria-expanded={open}
               onClick={openAgent}
@@ -290,10 +337,24 @@ function AgentModeBlob({
               role="dialog"
               aria-modal="true"
               aria-labelledby="agent-blob-title"
-              className={classNames("h-full", "flex flex-col gap-3 p-4")}
-              // 창이 다 커질 즈음 내용이 나타납니다.
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { delay: 0.35 } }}
+              className={classNames(
+                "absolute",
+                "flex flex-col gap-3 p-4",
+                "pointer-events-auto",
+              )}
+              style={
+                morph
+                  ? {
+                      left: morph.panel.x,
+                      top: morph.panel.y,
+                      width: morph.panel.width,
+                      height: morph.panel.height,
+                    }
+                  : undefined
+              }
+              // 창이 거의 다 퍼질 즈음 내용이 나타납니다.
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
             >
               <header
                 className={classNames(
@@ -321,22 +382,17 @@ function AgentModeBlob({
                   <span aria-hidden>✕</span>
                 </button>
               </header>
-              {/* 대화 내용 (에이전트 기능이 붙으면) */}
-              <div className={classNames("flex-1 overflow-auto")} />
-              {/* TODO(에이전트 연결): 지금은 listening ↔ thinking 만 바꿔 보는 버튼 */}
-              <button
-                type="button"
-                onClick={() =>
-                  setState(state === "listening" ? "thinking" : "listening")
-                }
-                className={classNames(
-                  "mx-auto size-16",
-                  "rounded-full bg-white/80 backdrop-blur transition hover:bg-white",
-                  "font-neuehaas text-sm font-medium text-primary",
-                )}
-              >
-                {state === "listening" ? labels.send : labels.talk}
-              </button>
+              <TalkPanel
+                view={view}
+                labels={labels}
+                lang={lang}
+                onAsk={(text) => talk.ask(text)}
+                onChoose={(index) => talk.choose(index)}
+                onConfirm={() => talk.confirm()}
+                onMicStart={() => talk.startVoice()}
+                onMicStop={() => talk.stopVoice()}
+                onNavigate={closeAgent}
+              />
             </motion.div>
           )}
         </BlobCanvas>

@@ -21,9 +21,15 @@ export const LOGO_MOTION = {
 export function HeroLogo({
   text,
   className,
+  letterClassName,
 }: {
   text: string;
   className?: string;
+  /**
+   * 글자 하나하나에 거는 클래스 (예: 그라디언트 글자 bg-clip-text).
+   * 글자마다 따로 움직이는 상자라 부모에 건 bg-clip-text 는 잘 안 잡히므로 여기에 겁니다.
+   */
+  letterClassName?: string;
 }) {
   const reduce = useReducedMotion();
   return (
@@ -34,7 +40,7 @@ export function HeroLogo({
           <motion.span
             // 글자는 바뀌지 않으므로 순서를 키로 씀
             key={index}
-            className={classNames("inline-block")}
+            className={classNames("inline-block", letterClassName)}
             initial={
               reduce ? false : { opacity: 0, y: "35%", filter: "blur(16px)" }
             }

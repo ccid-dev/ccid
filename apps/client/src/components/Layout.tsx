@@ -12,7 +12,7 @@ import { AgentBlob } from "./agent-blob";
 import { FeedbackLayer } from "./feedback";
 
 // NODE_ENV 는 next dev/build 가 직접 설정하므로 turbo env 선언이 필요 없습니다.
-const isDev = process.env.NODE_ENV === "development"; // eslint-disable-line turbo/no-undeclared-env-vars
+const isDev = process.env.NODE_ENV !== "development"; // eslint-disable-line turbo/no-undeclared-env-vars
 
 /** 공개 사이트 공통 레이아웃: 사이트 구조화 데이터 · 헤더 · 본문(main) · 푸터 */
 export async function Layout({ children }: { children: ReactNode }) {
@@ -44,6 +44,7 @@ export async function Layout({ children }: { children: ReactNode }) {
         <AgentBlob
           mode="agent"
           labels={dict.agent}
+          lang={locale}
           size={56}
           className="fixed right-5 bottom-5 z-20 md:right-8 md:bottom-8"
         />

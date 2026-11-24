@@ -37,10 +37,42 @@ export const ko = {
   /** 에이전트 구 대화 창 (components/agent-blob — mode="agent" 일 때) */
   agent: {
     open: "보이스 에이전트 열기",
+    hover: "클릭하여 물어보세요",
     title: "cciD 에이전트",
     close: "닫기",
     talk: "말하기",
     send: "보내기",
+    placeholder: "질문을 입력하세요",
+    thinking: "생각하는 중",
+    ended: "대화를 마쳤어요",
+    suggestions: "추천 질문",
+    /** 팀에 보낼 메시지 미리보기 */
+    to: "cciD 팀에게",
+    yes: "네, 보내 주세요",
+    sentTo: "cciD 팀에 보냈어요",
+    mailApp: "메일 앱에서 보내기",
+    /** 메일 앱으로 보낼 때 제목 */
+    subject: "cciD 문의",
+    mic: "목소리로 이야기하기",
+    micOff: "마이크 끄기",
+    /** 마이크를 켜기 전 안내 (브라우저 허용 창보다 먼저 보임) */
+    askTitle: "목소리로 이야기할까요?",
+    askBody:
+      "마이크가 켜져 있는 동안 말소리만 골라 글자로 받아 적어요.\n녹음은 저장하지 않고, 언제든 끌 수 있어요.",
+    askNote: "받아 적기와 목소리는 ElevenLabs, 대답은 OpenAI가 만들어요.",
+    askAllow: "마이크 켜기",
+    askDecline: "아니요, 글로 할게요",
+    askHint: "다음에 브라우저가 마이크 허용을 한 번 더 물어봐요.",
+    starting: "마이크를 켜는 중",
+    listening: "듣고 있어요",
+    speaking: "말을 걸면 멈춰요",
+    notices: {
+      micBlocked:
+        "마이크가 막혀 있어요. 주소창의 자물쇠 아이콘에서 허용하거나, 글로 물어봐 주세요.",
+      noVoice: "이 브라우저에서는 말로 할 수 없어요. 글로 물어봐 주세요.",
+      voiceFailed: "음성을 불러오지 못했어요. 글로 물어봐 주세요.",
+      quiet: "한동안 조용해서 마이크를 껐어요.",
+    },
   },
   home: {
     research: "Research",

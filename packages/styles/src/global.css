@@ -47,7 +47,7 @@
   --color-gray-900: #101828;
   --color-gray-950: #030712;
 
-  --color-background: #fbfbfb;
+  --color-background: #fff;
   --color-sheet: #ebebeb;
   --color-field: #f8f8f8;
 
@@ -101,11 +101,16 @@
   .font-neuehaas {
     --font-weight-thin: 400;
     --font-weight-extralight: 400;
-    --font-weight-light: 400; /* 45 Light */
-    --font-weight-normal: 500; /* 55 Roman */
-    --font-weight-medium: 600; /* 65 Medium */
-    --font-weight-semibold: 600; /* 65 Medium */
-    --font-weight-bold: 700; /* 75 Bold */
+    --font-weight-light: 400;
+    /* 45 Light */
+    --font-weight-normal: 500;
+    /* 55 Roman */
+    --font-weight-medium: 600;
+    /* 65 Medium */
+    --font-weight-semibold: 600;
+    /* 65 Medium */
+    --font-weight-bold: 700;
+    /* 75 Bold */
     --font-weight-extrabold: 700;
     --font-weight-black: 700;
     /* 굵기 클래스가 없으면 55 Roman (같은 요소의 굵기 클래스가 있으면 그쪽이 이김) */

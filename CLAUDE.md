@@ -74,6 +74,15 @@ yarn check-types
 
 패널(Leva)에서 조절한 뒤 'JSON 복사'로 값 파일에 통째로 붙여 넣습니다.
 
+## 보이스 에이전트 (대화)
+
+구조 · 파일은 `apps/client/src/components/agent-blob/README.md` "대화"에 있습니다.
+
+- 외부 API(OpenAI · ElevenLabs)를 부르는 것은 서버 `app/api/talk/*` 뿐입니다. 키는 `libs/talk/env.ts` 로만 읽고, 브라우저 코드로 옮기지 않습니다.
+- 돈이 드는 경로를 늘릴 때는 `guard()`(봇 · 통행증 · 횟수) 와 하루 한도(`libs/talk/usage.ts`)를 함께 거치게 합니다.
+- 에이전트가 아는 내용은 DB(admin)와 `talk/answers.ts`(정해 둔 대답) 뿐입니다. 사실을 프롬프트에 직접 적지 않습니다.
+- 화면만 고칠 때는 `.env.local` 에 `TALK_FAKE=1` 을 넣어 연습용 대답으로 확인합니다 (비용 0).
+
 ## 피드백 코멘트 반영
 
 사이트 위에서 남긴 코멘트는 루트 `.feedback/comments.json` 에 있습니다. (README "사이트 위 피드백 코멘트") "피드백 반영해줘" 라고 하면:

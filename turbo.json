@@ -15,7 +15,19 @@
       "env": [
         "GOOGLE_SITE_VERIFICATION",
         "NAVER_SITE_VERIFICATION",
-        "SUPABASE_SECRET_KEY"
+        "SUPABASE_SECRET_KEY",
+        "OPENAI_API_KEY",
+        "OPENAI_AGENT_MODEL",
+        "OPENAI_AGENT_TIER",
+        "OPENAI_AGENT_REASONING",
+        "ELEVENLABS_API_KEY",
+        "ELEVENLABS_STT_MODEL",
+        "ELEVENLABS_TTS_MODEL",
+        "TALK_PASS_SECRET",
+        "TALK_FAKE",
+        "TALK_DAILY_CHATS",
+        "TALK_DAILY_LISTENS",
+        "TALK_DAILY_SPEAK_CHARS"
       ]
     },
     "lint": {

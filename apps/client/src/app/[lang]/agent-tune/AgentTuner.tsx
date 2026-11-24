@@ -33,6 +33,7 @@ const isState = (s: BlobSituation): s is BlobState =>
 const baseOf = (config: BlobConfig): BlobBase => ({
   flow: config.flow,
   panel: config.panel,
+  morph: config.morph,
   voice: config.voice,
   motion: config.motion,
 });
@@ -60,9 +61,8 @@ const PREVIEW = {
   /** 눈금 한 칸 (px). 헤더 크기 40 · 기본 100 이 눈금 위에 오도록 */
   sizeStep: 4,
   headerSize: 40,
-  panelW: "min(360px, 90%)",
-  panelH: "min(460px, 88%)",
-  ease: "cubic-bezier(.22,1,.36,1)",
+  /** 펼친 창: 무대 가장자리에서 들어온 비율 (0.13 → 창은 무대의 74%, 사이트와 같음) */
+  panelInset: 0.13,
 };
 
 /** Leva 패널 이름(평평한 이름) — 상황 값 p_<키> · 공통 값 b_<구역>_<키> · 색 · 스타일 f_<키> */
@@ -122,6 +122,35 @@ export function AgentTuner({
   const [situation, setSituation] = useState<BlobSituation>("idle");
   const [expanded, setExpanded] = useState(false);
   const [orbSize, setOrbSize] = useState(PREVIEW.orb);
+  /** 미리보기 무대 크기 (모핑의 구 자리 · 창 자리 기준) */
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() =>
+      setStage({ width: el.clientWidth, height: el.clientHeight }),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const morph = stage.width
+    ? {
+        open: expanded,
+        closed: {
+          x: (stage.width - orbSize) / 2,
+          y: (stage.height - orbSize) / 2,
+          width: orbSize,
+          height: orbSize,
+        },
+        panel: {
+          x: stage.width * PREVIEW.panelInset,
+          y: stage.height * PREVIEW.panelInset,
+          width: stage.width * (1 - PREVIEW.panelInset * 2),
+          height: stage.height * (1 - PREVIEW.panelInset * 2),
+        },
+      }
+    : null;
   const [toast, setToast] = useState("");
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -479,54 +508,68 @@ export function AgentTuner({
             </span>
           </div>
 
-          {/* 무대: 구를 누르면 대화 창으로 펼쳐짐 · 바깥을 누르면 접힘 */}
+          {/*
+            무대: 구를 누르면 사이트처럼 구가 직접 대화 창 모양으로 바뀜(모핑) · 창 밖을 누르면 접힘.
+            창 크기는 무대의 74% (사이트의 AgentBlob 과 같은 비율). 모핑 값은 공통 패널 "열고 닫는 모션".
+          */}
           <div
+            ref={stageRef}
             onClick={(event) => {
-              if (expanded && event.target === event.currentTarget)
-                setExpanded(false);
+              const el = event.target as Element;
+              if (expanded && !el.closest("[role=dialog]")) setExpanded(false);
             }}
-            className={classNames(
-              "min-h-0 flex-1",
-              "flex items-center justify-center",
-            )}
+            className={classNames("relative min-h-0 flex-1")}
           >
-            <div
-              style={{
-                width: expanded ? PREVIEW.panelW : orbSize,
-                height: expanded ? PREVIEW.panelH : orbSize,
-                transition: `width .7s ${PREVIEW.ease}, height .7s ${PREVIEW.ease}`,
-              }}
-            >
-              <BlobCanvas
-                state={state}
-                force={force}
-                expanded={expanded}
-                // 마우스 반응은 끔 — hover · press 효과는 그 탭을 골랐을 때만 보여 줍니다
-                interactive={false}
-                level={listening ? micLevel : undefined}
-                config={draft}
-              >
-                {expanded ? (
-                  <PreviewModal
-                    title={labels.title}
-                    situation={situation}
-                    closeButtonRef={closeButtonRef}
-                    onClose={() => setExpanded(false)}
-                  />
-                ) : (
-                  <button
-                    ref={openButtonRef}
-                    type="button"
-                    aria-label="눌러서 대화 창(모달)으로 보기"
-                    onClick={() => setExpanded(true)}
-                    className={classNames(
-                      "absolute inset-0 rounded-full",
-                      "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-purple",
-                    )}
-                  />
-                )}
-              </BlobCanvas>
-            </div>
+            {morph ? (
+              <div className={classNames("absolute inset-0")}>
+                <BlobCanvas
+                  state={state}
+                  force={force}
+                  expanded={expanded}
+                  morph={morph}
+                  // 마우스 반응은 끔 — hover · press 효과는 그 탭을 골랐을 때만 보여 줍니다
+                  interactive={false}
+                  level={listening ? micLevel : undefined}
+                  config={draft}
+                >
+                  {expanded ? (
+                    <div
+                      className={classNames("absolute")}
+                      style={{
+                        left: morph.panel.x,
+                        top: morph.panel.y,
+                        width: morph.panel.width,
+                        height: morph.panel.height,
+                      }}
+                    >
+                      <PreviewModal
+                        title={labels.title}
+                        situation={situation}
+                        closeButtonRef={closeButtonRef}
+                        onClose={() => setExpanded(false)}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      ref={openButtonRef}
+                      type="button"
+                      aria-label="눌러서 대화 창(모달)으로 보기"
+                      onClick={() => setExpanded(true)}
+                      className={classNames(
+                        "absolute rounded-full",
+                        "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-purple",
+                      )}
+                      style={{
+                        left: morph.closed.x,
+                        top: morph.closed.y,
+                        width: morph.closed.width,
+                        height: morph.closed.height,
+                      }}
+                    />
+                  )}
+                </BlobCanvas>
+              </div>
+            ) : null}
           </div>
 
           {/* listening · speaking: 실시간 음성 그래프 (마이크 켜기 · 끄기) */}
