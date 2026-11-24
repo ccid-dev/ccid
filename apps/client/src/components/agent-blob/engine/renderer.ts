@@ -369,13 +369,17 @@ export class BlobRenderer {
 
     // 구: 모양 중심에, 닫힌 구 지름 → 창 대각선 × fill
     const closedD = 2 * rc * scale;
-    // 구 지름: 지금 사각형을 채우는 크기(현재 대각선 × fill)를 따라가며, 구 크기에 가까워질수록 닫힌 구 크기로 모음.
-    // (창 최종 크기 기준으로 재면 줄어드는 사각형 안에 구가 따로 들어 있거나 옆에 옅은 원으로 비침)
-    const fillD = Math.hypot(2 * sh.hw.x, 2 * sh.hh.x) * panel.fill;
-    const diameter = Math.max(
-      1,
-      closedD + (fillD - closedD) * clamp01(raw * 3),
-    );
+    // 구 그림 펼치기: 구를 창을 덮을 만큼 키워 일부만 자르면 구의 무늬가 늘어나 뭉개지거나 다른 그림이 됨.
+    // 대신 구를 "한 장의 그림"으로 그려 두고(지름 = 창 긴 변 × fit), 창 모양에 맞춰 늘려 읽음.
+    // 창이 열릴수록(w) 닫힌 구 크기 · 화면 그대로 읽기 → 큰 구 그림 · 펼쳐 읽기로 바뀜.
+    const w = clamp01(raw * 3);
+    const fit = panel.fit;
+    const stillD = Math.max(sh.hw.x, sh.hh.x) * 2 * fit;
+    const diameter = Math.max(1, closedD + (stillD - closedD) * w);
+    // 창 반쪽 크기가 구 그림 반지름에 닿도록: 그림 반지름 / (fit × 창 반쪽)
+    const srcX = diameter / 2 / Math.max(1, fit * sh.hw.x);
+    const srcY = diameter / 2 / Math.max(1, fit * sh.hh.x);
+    const srcScale: [number, number] = [1 + (srcX - 1) * w, 1 + (srcY - 1) * w];
 
     // 방향으로 늘어남: 빨리 움직일수록 (부피는 그대로)
     const vx = sh.x.v;
@@ -416,6 +420,7 @@ export class BlobRenderer {
         // 닫힌 구일 때는 자르지 않아 둘레 빛번짐이 그대로 보이고, 열리기 시작하면 바로 모양을 따릅니다.
         // 거의 끝(구 크기)까지 모양을 따르다 마지막에만 풀림 — 일찍 풀리면 구 본체가 사각형 옆에 따로 보임
         amount: clamp01(raw * 10),
+        srcScale,
         veil: panel.veil * prog,
         edge: morph.edge * prog,
       },

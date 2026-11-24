@@ -40,7 +40,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
       */}
       <div
         className={classNames(
-          "flex flex-col gap-6 md:flex-row md:items-center md:gap-[5.35vw]",
+          "flex flex-col gap-6 md:flex-row md:items-center md:gap-[5vw]",
         )}
       >
         {/* 큰 로고: 흰색 → 연하늘 → 하늘색 그라디언트 글자, 글자들이 차례로 떠오르며 선명해짐 */}
@@ -48,7 +48,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
           text="cciD."
           className={classNames(
             "whitespace-nowrap",
-            "font-neuehaas text-[22vw] leading-[1.2] md:text-[11.8vw]",
+            "font-neuehaas text-[22vw] leading-none md:text-[11.8vw]",
           )}
           letterClassName={classNames(
             "bg-linear-to-b from-white from-22% via-[#e3f0ff] via-70% to-[#5ea7ff] to-90% bg-clip-text",

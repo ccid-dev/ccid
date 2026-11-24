@@ -9,4 +9,7 @@ export { TypedText } from "./TypedText";
 export { PartnerMarquee } from "./PartnerMarquee";
 export { ImageBento } from "./ImageBento";
 export { JoinSection } from "./JoinSection";
+export { MainButton } from "./MainButton";
+export { MoreResearch } from "./MoreResearch";
+export { ResearchHero } from "./ResearchHero";
 export { SiteNextLink } from "./SiteNextLink";

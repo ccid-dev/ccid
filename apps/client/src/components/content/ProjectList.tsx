@@ -11,6 +11,7 @@ import { InView } from "./InView";
 import { SiteNextLink } from "./SiteNextLink";
 import { localePath, localized, type Dictionary, type Locale } from "@/i18n";
 import type { ProjectWithThemes } from "@/libs/content";
+import { mediaUrl } from "@/libs/media";
 
 export const projectYear = (project: ProjectWithThemes) =>
   project.year_end
@@ -98,6 +99,7 @@ export function ProjectList({
           client: localized(project, "client", locale),
           description: localized(project, "description", locale),
           nda: project.is_nda,
+          themes: project.themes.map((theme) => theme.number),
         }}
         ndaLabel={dict.project.nda}
         showYear={!groupByYear}
@@ -112,7 +114,7 @@ export function ProjectList({
   return (
     <>
       {groupByYear ? (
-        <div className={classNames("flex flex-col gap-16 md:gap-20")}>
+        <div className={classNames("flex flex-col gap-16 md:gap-28")}>
           {years.map((year) => (
             <section
               key={year}
@@ -130,7 +132,7 @@ export function ProjectList({
               </h2>
               <ul
                 className={classNames(
-                  "grid gap-3 md:grid-cols-2 lg:col-span-8",
+                  "grid gap-3.5 md:grid-cols-2 lg:col-span-8",
                 )}
               >
                 {projects
@@ -141,7 +143,7 @@ export function ProjectList({
           ))}
         </div>
       ) : (
-        <ul className={classNames("flex flex-col gap-3")}>
+        <ul className={classNames("flex flex-col gap-6")}>
           {projects.map((project, order) => card(project, order))}
         </ul>
       )}
@@ -417,9 +419,9 @@ function ProjectDialog({
                   }
                   className={classNames(
                     "w-full",
-                    "aspect-[3/5] md:aspect-[5/3] h-auto md:w-[min(100cqw,calc(100cqh*4/3))]",
+                    "aspect-[3/5] md:aspect-[5/3] lg:aspect-[1038/500] h-auto md:w-[min(100cqw,calc(100cqh*5/3))] lg:w-[min(100cqw,calc(100cqh*1038/500))]",
                     "overflow-y-auto overscroll-contain",
-                    "rounded-3xl bg-background text-main shadow-2xl",
+                    "rounded-3xl bg-[#fff] text-main shadow-2xl",
                     // 지금 카드: 크게 · 선명하게 / 이전 · 다음: 작게 · 흐리게 (누르면 그쪽으로)
                     "transition-[scale,opacity,translate] motion-reduce:transition-none",
                     motion,
@@ -464,6 +466,10 @@ function ProjectDialog({
                           title: localized(theme, "title", locale),
                           summary: localized(theme, "summary", locale),
                           href: localePath(locale, `/research/${theme.slug}`),
+                          number: theme.number,
+                          image: mediaUrl(theme.images[0]),
+                          subtitle: theme.title_en,
+                          label: localized(theme, "keywords", locale).join(", "),
                         })),
                       }}
                     />

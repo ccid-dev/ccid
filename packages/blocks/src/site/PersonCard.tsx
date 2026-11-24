@@ -53,13 +53,8 @@ export function PersonCard({
             ],
       )}
     >
-      {wide ? (
-        // 디렉터 좁은 화면: 다른 사진을 넣을 자리로 16:9 빈 카드만 둠 (sm 이상은 기존 사진)
-        <div className={classNames("sm:hidden")}>
-          <SiteImage src={null} alt="" ratio="banner" fallback="" />
-        </div>
-      ) : null}
-      <div className={classNames({ "hidden sm:block": wide })}>
+      {/* 디렉터 좁은 화면: 화면 폭 전체가 아니라 높이 288px 기준의 3:4 사진 (폭 216px · 크롭 그대로라 늘어나지 않음) · sm 이상은 카드 폭 */}
+      <div className={classNames({ "w-54 sm:w-auto": wide })}>
         <SiteImage
           src={person.image}
           alt={person.name}

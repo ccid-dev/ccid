@@ -61,6 +61,11 @@ export interface FlowOrbMask {
   veil: number;
   /** 0–1. 가장자리 안쪽 빛 */
   edge: number;
+  /**
+   * 구 그림을 읽는 배율 (가로 · 세로). [1, 1] = 화면 그대로(구가 그려진 자리와 같은 자리를 읽음).
+   * 1 보다 크면 창 가장자리 쪽에서 그림의 더 바깥을 읽음 → 구 한 장이 창 모양에 맞춰 늘어나 보임 (창이 구의 "그림"이 됨)
+   */
+  srcScale: [number, number];
 }
 
 const MASK_VERTEX = /* glsl */ `
@@ -87,6 +92,8 @@ uniform float uAmount;
 uniform float uVeil;
 uniform float uEdge;
 uniform float uPx;
+uniform vec2 uSrcScale;
+uniform vec2 uRes;
 varying vec2 vUv;
 
 float sdRoundBox(vec2 p, vec2 b, float r) {
@@ -101,7 +108,8 @@ float smin(float a, float b, float k) {
 }
 
 void main() {
-  vec4 col = texture2D(tScene, vUv);
+  // 구 그림 읽기: 창 중심에서 떨어진 만큼에 배율을 곱한 자리의 그림을 가져옴 (배율 1 이면 화면 그대로)
+  vec4 col = texture2D(tScene, (uCenter + (gl_FragCoord.xy - uCenter) * uSrcScale) / uRes);
   vec2 p = gl_FragCoord.xy - uCenter;
   vec2 perp = vec2(-uDir.y, uDir.x);
   vec2 q = uDir * dot(p, uDir) / uStretch + perp * dot(p, perp) * uStretch;
@@ -254,6 +262,8 @@ export function createFlowOrb(
     uVeil: { value: 0 },
     uEdge: { value: 0 },
     uPx: { value: 1 },
+    uSrcScale: { value: new THREE.Vector2(1, 1) },
+    uRes: { value: new THREE.Vector2(1, 1) },
   };
   const maskScene = new THREE.Scene();
   const maskCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -366,6 +376,8 @@ export function createFlowOrb(
       u.uVeil.value = mask.veil;
       u.uEdge.value = mask.edge;
       u.uPx.value = px;
+      u.uSrcScale.value.set(mask.srcScale[0], mask.srcScale[1]);
+      u.uRes.value.set(bw, bh);
       renderer.render(maskScene, maskCamera);
     },
     destroy() {

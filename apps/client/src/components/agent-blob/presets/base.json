@@ -17,7 +17,8 @@
   "panel": {
     "radius": 28,
     "fill": 1.15,
-    "veil": 0.25
+    "veil": 0.25,
+    "fit": 1.2
   },
   "voice": {
     "levelScale": 0.12,

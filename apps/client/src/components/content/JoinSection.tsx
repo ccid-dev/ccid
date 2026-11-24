@@ -36,13 +36,14 @@ export function JoinSection({
       <div
         className={classNames(
           "flex flex-col gap-10 md:flex-row md:items-end md:justify-between",
-          "p-8 md:p-12 lg:p-16",
-          "rounded-3xl bg-gray-100 text-black",
+          "p-8 md:p-10 lg:p-14",
+          "rounded-3xl bg-[#fff] text-black",
         )}
       >
-        <div className={classNames("max-w-2xl", "flex flex-col gap-4")}>
+        <div className={classNames("max-w-2xl", "flex flex-col gap-5")}>
           <p
             className={classNames(
+              "font-neuehaas",
               "text-2xl leading-snug whitespace-pre-line break-keep md:text-3xl 2xl:text-4xl",
             )}
           >

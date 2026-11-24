@@ -76,7 +76,7 @@ async function HomeDataSections({
 
   return (
     <>
-      <Section id="research" title={dict.home.research}>
+      <Section id="research" title={dict.home.research} closeBelow>
         <HomeResearch themes={themes} locale={lang} dict={dict} />
       </Section>
 

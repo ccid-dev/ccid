@@ -67,8 +67,18 @@ const toShaderParams = (shader: FooterBackgroundConfig["shader"]) => ({
   },
 });
 
-/** 화면 해상도 상한 (부드러운 그라디언트라 2배 이상은 차이가 없고 GPU 만 씀) */
-const MAX_DPR = 1.5;
+/**
+ * 성능 예산. 픽셀마다 무거운 연산(7번 반복 + 표면 법선)을 하는 셰이더라 "그리는 픽셀 수 × 초당 프레임"이 곧 부하입니다.
+ * 부드러운 그라디언트는 낮은 해상도로 그려 CSS 로 늘려도 거의 차이가 없어서, 픽셀 수와 프레임을 제한합니다.
+ * - 큰 화면(마우스): 최대 90만 픽셀 · 30fps
+ * - 터치 화면(폰 · 태블릿): 최대 20만 픽셀 · 20fps
+ */
+const BUDGET = {
+  fine: { pixels: 900_000, fps: 30, dpr: 1.5 },
+  coarse: { pixels: 200_000, fps: 20, dpr: 1 },
+};
+const budgetNow = () =>
+  window.matchMedia("(pointer: coarse)").matches ? BUDGET.coarse : BUDGET.fine;
 
 /**
  * Figma 셰이더(moving-gradient)를 canvas 에 그립니다 (WebGPU).
@@ -115,16 +125,19 @@ function MovingGradient({
     let start = 0;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      const budget = budgetNow();
+      const dpr = Math.min(window.devicePixelRatio || 1, budget.dpr);
       const max = device?.limits.maxTextureDimension2D ?? 4096;
-      canvas.width = Math.max(
-        1,
-        Math.min(max, Math.round(canvas.clientWidth * dpr)),
-      );
-      canvas.height = Math.max(
-        1,
-        Math.min(max, Math.round(canvas.clientHeight * dpr)),
-      );
+      let w = canvas.clientWidth * dpr;
+      let h = canvas.clientHeight * dpr;
+      // 픽셀 수가 예산을 넘으면 비율을 지켜 줄임 (CSS 가 원래 크기로 늘려 보여 줌)
+      const over = Math.sqrt((w * h) / budget.pixels);
+      if (over > 1) {
+        w /= over;
+        h /= over;
+      }
+      canvas.width = Math.max(1, Math.min(max, Math.round(w)));
+      canvas.height = Math.max(1, Math.min(max, Math.round(h)));
     };
 
     const draw = (now: number) => {
@@ -135,9 +148,18 @@ function MovingGradient({
       frame.output = context.getCurrentTexture();
       render(device, frame);
     };
+    let lastDraw = -Infinity;
     const tick = (now: number) => {
-      draw(now);
-      raf = visible && !reduce ? requestAnimationFrame(tick) : 0;
+      // 프레임 상한: 상한보다 빨리 오면 그리지 않고 다음 프레임을 기다림 (화면 갱신은 그대로 60fps 로 부드럽게 보임)
+      const interval = 1000 / budgetNow().fps;
+      if (reduce || now - lastDraw >= interval - 1) {
+        lastDraw = now;
+        draw(now);
+      }
+      raf =
+        visible && !reduce && !document.hidden
+          ? requestAnimationFrame(tick)
+          : 0;
     };
     /** 다음 프레임에 그리기 (이미 돌고 있으면 그대로) */
     const request = () => {
@@ -153,6 +175,10 @@ function MovingGradient({
       resize();
       request();
     });
+    const onVisibility = () => {
+      if (!document.hidden && visible) request();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     void (async () => {
       const adapter = await gpu.requestAdapter();
@@ -183,6 +209,7 @@ function MovingGradient({
       cancelAnimationFrame(raf);
       observer.disconnect();
       sizer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       device?.destroy();
     };
   }, []);
@@ -199,6 +226,16 @@ function MovingGradient({
  * 값은 footer-background.json 에 있고, /footer-tune 페이지에서 조절합니다.
  */
 export function FooterBackground() {
+  // 마우스 화면에서만 blur 필터 (서버에서는 true 로 그려 hydration 이 어긋나지 않게 두고, 터치 기기는 마운트 뒤 끔)
+  const fine = useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(pointer: coarse)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => !window.matchMedia("(pointer: coarse)").matches,
+    () => true,
+  );
   const live = useSyncExternalStore(
     footerBackgroundLive.subscribe,
     footerBackgroundLive.get,
@@ -246,7 +283,8 @@ export function FooterBackground() {
           // 흐림: 덩어리 경계를 부드럽게 (px)
           style={{
             opacity: config.shader.opacity,
-            filter: `blur(${config.shader.blur}px)`,
+            // blur 필터는 매 프레임 움직이는 큰 면에 걸면 가장 무거움 → 터치 화면에서는 끔 (낮은 해상도로 늘려 이미 부드러움)
+            filter: fine ? `blur(${config.shader.blur}px)` : undefined,
           }}
           className={classNames(
             "absolute -inset-x-[8.82%] -inset-y-[20.94%] h-[141.88%] w-[117.64%]",
