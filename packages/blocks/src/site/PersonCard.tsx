@@ -10,7 +10,7 @@ export type PersonCardData = {
   image: string | null;
   /** 이미지가 없을 때 회색 상자에 적을 글자 */
   imageFallback?: string;
-  /** wide(디렉터) 넓은 화면 사진: 정사각 사진을 넓은 카드 안에 양옆 여백을 두고 놓음 (배경 #f5f5f5). 없으면 빈 카드 */
+  /** wide(디렉터) 넓은 화면 사진: 정사각 사진을 넓은 카드 안에 양옆 여백을 두고 놓음 (배경 #ccc — 사진 배경도 #ccc 로 맞춰 둠). 없으면 빈 카드 */
   wideImage?: string | null;
 };
 
@@ -67,7 +67,7 @@ export function PersonCard({
           </div>
           {/*
             sm 이상: 비율 대신 오른쪽 글 단 높이에 맞춘 카드 (칸을 채우고 줄 높이는 글이 정함)
-            wideImage 가 있으면 정사각 사진을 카드 높이에 맞춰, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓고 양옆은 사진 배경색(#f5f5f5)으로 채움
+            wideImage 가 있으면 정사각 사진을 카드 높이의 88% 로 아래에 붙이고, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓음. 나머지는 아래 인물 사진들과 같은 배경 회색(#ccc)
           */}
           <div className={classNames("hidden sm:relative sm:block")}>
             {person.wideImage ? (
@@ -75,7 +75,7 @@ export function PersonCard({
                 className={classNames(
                   "absolute inset-0",
                   "overflow-hidden",
-                  "rounded-2xl bg-[#f5f5f5]",
+                  "rounded-2xl bg-[#ccc]",
                 )}
               >
                 <img
@@ -83,7 +83,7 @@ export function PersonCard({
                   alt={person.name}
                   decoding="async"
                   className={classNames(
-                    "aspect-square h-full",
+                    "aspect-square h-[88%]",
                     "absolute bottom-0 left-1/3 -translate-x-1/2",
                     "object-cover grayscale",
                   )}
