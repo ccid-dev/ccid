@@ -67,7 +67,7 @@ export function PersonCard({
           </div>
           {/*
             sm 이상: 비율 대신 오른쪽 글 단 높이에 맞춘 카드 (칸을 채우고 줄 높이는 글이 정함)
-            wideImage 가 있으면 정사각 사진을 카드 높이의 88% 로 아래에 붙이고, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓음. 사진은 배경 없는 투명 PNG 라 카드 바탕(아래 인물 사진들과 같은 회색 #ccc)이 그대로 보임
+            wideImage 가 있으면 정사각 사진을 카드 높이의 88% 로 아래에 붙이고, 사진 가운데가 카드 폭의 36% 지점(1/3 에서 살짝 오른쪽)에 오게 놓음. 사진은 배경 없는 투명 PNG 라 카드 바탕(아래 인물 사진들과 같은 회색 #ccc)이 그대로 보임
           */}
           <div className={classNames("hidden sm:relative sm:block")}>
             {person.wideImage ? (
@@ -84,7 +84,7 @@ export function PersonCard({
                   decoding="async"
                   className={classNames(
                     "aspect-square h-[88%]",
-                    "absolute bottom-0 left-1/3 -translate-x-1/2",
+                    "absolute bottom-0 left-[36%] -translate-x-1/2",
                     "object-cover grayscale",
                   )}
                 />
