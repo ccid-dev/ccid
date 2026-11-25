@@ -11,11 +11,12 @@ import { localeAlternates } from "@/libs/seo";
 
 export const revalidate = 60;
 
+/** 분야 번호 → 이미지 아래 그라데이션 색. 지금은 모든 분야가 진보라(#24202e, 이전 푸터 색) — 분야 색으로 되돌릴 땐 from-theme-NN/90 */
 const GRADIENT: Record<number, string> = {
-  1: "from-theme-01/90",
-  2: "from-theme-02/90",
-  3: "from-theme-03/90",
-  4: "from-theme-04/90",
+  1: "from-[#24202e]/90",
+  2: "from-[#24202e]/90",
+  3: "from-[#24202e]/90",
+  4: "from-[#24202e]/90",
 };
 
 export async function generateMetadata({
@@ -41,11 +42,7 @@ export default async function ResearchIndexPage({
 
   return (
     <>
-      <PageHeader
-        title={dict.research.title}
-        description={dict.research.description}
-        descriptionDesktopOnly
-      />
+      <PageHeader title={dict.research.title} />
       <ol
         className={classNames(
           "px-5 md:px-10",
@@ -67,24 +64,16 @@ export default async function ResearchIndexPage({
                     "group grid gap-y-6 lg:grid-cols-[minmax(0,280fr)_minmax(0,560fr)_minmax(0,520fr)] lg:gap-x-0",
                   )}
                 >
-                  {/* 번호 + 분야 색 점 */}
-                  <span
-                    className={classNames(
-                      "font-neuehaas text-5xl leading-12",
-                    )}
-                  >
-                    {String(theme.number).padStart(2, "0")}
-                  </span>
+                  {/* 첫 칸: 번호를 뺀 빈 자리 (넓은 화면의 3단 비율은 그대로 둠) */}
+                  <span aria-hidden className={classNames("hidden lg:block")} />
 
                   {/* 분야 이름 → 질문 → 요약, 자세히 보기는 이미지 아래 끝에 맞춰 맨 아래 */}
-                  <span
-                    className={classNames(
-                      "flex flex-col gap-8 lg:pr-10",
-                    )}
-                  >
+                  <span className={classNames("flex flex-col gap-8 lg:pr-10")}>
                     <span className={classNames("flex flex-col gap-2")}>
                       <span
-                        className={classNames("text-base font-medium break-keep")}
+                        className={classNames(
+                          "text-base font-medium break-keep",
+                        )}
                       >
                         {localized(theme, "title", lang)}
                       </span>

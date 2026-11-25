@@ -16,14 +16,6 @@ import { mediaUrl } from "@/libs/media";
 import type { Theme } from "@/types";
 import { useScrollStep } from "./useScrollStep";
 
-/** 분야 번호 → 이미지 아래 그라데이션 색 (global.css 의 --color-theme-NN, 클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
-const GRADIENT: Record<number, string> = {
-  1: "from-theme-01/90",
-  2: "from-theme-02/90",
-  3: "from-theme-03/90",
-  4: "from-theme-04/90",
-};
-
 /**
  * 홈 Research 쇼케이스 (Figma "research" 프레임).
  * - 넓은 화면(1024+): 분야 카드가 세로로 쌓여 롤링됩니다. 스크롤하는 만큼 한 칸씩 올라가고,
@@ -207,13 +199,11 @@ export function HomeResearch({
                         className={classNames("block h-auto w-full")}
                       />
                     ) : null}
-                    {/* 지금 분야: 아래에서 위로 분야 색 그라데이션 + 세부 분야 · 영문 제목 */}
+                    {/* 지금 분야: 세부 분야 · 영문 제목 (분야 색 그라데이션은 뺌) */}
                     <span
                       className={classNames(
                         "absolute inset-x-0 bottom-0 flex flex-col gap-1",
                         "px-7 pt-28 pb-6",
-                        "bg-linear-to-t to-transparent",
-                        GRADIENT[theme.number] ?? "from-black/70",
                         "font-neuehaas font-light text-white",
                         "transition-opacity duration-500",
                         isActive ? "opacity-100" : "opacity-0",
@@ -242,13 +232,6 @@ export function HomeResearch({
                         : "pointer-events-none opacity-0 blur-sm",
                     )}
                   >
-                    <span
-                      className={classNames(
-                        "font-neuehaas text-base font-medium text-sub",
-                      )}
-                    >
-                      {String(theme.number).padStart(2, "0")}
-                    </span>
                     <span
                       className={classNames("text-2xl leading-snug break-keep")}
                     >

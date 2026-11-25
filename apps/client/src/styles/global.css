@@ -94,6 +94,10 @@
   body {
     word-break: keep-all;
   }
+  /* 문단 끝 정렬(ragging): 한 줄만 툭 튀어나오지 않게 줄 길이를 고르게 맞춤 (마지막 줄은 짧아도 됨) */
+  p {
+    text-wrap: pretty;
+  }
 }
 
 /* 커스텀 커서(components/CustomCursor.tsx)가 켜지면 기본 커서를 숨깁니다. 글 입력칸은 그대로 둡니다. */

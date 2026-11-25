@@ -11,7 +11,7 @@ type Common = {
 /**
  * 메인 버튼 (Figma "참여 및 채용 안내 ↗").
  * 평소: Figma 와 같은 그라데이션 테두리(보라 → 파랑 → 보라 → 연분홍) + 흰 바탕 + 어두운 글.
- * 호버: 테두리에 있던 그라데이션이 안쪽 전체를 왼쪽에서 오른쪽으로 채우며 글이 흰색으로 바뀜.
+ * 호버: 진보라(#24202e, 이전 푸터 색)가 안쪽 전체를 왼쪽에서 오른쪽으로 채우며 글이 흰색으로 바뀜.
  *
  * `href` 를 주면 링크(<a>), 안 주면 <button> 으로 그려집니다.
  * 테두리 두께는 border(1px) 하나로 정해집니다.
@@ -36,13 +36,13 @@ export function MainButton(
   );
   const inner = (
     <>
-      {/* 호버: 테두리와 같은 그라데이션이 왼쪽에서 채워짐 (움직임 줄이기 설정이면 바로 바뀜) */}
+      {/* 호버: 진보라가 왼쪽에서 채워짐 — 테두리 그라데이션으로 채우면 색이 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
         className={classNames(
           "absolute inset-0 -z-10",
           "origin-left scale-x-0 group-hover:scale-x-100",
-          "bg-[linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)]",
+          "bg-[#24202e]",
           "transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
         )}
       />
@@ -62,16 +62,17 @@ export function MainButton(
 
   if (rest.href !== undefined) {
     return (
-      <a
-        {...(rest as ComponentProps<"a">)}
-        className={classes}
-      >
+      <a {...(rest as ComponentProps<"a">)} className={classes}>
         {inner}
       </a>
     );
   }
   return (
-    <button type="button" {...(rest as ComponentProps<"button">)} className={classes}>
+    <button
+      type="button"
+      {...(rest as ComponentProps<"button">)}
+      className={classes}
+    >
       {inner}
     </button>
   );

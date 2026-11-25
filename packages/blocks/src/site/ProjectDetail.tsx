@@ -24,12 +24,12 @@ export type ProjectDetailData = {
   }[];
 };
 
-/** 분야 번호 → 이미지 아래 그라데이션 색 (global.css 의 --color-theme-NN, 클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
+/** 분야 번호 → 이미지 아래 그라데이션 색. 지금은 모든 분야가 진보라(#24202e, 이전 푸터 색) — 분야 색으로 되돌릴 땐 from-theme-NN/90 (클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
 const GRADIENT: Record<number, string> = {
-  1: "from-theme-01/90",
-  2: "from-theme-02/90",
-  3: "from-theme-03/90",
-  4: "from-theme-04/90",
+  1: "from-[#24202e]/90",
+  2: "from-[#24202e]/90",
+  3: "from-[#24202e]/90",
+  4: "from-[#24202e]/90",
 };
 
 export type ProjectDetailLabels = {

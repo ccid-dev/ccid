@@ -8,7 +8,7 @@ export type ProjectCardData = {
   client: string;
   description: string;
   nda: boolean;
-  /** 속한 리서치 분야 번호 (주 분야 먼저). 호버 그라데이션 · 번호 칩에 씁니다. 없으면 비움 */
+  /** 속한 리서치 분야 번호 (주 분야 먼저). 홈 프로젝트의 호버 그라데이션(themeGlow)에 씁니다. 없으면 비움 */
   themes?: number[];
 };
 
@@ -47,10 +47,10 @@ export function themeGlow(themes: number[]) {
 
 /**
  * 프로젝트 카드. onClick 이 있으면 누를 수 있는 버튼, 없으면 그냥 상자입니다.
- * - 한 줄 카드(기본, 리서치 상세의 Projects): 바탕 없이 글만. 왼쪽 연도 → 제목(+ 같은 줄 회사명) → 설명 / 오른쪽 위 분야 번호 칩 · ⋯
- * - tile: 2단 격자의 흰 카드 (Projects 페이지) — 위에 제목 · 설명, 아래 왼쪽 회사명 · 오른쪽 분야 번호 칩 · ⋯
+ * - 한 줄 카드(기본, 리서치 상세의 Projects): 바탕 없이 글만. 왼쪽 연도 → 제목(+ 같은 줄 회사명) → 설명 / 오른쪽 위 ⋯
+ * - tile: 2단 격자의 흰 카드 (Projects 페이지) — 위에 제목 · 설명, 아래 왼쪽 회사명 · 오른쪽 ⋯
  * NDA 프로젝트는 흐리게 보입니다.
- * 모션: 마우스를 올리면 속한 분야 색의 radial 그라데이션이 서서히 번지고, ⋯ 버튼이 검정으로 바뀌며 살짝 커집니다.
+ * 모션: 마우스를 올리면 ⋯ 버튼이 검정으로 바뀌며 살짝 커집니다. (분야 색 그라데이션은 뺌 — themeGlow 는 홈 프로젝트에서만 씀)
  */
 export function ProjectCard({
   project,
@@ -68,26 +68,11 @@ export function ProjectCard({
   onClick?: () => void;
 }) {
   const Root = onClick ? "button" : "div";
-  const themes = project.themes ?? [];
-  const glow = themeGlow(themes);
   const showDescription = !project.nda && project.description;
 
-  /** 분야 번호 칩 + ⋯ (더보기 모달로 자세히) */
+  /** ⋯ (더보기 모달로 자세히) — 분야 번호 칩은 뺌 */
   const chips = (
     <span className={classNames("flex items-center gap-2.5")}>
-      {themes.map((n) => (
-        <span
-          key={n}
-          className={classNames(
-            "h-7 shrink-0 px-2.5",
-            "inline-flex items-center gap-1.5",
-            "rounded-full bg-[#FFFFFF]",
-            "font-neuehaas text-xs font-medium",
-          )}
-        >
-          {String(n).padStart(2, "0")}
-        </span>
-      ))}
       <span
         aria-hidden
         className={classNames(
@@ -126,19 +111,6 @@ export function ProjectCard({
         onClick && "cursor-pointer",
       )}
     >
-      {glow ? (
-        <span
-          aria-hidden
-          style={{ backgroundImage: glow }}
-          className={classNames(
-            "pointer-events-none absolute inset-0 -z-10 rounded-[inherit]",
-            "opacity-0 transition-opacity duration-500 group-hover:opacity-100",
-            // Figma 의 안쪽 흰 그림자: 가장자리를 유리처럼 부드럽게
-            "shadow-[inset_-22px_-15px_16px_rgb(255_255_255/0.25),inset_42px_40px_3px_rgb(255_255_255/0.25),inset_0_-59px_100px_rgb(255_255_255/0.25)]",
-          )}
-        />
-      ) : null}
-
       {tile ? (
         <>
           <span className={classNames("flex min-w-0 flex-col gap-1.5")}>

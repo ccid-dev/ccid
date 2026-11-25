@@ -36,10 +36,7 @@ export default async function ProjectsPage({
 
   return (
     <>
-      <PageHeader
-        title={dict.projects.title}
-        description={dict.projects.description}
-      />
+      <PageHeader title={dict.projects.title} />
       <div className={classNames("px-5 pt-10 pb-24 md:px-10 md:pt-14")}>
         <ProjectBrowser
           projects={projects}

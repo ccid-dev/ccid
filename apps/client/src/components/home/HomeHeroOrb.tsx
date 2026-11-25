@@ -45,7 +45,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
       >
         {/* 큰 로고: 흰색 → 연하늘 → 하늘색 그라디언트 글자, 글자들이 차례로 떠오르며 선명해짐 */}
         <HeroLogo
-          text="cciD."
+          text="cciD"
           className={classNames(
             "whitespace-nowrap",
             "font-neuehaas text-[22vw] leading-none md:text-[11.8vw]",

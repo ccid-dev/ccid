@@ -4,12 +4,12 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useState } from "react";
 
-/** 분야 번호 → 이미지 아래 그라데이션 색 (global.css 의 --color-theme-NN, 클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
+/** 분야 번호 → 이미지 아래 그라데이션 색. 지금은 모든 분야가 진보라(#24202e, 이전 푸터 색) — 분야 색으로 되돌릴 땐 from-theme-NN/90 (클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
 const GRADIENT: Record<number, string> = {
-  1: "from-theme-01/90",
-  2: "from-theme-02/90",
-  3: "from-theme-03/90",
-  4: "from-theme-04/90",
+  1: "from-[#24202e]/90",
+  2: "from-[#24202e]/90",
+  3: "from-[#24202e]/90",
+  4: "from-[#24202e]/90",
 };
 
 export type MoreResearchItem = {
@@ -43,11 +43,7 @@ export function MoreResearch({
   if (!items.length) return null;
 
   return (
-    <ol
-      className={classNames(
-        "flex flex-col gap-10 lg:gap-4",
-      )}
-    >
+    <ol className={classNames("flex flex-col gap-10 lg:gap-4")}>
       {items.map((item, index) => {
         const isActive = index === active;
         return (
@@ -71,9 +67,7 @@ export function MoreResearch({
                 "rounded-2xl bg-sheet",
                 "[&_img]:transition-transform [&_img]:duration-700 [&_img]:ease-[cubic-bezier(.22,1,.36,1)] group-hover:[&_img]:scale-105",
                 "lg:transition-[width,filter] lg:duration-700 lg:ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
-                isActive
-                  ? "lg:w-full lg:blur-0"
-                  : "lg:w-3/4 lg:blur-[2.5px]",
+                isActive ? "lg:w-full lg:blur-0" : "lg:w-3/4 lg:blur-[2.5px]",
               )}
             >
               {item.image ? (

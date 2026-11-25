@@ -50,7 +50,7 @@ export function HomeHero({
       >
         {/* 큰 로고: 글자들이 차례로 떠오르며 선명해짐 (HeroLogo) → 이어서 옆 글이 타이핑됨 */}
         <HeroLogo
-          text="cciD."
+          text="cciD"
           className={classNames(
             "font-neuehaas text-[20vw] leading-none whitespace-nowrap md:text-[9vw]",
           )}
