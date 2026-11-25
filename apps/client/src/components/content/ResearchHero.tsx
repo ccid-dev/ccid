@@ -134,7 +134,8 @@ export function ResearchHero({
           // 글 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
           "pointer-events-none absolute inset-x-0 bottom-0 z-10",
           "flex items-end justify-between gap-6",
-          "px-5 pt-40 pb-6 md:px-20 md:pb-10",
+          // 오른쪽: 화면 오른쪽 아래 에이전트 구(56px, 오른쪽 20 · 32px)와 겹치지 않게 여백을 더 둠
+          "pt-40 pr-24 pb-6 pl-5 md:pr-32 md:pb-10 md:pl-20",
           "bg-linear-to-t to-transparent",
           GRADIENT[number] ?? "from-black/70",
           "text-white",

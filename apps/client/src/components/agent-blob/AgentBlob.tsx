@@ -152,7 +152,7 @@ function AgentModeBlob({
       : view.phase;
   const pathname = usePathname();
   const slotRef = useRef<HTMLDivElement>(null);
-  // 진한 배경(홈 첫 화면 보라 · 리서치 상세 이미지 · 푸터) 위에 있으면 보라를 빼고 밝게 빛나는 구로 (피드백 #88)
+  // 홈 첫 화면 · 리서치 상세 이미지 · 푸터 위에서는 보라를 빼고 밝게 빛나는 구로 (피드백 #88 · #101 · #102)
   const overDark = useOverDark(slotRef);
   /** 열린 대화 창 자리 (보이지 않는 요소 — 크기는 아래 JSX 의 Tailwind 클래스) */
   const targetRef = useRef<HTMLDivElement>(null);
@@ -327,11 +327,15 @@ function AgentModeBlob({
           "transition-[filter] duration-700 ease-out motion-reduce:transition-none",
         )}
         style={{
-          filter:
-            overDark && !floating
-              ? // 보라를 빼고 더 밝게 + 둘레로 넓게 번지는 흰 역광(drop-shadow 두 겹)
+          filter: floating
+            ? undefined
+            : overDark === "glow"
+              ? // 홈 첫 화면: 보라를 빼고 더 밝게 + 둘레로 넓게 번지는 흰 역광(drop-shadow 두 겹)
                 "saturate(0.2) brightness(1.65) drop-shadow(0 0 10px rgb(255 255 255 / 0.85)) drop-shadow(0 0 28px rgb(255 255 255 / 0.55))"
-              : undefined,
+              : overDark === "dark"
+                ? // 어두운 배경(리서치 상세 이미지 · 푸터): 밝은 구로만, 둘레 빛은 아주 옅게
+                  "saturate(0.2) brightness(1.45) drop-shadow(0 0 6px rgb(255 255 255 / 0.3))"
+                : undefined,
         }}
       >
         <BlobCanvas
