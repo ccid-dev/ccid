@@ -6,11 +6,12 @@
 
 /* 홈 하단 협업 기관 로고 띠: 같은 목록을 두 번 이어 붙여 절반만큼 흘립니다. (animate-marquee · 반대 방향 animate-marquee-reverse) */
 /*
- * 사이트 바탕색: 공통값(#FBFBFB)과 미색(#F2F0EB, HSB 45 · 3 · 95)의 중간 (#F7F6F3) — 흰 카드(#fff)가 바탕과 구분되되 노란 기운은 옅게
+ * 사이트 바탕색: 예전 공통값(#FBFBFB)과 #F7F6F3 의 중간 밝기에, 색조만 살짝 보라 쪽으로 (#F9F8FB, HSB 260 · 1.2 · 98)
+ *   흰 카드(#fff)와 겨우 구분될 만큼만 옅게
  * (admin 은 공통값 그대로)
  */
 @theme {
-  --color-background: #f7f6f3;
+  --color-background: #f9f8fb;
 }
 
 @theme {
