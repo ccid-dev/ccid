@@ -11,7 +11,7 @@ type Common = {
 /**
  * 메인 버튼 (Figma "참여 및 채용 안내 ↗").
  * 평소: Figma 와 같은 그라데이션 테두리(보라 → 파랑 → 보라 → 연분홍) + 흰 바탕 + 어두운 글.
- * 호버: 진보라(#24202e, 이전 푸터 색)가 안쪽 전체를 왼쪽에서 오른쪽으로 채우며 글이 흰색으로 바뀜.
+ * 호버: 연회색(sheet)이 안쪽 전체를 왼쪽에서 오른쪽으로 채움 (글은 그대로 검정).
  *
  * `href` 를 주면 링크(<a>), 안 주면 <button> 으로 그려집니다.
  * 테두리 두께는 border(1px) 하나로 정해집니다.
@@ -31,18 +31,18 @@ export function MainButton(
     //   (바깥 그라데이션 상자 + 안쪽 흰 상자를 겹치면 소수점 픽셀에서 두께가 들쭉날쭉해짐)
     "rounded-full border border-transparent [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)_border-box]",
     "text-lg leading-normal font-medium text-black",
-    "transition-[color,scale] duration-500 group-hover:text-white active:scale-[0.97]",
+    "transition-[scale] duration-500 active:scale-[0.97]",
     className,
   );
   const inner = (
     <>
-      {/* 호버: 진보라가 왼쪽에서 채워짐 — 테두리 그라데이션으로 채우면 색이 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
+      {/* 호버: 연회색이 왼쪽에서 채워짐 — 색이 들어가면 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
         className={classNames(
           "absolute inset-0 -z-10",
           "origin-left scale-x-0 group-hover:scale-x-100",
-          "bg-[#24202e]",
+          "bg-sheet",
           "transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
         )}
       />

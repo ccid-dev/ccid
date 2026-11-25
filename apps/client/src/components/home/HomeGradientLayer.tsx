@@ -1,8 +1,13 @@
 "use client";
 
 import classNames from "classnames";
-import { motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+} from "motion/react";
+import { type ReactNode, useEffect } from "react";
 import { DriftLayer } from "./DriftLayer";
 
 /**
@@ -81,8 +86,28 @@ const CIRCLE_GLOW = {
   },
 } as const;
 
+/** About 하늘색 채도: 스크롤 전(About 이 화면 아래쪽)엔 이만큼 낮췄다가, 화면 한 장만큼 스크롤하면(About 이 화면 위쪽) 원래대로 */
+const SKY_SATURATION_START = 0.45;
+
 export function HomeGradientLayer({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
+  const { scrollY } = useScroll();
+  // 서버 렌더와 맞추려고 처음엔 "none", 마운트 뒤 스크롤 위치로 채움 (움직임 줄이기면 계속 "none")
+  const skySaturate = useMotionValue("none");
+  useEffect(() => {
+    if (reduce) {
+      skySaturate.set("none");
+      return;
+    }
+    const update = (y: number) => {
+      const progress = Math.min(1, Math.max(0, y / window.innerHeight));
+      const amount =
+        SKY_SATURATION_START + (1 - SKY_SATURATION_START) * progress;
+      skySaturate.set(`saturate(${amount.toFixed(3)})`);
+    };
+    update(scrollY.get());
+    return scrollY.on("change", update);
+  }, [reduce, scrollY, skySaturate]);
 
   return (
     <div className={classNames("relative isolate overflow-clip")}>
@@ -168,6 +193,23 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
               />
             ))}
           </div>
+          {/*
+            ④ 아래쪽 하늘색 채도 (스크롤 연동): 원 아래쪽(하늘색 → 흰색)만 backdrop-filter 로 채도를 낮췄다가
+            스크롤하며 About 이 화면 위쪽으로 오면 원래 채도로. 위쪽 보라는 마스크로 빼서 그대로 둠.
+            움직임 줄이기 설정이면 처음부터 원래 채도
+          */}
+          <motion.div
+            aria-hidden
+            className={classNames(
+              "absolute inset-0 rounded-full",
+              "pointer-events-none",
+              "[mask-image:linear-gradient(to_bottom,transparent_30%,black_46%)]",
+            )}
+            style={{
+              backdropFilter: skySaturate,
+              WebkitBackdropFilter: skySaturate,
+            }}
+          />
         </motion.div>
       </div>
       {/*

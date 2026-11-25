@@ -58,7 +58,7 @@ export async function Footer() {
         >
           <Logo aria-hidden className={classNames("h-3 w-auto md:h-[13px]")} />
         </Link>
-        <p className={classNames("text-base font-medium md:text-lg")}>
+        <p className={classNames("text-base md:text-lg")}>
           {APP_INFO.fullName}
         </p>
       </div>
