@@ -52,7 +52,7 @@ const CIRCLE_GLOW = {
       y: [-6, 8, -6],
       rotate: [-3, 3, -3],
       scale: [1, 1.12, 1],
-      opacity: [0.55, 1, 0.55],
+      opacity: [0.4, 0.75, 0.4],
     },
     seconds: 9,
     delay: 0,
@@ -79,7 +79,7 @@ const CIRCLE_GLOW = {
       x: [-120, 120, -120],
       y: [0, -30, 0],
       scale: [1, 1.2, 1],
-      opacity: [0.2, 0.8, 0.2],
+      opacity: [0.15, 0.5, 0.15],
     },
     seconds: 14,
     delay: 3,
@@ -88,6 +88,26 @@ const CIRCLE_GLOW = {
 
 /** About 하늘색 채도: 스크롤 전(About 이 화면 아래쪽)엔 이만큼 낮췄다가, 화면 한 장만큼 스크롤하면(About 이 화면 위쪽) 원래대로 */
 const SKY_SATURATION_START = 0.45;
+
+/**
+ * 광원 움직임 (피드백 #89): 보라 · 흰 층이 한 광원을 따라 함께 밀리는 느낌.
+ * 같은 seconds 로 ① 진보라(위아래)와 원 안 큰 흰 빛(좌우)을 묶어 움직입니다. purpleY 는 px.
+ */
+const LIGHT = {
+  seconds: 22,
+  purpleY: [0, 36, 0],
+  glow: {
+    style: { left: "-10%", top: "-6%", width: "70%", height: "46%" },
+    className:
+      "mix-blend-screen bg-[radial-gradient(closest-side,rgb(255_255_255/0.55),rgb(255_255_255/0.18)_55%,rgb(255_255_255/0))]",
+    frames: {
+      x: [0, 58, 0],
+      y: [0, 10, 0],
+      scale: [1, 1.08, 1],
+      opacity: [0.7, 1, 0.7],
+    },
+  },
+} as const;
 
 export function HomeGradientLayer({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
@@ -123,8 +143,23 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
           "",
         )}
       >
-        {/* ① 진보라 그라디언트 */}
+        {/* ① 진보라 그라디언트 — 광원이 움직이듯 천천히 위아래로 밀림 (LIGHT, 움직임 줄이기면 멈춤) */}
         <motion.div
+          // transform 문자열로 줘야 브라우저 합성 단계에서 돌아 가벼움 (y 속성은 매 프레임 자바스크립트)
+          animate={
+            reduce
+              ? undefined
+              : {
+                  transform: LIGHT.purpleY.map(
+                    (y) => `translate3d(0, ${y}px, 0)`,
+                  ),
+                }
+          }
+          transition={{
+            duration: LIGHT.seconds,
+            ease: "easeInOut",
+            repeat: Infinity,
+          }}
           className={classNames(
             // 진보라 위 배경: 1440×900 에서 1273px (화면이 높으면 같이 길어짐)
             "h-[max(1273px,141.4svh)] w-full",
@@ -135,6 +170,16 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
           )}
         />
 
+        {/*
+          ⑤ 입자(grain): 그라디언트가 단계로 끊겨 보이는 띠(밴딩)를 흐트러뜨려 경계를 안 보이게 (public/img/noise.svg, 아주 옅게)
+        */}
+        <div
+          className={classNames(
+            "absolute inset-0 z-10",
+            "pointer-events-none",
+            "bg-[url(/img/noise.svg)] bg-size-[240px_240px] opacity-[0.07] mix-blend-overlay",
+          )}
+        />
         {/* ② 큰 원 (@container: 안쪽 그림자 크기를 원 지름 비율 cqw 로) */}
         <motion.div
           className={classNames(
@@ -182,6 +227,13 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
               "absolute inset-0 overflow-hidden rounded-full",
             )}
           >
+            {/* 광원: 원 위쪽을 좌우로 천천히 지나가는 큰 흰 빛 (① 진보라와 같은 박자) */}
+            <DriftLayer
+              frames={LIGHT.glow.frames}
+              seconds={LIGHT.seconds}
+              className={LIGHT.glow.className}
+              style={LIGHT.glow.style}
+            />
             {Object.entries(CIRCLE_GLOW).map(([name, glow]) => (
               <DriftLayer
                 key={name}
@@ -227,13 +279,14 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
       />
       {/*
         헤더 글자를 흰색으로 바꾸는 구역 (HeaderTone 이 이 상자와 헤더가 겹치는지 봄).
-        진보라 배경 · 원의 보라 부분까지: 원 윗선 + 원 지름의 38.5% (1440×900 에서 약 900px)
+        경계 = 흰 글자 대비가 4.5:1 아래로 떨어지는 곳: 안쪽 원 그라디언트가 rgb(88 0 169) → rgb(154 149 255) 로 밝아지는 구간에서
+        밝기(상대 휘도)가 0.18 을 넘는 지점 ≈ 원 윗선 + 원 지름의 22% (예전 38.5% 는 연보라 · 하늘색 위까지 흰 글자로 남아 흐렸음)
       */}
       <div
         aria-hidden
         data-header-tone="dark"
         className={classNames(
-          "h-[calc(max(96px,15.3svh)+0.385*max(137.6vw,999px))]",
+          "h-[calc(max(96px,15.3svh)+0.22*max(137.6vw,999px))]",
           "pointer-events-none absolute inset-x-0 top-0",
           "",
         )}

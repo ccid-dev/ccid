@@ -190,7 +190,8 @@ export default async function ResearchPage({
           label: dict.home.viewAll,
         }}
       >
-        <ProjectList projects={projects} locale={lang} dict={dict} />
+        {/* NDA: Research 페이지에서는 회사 · 그룹명을 보이지 않음 */}
+        <ProjectList projects={projects} locale={lang} dict={dict} hideClient />
       </Section>
 
       {others.length ? (

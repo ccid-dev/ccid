@@ -22,6 +22,7 @@ export function HeroLogo({
   text,
   className,
   letterClassName,
+  shadowClassName,
 }: {
   text: string;
   className?: string;
@@ -30,6 +31,10 @@ export function HeroLogo({
    * 글자마다 따로 움직이는 상자라 부모에 건 bg-clip-text 는 잘 안 잡히므로 여기에 겁니다.
    */
   letterClassName?: string;
+  /**
+   * 글자마다 뒤에 깔 그림자 글자 클래스 (예: 사선으로 비껴 앉은 흐린 그라디언트 글자). 주면 같은 글자를 하나 더 뒤에 그립니다.
+   */
+  shadowClassName?: string;
 }) {
   const reduce = useReducedMotion();
   return (
@@ -40,7 +45,11 @@ export function HeroLogo({
           <motion.span
             // 글자는 바뀌지 않으므로 순서를 키로 씀
             key={index}
-            className={classNames("inline-block", letterClassName)}
+            className={classNames(
+              "inline-block",
+              shadowClassName && "relative isolate",
+              letterClassName,
+            )}
             initial={
               reduce ? false : { opacity: 0, y: "35%", filter: "blur(16px)" }
             }
@@ -52,6 +61,18 @@ export function HeroLogo({
             }}
           >
             {letter}
+            {shadowClassName ? (
+              <span
+                aria-hidden
+                className={classNames(
+                  "absolute inset-0 -z-10",
+                  "pointer-events-none select-none",
+                  shadowClassName,
+                )}
+              >
+                {letter}
+              </span>
+            ) : null}
           </motion.span>
         ))}
       </span>

@@ -30,12 +30,15 @@ export function ProjectList({
   locale,
   dict,
   groupByYear = false,
+  hideClient = false,
 }: {
   projects: ProjectWithThemes[];
   locale: Locale;
   dict: Dictionary;
   /** 연도별로 묶기 (왼쪽 2칸에 연도, 카드에는 연도를 빼고 2단 격자로) */
   groupByYear?: boolean;
+  /** 회사 · 그룹명(client)을 카드와 모달에서 숨김 (Research 페이지 — NDA) */
+  hideClient?: boolean;
 }) {
   const [index, setIndex] = useState<number | null>(null);
 
@@ -96,7 +99,7 @@ export function ProjectList({
         project={{
           year: projectYear(project),
           title: localized(project, "title", locale),
-          client: localized(project, "client", locale),
+          client: hideClient ? "" : localized(project, "client", locale),
           description: localized(project, "description", locale),
           nda: project.is_nda,
           themes: project.themes.map((theme) => theme.number),
@@ -157,6 +160,7 @@ export function ProjectList({
         onNavigate={() => {
           navigatingRef.current = true;
         }}
+        hideClient={hideClient}
       />
     </>
   );
@@ -179,6 +183,7 @@ function ProjectDialog({
   dict,
   onClose,
   onNavigate,
+  hideClient,
 }: {
   projects: ProjectWithThemes[];
   /** 지금 프로젝트 (null = 닫힘) */
@@ -190,6 +195,8 @@ function ProjectDialog({
   onClose: () => void;
   /** 관련 리서치로 이동하기 직전 */
   onNavigate: () => void;
+  /** 회사 · 그룹명 숨김 (ProjectList 와 같음) */
+  hideClient: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const swiperRef = useRef<SwiperInstance | null>(null);
@@ -458,7 +465,9 @@ function ProjectDialog({
                       project={{
                         year: projectYear(project),
                         title: localized(project, "title", locale),
-                        client: localized(project, "client", locale),
+                        client: hideClient
+                          ? ""
+                          : localized(project, "client", locale),
                         description: localized(project, "description", locale),
                         tags: localized(project, "tags", locale),
                         nda: project.is_nda,
@@ -469,7 +478,9 @@ function ProjectDialog({
                           number: theme.number,
                           image: mediaUrl(theme.images[0]),
                           subtitle: theme.title_en,
-                          label: localized(theme, "keywords", locale).join(", "),
+                          label: localized(theme, "keywords", locale).join(
+                            ", ",
+                          ),
                         })),
                       }}
                     />

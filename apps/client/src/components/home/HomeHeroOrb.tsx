@@ -25,6 +25,8 @@ const FADE = {
 export function HomeHeroOrb({ description }: { description: string }) {
   return (
     <div
+      // 첫 화면 위에서는 에이전트 구가 보라를 빼고 밝게 빛나는 구로 (useOverDark)
+      data-agent-glow
       className={classNames(
         "min-h-svh",
         // 글자 묶음을 화면(뷰포트) 아래쪽에 붙임: 화면이 낮거나 넓어도 아래로 밀려 잘리지 않음
@@ -50,9 +52,13 @@ export function HomeHeroOrb({ description }: { description: string }) {
             "whitespace-nowrap",
             "font-neuehaas text-[22vw] leading-none md:text-[11.8vw]",
           )}
-          // 글자 안 그라디언트 없이 흰 단색 (가장자리만 옅게 빛나게)
-          letterClassName={classNames(
-            "text-white text-shadow-[0_0_4px_rgb(255_255_255/0.25)]",
+          // 글자 안은 흰 단색 · 선명하게 (흰 빛 번짐 없음)
+          letterClassName={classNames("text-white")}
+          // 글자 뒤: 오른쪽 아래 사선으로 비껴 앉은 흐린 그라디언트 글자 (그림자처럼)
+          shadowClassName={classNames(
+            "translate-x-[0.035em] translate-y-[0.045em] blur-[10px]",
+            "bg-linear-to-br from-[#c4a6ff] via-[#7f6bff] to-[#5ea7ff] bg-clip-text",
+            "text-transparent opacity-90",
           )}
         />
         <div className={classNames("max-w-100", "flex flex-col gap-3.5")}>
@@ -61,7 +67,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
             y={12}
             delay={FADE.nameS}
             className={classNames(
-              "font-neuehaas text-2xl leading-7 text-white",
+              "font-neuehaas text-2xl leading-7 text-white [text-shadow:0_1px_14px_rgb(40_0_110/0.25)]",
             )}
           >
             <p>{NAME}</p>
@@ -70,7 +76,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
             y={12}
             delay={FADE.descriptionS}
             className={classNames(
-              "text-[17px] leading-normal font-medium text-[#f1f1f1]",
+              "text-[17px] leading-normal font-medium text-white [text-shadow:0_1px_12px_rgb(40_0_110/0.3)]",
             )}
           >
             <p>{description}</p>

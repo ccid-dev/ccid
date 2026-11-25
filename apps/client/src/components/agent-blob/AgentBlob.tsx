@@ -22,6 +22,7 @@ import {
 import type { Morph } from "./engine/renderer";
 import { useMicLevel } from "./engine/useMicLevel";
 import { TalkChat } from "./talk/chat";
+import { useOverDark } from "./useOverDark";
 import { noteOpened, notePage, watchHuman } from "./talk/human";
 import { type TalkLabels, TalkPanel } from "./TalkPanel";
 
@@ -151,6 +152,8 @@ function AgentModeBlob({
       : view.phase;
   const pathname = usePathname();
   const slotRef = useRef<HTMLDivElement>(null);
+  // 진한 배경(홈 첫 화면 보라 · 리서치 상세 이미지 · 푸터) 위에 있으면 보라를 빼고 밝게 빛나는 구로 (피드백 #88)
+  const overDark = useOverDark(slotRef);
   /** 열린 대화 창 자리 (보이지 않는 요소 — 크기는 아래 JSX 의 Tailwind 클래스) */
   const targetRef = useRef<HTMLDivElement>(null);
   /** 모핑: 닫힌 구 자리 · 열린 창 자리 (화면 기준). 떠 있는 동안만 있습니다. */
@@ -321,7 +324,14 @@ function AgentModeBlob({
           floating
             ? "pointer-events-none fixed inset-0 z-50"
             : "relative size-full",
+          "transition-[filter] duration-700 ease-out motion-reduce:transition-none",
         )}
+        style={{
+          filter:
+            overDark && !floating
+              ? "saturate(0.2) brightness(1.45)"
+              : undefined,
+        }}
       >
         <BlobCanvas
           state={state}
