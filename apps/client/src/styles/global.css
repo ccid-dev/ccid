@@ -5,6 +5,14 @@
 @source "../../../../packages/blocks/src";
 
 /* 홈 하단 협업 기관 로고 띠: 같은 목록을 두 번 이어 붙여 절반만큼 흘립니다. (animate-marquee · 반대 방향 animate-marquee-reverse) */
+/*
+ * 사이트 바탕색: 공통값(#FBFBFB, HSB 0 · 0 · 98)에서 명도 -3 · 채도 +3 한 미색 (HSB 45 · 3 · 95) — 흰 카드(#fff)가 바탕과 더 잘 구분됨
+ * (admin 은 공통값 그대로)
+ */
+@theme {
+  --color-background: #f2f0eb;
+}
+
 @theme {
   --animate-marquee: marquee 100s linear infinite;
   --animate-marquee-reverse: marquee 100s linear infinite reverse;
