@@ -154,6 +154,18 @@ function AgentModeBlob({
   const slotRef = useRef<HTMLDivElement>(null);
   // 홈 첫 화면 · 리서치 상세 이미지 · 푸터 위에서는 보라를 빼고 밝게 빛나는 구로 (피드백 #88 · #101 · #102)
   const overDark = useOverDark(slotRef);
+  // 푸터 위에서만: 구 뒤로 흐리게 번지는 빛(haze, 튜닝 페이지 "빛번짐")을 지금의 10% 로 (피드백 #117 · #118)
+  const blobConfig: DeepPartial<BlobConfig> | undefined =
+    overDark === "footer"
+      ? {
+          ...config,
+          situations: Object.fromEntries(
+            Object.entries(DEFAULT_BLOB_CONFIG.situations).map(
+              ([name, preset]) => [name, { haze: preset.haze * 0.1 }],
+            ),
+          ),
+        }
+      : config;
   /** 열린 대화 창 자리 (보이지 않는 요소 — 크기는 아래 JSX 의 Tailwind 클래스) */
   const targetRef = useRef<HTMLDivElement>(null);
   /** 모핑: 닫힌 구 자리 · 열린 창 자리 (화면 기준). 떠 있는 동안만 있습니다. */
@@ -332,7 +344,7 @@ function AgentModeBlob({
             : overDark === "glow"
               ? // 홈 첫 화면: 보라를 빼고 더 밝게 + 둘레로 넓게 번지는 흰 역광(drop-shadow 두 겹)
                 "saturate(0.2) brightness(1.65) drop-shadow(0 0 10px rgb(255 255 255 / 0.85)) drop-shadow(0 0 28px rgb(255 255 255 / 0.55))"
-              : overDark === "dark"
+              : overDark === "dark" || overDark === "footer"
                 ? // 어두운 배경(리서치 상세 이미지 · 푸터): 보라만 빼고 살짝 밝게 — 더 밝히면 구 둘레의 옅은 번짐(haze)까지 커져 넓게 퍼져 보임
                   "saturate(0.2) brightness(1.2)"
                 : undefined,
@@ -346,7 +358,7 @@ function AgentModeBlob({
           morph={morph}
           onMorphSettle={onMorphSettle}
           interactive={!open}
-          config={config}
+          config={blobConfig}
         >
           {!floating ? (
             <button

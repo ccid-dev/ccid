@@ -9,8 +9,8 @@ import Logo from "@/public/img/logo.svg";
 
 /**
  * 공개 사이트 푸터 (헤더에서 #contact 로 이동)
- * 왼쪽 위: 글자 크기 로고(cciD) + 아래 줄에 정식 명칭 / 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야)
- * 오른쪽 아래(왼쪽 정렬, 위에서부터): 연락처(흰색) → 저작권 → 주소
+ * 왼쪽: 글자 크기 로고(cciD) → 정식 명칭 → 저작권 → 이메일 · 전화(흰색)
+ * 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야) / 오른쪽 아래: 주소
  * 배경: 보라 기운이 도는 진회색 단색 (예전 셰이더 배경 FooterBackground · /footer-tune 은 지금 쓰지 않음)
  */
 export async function Footer() {
@@ -61,6 +61,32 @@ export async function Footer() {
         <p className={classNames("text-base md:text-lg")}>
           {APP_INFO.fullName}
         </p>
+        {/* 로고 · 정식 명칭 아래: 저작권 → 이메일 · 전화 (흰색) */}
+        <div className={classNames("flex flex-col gap-1", "mt-4", "text-sm")}>
+          <p className={classNames("text-white/55")}>
+            © {new Date().getFullYear()} {APP_INFO.name}
+          </p>
+          <a
+            href={`mailto:${APP_INFO.email}`}
+            className={classNames(
+              "self-start",
+              "transition",
+              "text-white hover:text-white/60",
+            )}
+          >
+            {APP_INFO.email}
+          </a>
+          <a
+            href={`tel:${APP_INFO.phone.tel}`}
+            className={classNames(
+              "self-start",
+              "transition",
+              "text-white hover:text-white/60",
+            )}
+          >
+            {APP_INFO.phone.label}
+          </a>
+        </div>
       </div>
 
       <div className={classNames("flex flex-col justify-between gap-12")}>
@@ -94,46 +120,17 @@ export async function Footer() {
           ))}
         </nav>
 
-        {/* 아래 묶음 (왼쪽 정렬, 위에서부터): 연락처(흰색) → 저작권 → 주소 */}
-        <div className={classNames("flex flex-col gap-4")}>
-          <div
-            className={classNames("flex flex-col gap-1", "text-sm text-white")}
-          >
-            <a
-              href={`mailto:${APP_INFO.email}`}
-              className={classNames(
-                "self-start",
-                "transition",
-                "hover:text-white/60",
-              )}
-            >
-              {APP_INFO.email}
-            </a>
-            <a
-              href={`tel:${APP_INFO.phone.tel}`}
-              className={classNames(
-                "self-start",
-                "transition",
-                "hover:text-white/60",
-              )}
-            >
-              {APP_INFO.phone.label}
-            </a>
-          </div>
-          <p className={classNames("text-xs text-white/55")}>
-            © {new Date().getFullYear()} {APP_INFO.name}
+        {/* 아래: 주소 */}
+        <address
+          className={classNames("flex flex-col gap-2", "text-xs not-italic")}
+        >
+          <p className={classNames("font-pretendard text-[13px]")}>
+            {APP_INFO.address.ko}
           </p>
-          <address
-            className={classNames("flex flex-col gap-2", "text-xs not-italic")}
-          >
-            <p className={classNames("font-pretendard text-[13px]")}>
-              {APP_INFO.address.ko}
-            </p>
-            <p className={classNames("leading-[18px] text-white/55")}>
-              {APP_INFO.address.en}
-            </p>
-          </address>
-        </div>
+          <p className={classNames("leading-[18px] text-white/55")}>
+            {APP_INFO.address.en}
+          </p>
+        </address>
       </div>
     </footer>
   );
