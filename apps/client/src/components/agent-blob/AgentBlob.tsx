@@ -329,7 +329,8 @@ function AgentModeBlob({
         style={{
           filter:
             overDark && !floating
-              ? "saturate(0.2) brightness(1.45)"
+              ? // 보라를 빼고 더 밝게 + 둘레로 넓게 번지는 흰 역광(drop-shadow 두 겹)
+                "saturate(0.2) brightness(1.65) drop-shadow(0 0 10px rgb(255 255 255 / 0.85)) drop-shadow(0 0 28px rgb(255 255 255 / 0.55))"
               : undefined,
         }}
       >
