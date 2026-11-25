@@ -36,12 +36,12 @@ export function MainButton(
   );
   const inner = (
     <>
-      {/* 호버: 연회색이 왼쪽에서 채워짐 — 색이 들어가면 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
+      {/* 호버 · 누름: 연회색이 왼쪽에서 채워짐 — 색이 들어가면 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
         className={classNames(
           "absolute inset-0 -z-10",
-          "origin-left scale-x-0 group-hover:scale-x-100",
+          "origin-left scale-x-0 group-hover:scale-x-100 group-active:scale-x-100",
           "bg-sheet",
           "transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
         )}

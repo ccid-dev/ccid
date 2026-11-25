@@ -23,6 +23,7 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
  * - 이미지는 Swiper 로 가로로 넘어갑니다: 드래그 · 스와이프 · 트랙패드 가로 스크롤(휠) · ← → 키 · 오른쪽 아래 이전 · 01 / 15 · 다음
  *   (세로 스크롤은 페이지 스크롤에 양보 · 끝 장에서 더 밀면 페이지가 계속 움직임)
  * - 헤더는 이미지 위에 겹쳐 어두운 글자 그대로 (위쪽에 옅은 흰 번짐을 깔아 읽히게)
+ * - 좁은 화면: 글이 폭을 다 쓰고, 이전 · 다음은 그 아래 오른쪽 (한 줄에 두면 글이 한 단어씩 줄바꿈됨)
  */
 export function ResearchHero({
   images,
@@ -64,7 +65,7 @@ export function ResearchHero({
       className={classNames(
         "group size-10",
         "flex items-center justify-center",
-        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white",
+        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white active:bg-white",
         "disabled:pointer-events-none disabled:opacity-30",
         "font-neuehaas",
       )}
@@ -74,8 +75,8 @@ export function ResearchHero({
         className={classNames(
           "transition-transform duration-300",
           by === -1
-            ? "group-hover:-translate-x-0.5"
-            : "group-hover:translate-x-0.5",
+            ? "group-hover:-translate-x-0.5 group-active:-translate-x-0.5"
+            : "group-hover:translate-x-0.5 group-active:translate-x-0.5",
         )}
       >
         {by === -1 ? "←" : "→"}
@@ -128,7 +129,7 @@ export function ResearchHero({
         className={classNames(
           // 글 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
           "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-          "flex items-end justify-between gap-6",
+          "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6",
           "px-5 pt-40 pb-6 md:px-20 md:pb-10",
           "bg-linear-to-t to-transparent",
           GRADIENT[number] ?? "from-black/70",
@@ -139,7 +140,7 @@ export function ResearchHero({
           {keywords ? (
             <p
               className={classNames(
-                "font-neuehaas text-lg font-light md:text-3xl lg:text-5xl",
+                "font-neuehaas text-base font-light md:text-3xl lg:text-5xl",
               )}
             >
               {keywords}
@@ -156,7 +157,7 @@ export function ResearchHero({
         {count > 1 ? (
           <div
             className={classNames(
-              "pointer-events-auto flex shrink-0 items-center gap-3",
+              "pointer-events-auto flex shrink-0 items-center gap-3 self-end md:self-auto",
             )}
           >
             {arrow(-1)}

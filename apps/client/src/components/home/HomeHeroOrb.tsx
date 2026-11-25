@@ -40,7 +40,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
       */}
       <div
         className={classNames(
-          "flex flex-col gap-6 md:flex-row md:items-center md:gap-[5vw]",
+          "flex flex-col gap-2 md:flex-row md:items-center md:gap-[4vw]",
         )}
       >
         {/* 큰 로고: 흰색 → 연하늘 → 하늘색 그라디언트 글자, 글자들이 차례로 떠오르며 선명해짐 */}
@@ -48,20 +48,22 @@ export function HomeHeroOrb({ description }: { description: string }) {
           text="cciD"
           className={classNames(
             "whitespace-nowrap",
-            "font-neuehaas text-[22vw] leading-none md:text-[11.8vw]",
+            "font-neuehaas text-[24vw] leading-none md:text-[11.8vw]",
           )}
           letterClassName={classNames(
             "bg-linear-to-b from-white from-22% via-[#e3f0ff] via-70% to-[#5ea7ff] to-90% bg-clip-text",
             "text-transparent text-shadow-[0_0_4px_rgb(255_255_255/0.25)]",
           )}
         />
-        <div className={classNames("max-w-100", "flex flex-col gap-3.5")}>
+        <div
+          className={classNames("max-w-100", "flex flex-col gap-2 md:gap-3.5")}
+        >
           {/* 명칭 → 소개: 차례로 아래에서 페이드 인 */}
           <InView
             y={12}
             delay={FADE.nameS}
             className={classNames(
-              "font-neuehaas text-2xl leading-7 text-white",
+              "font-neuehaas text-[22px] md:text-2xl leading-tight text-white",
             )}
           >
             <p>{NAME}</p>
@@ -70,7 +72,7 @@ export function HomeHeroOrb({ description }: { description: string }) {
             y={12}
             delay={FADE.descriptionS}
             className={classNames(
-              "text-[17px] leading-normal font-medium text-[#f1f1f1]",
+              "text-sm md:text-[17px] leading-normal font-medium text-[#f1f1f1]",
             )}
           >
             <p>{description}</p>

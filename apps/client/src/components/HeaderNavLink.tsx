@@ -9,7 +9,7 @@ import { stripLocale } from "@/i18n";
 /**
  * 헤더 메뉴 링크 (가운데 메뉴 · 모바일 메뉴 공용).
  * 글자 배경을 위 절반 기본색 · 아래 절반 저채도 연보라 단색(#8e84c4)으로 두 배 높이로 깔고,
- * 마우스를 올리면 배경이 위로 밀려 글자가 아래에서부터 연보라로 차오릅니다.
+ * 마우스를 올리면(터치 화면은 누르는 동안) 배경이 위로 밀려 글자가 아래에서부터 연보라로 차오릅니다.
  * 지금 보고 있는 곳의 메뉴는 연보라 상태로 고정됩니다. (aria-current)
  * - 페이지 링크(/research 등): 그 페이지 · 하위 페이지에 있을 때
  * - 구역 링크(/#about): 그 페이지에서 해당 구역이 화면 가운데를 지나는 동안
@@ -59,7 +59,7 @@ export function HeaderNavLink({
               ],
           "bg-clip-text",
           "transition-[background-position] duration-500 ease-out motion-reduce:transition-none",
-          isCurrent ? "bg-bottom" : "bg-top hover:bg-bottom",
+          isCurrent ? "bg-bottom" : "bg-top hover:bg-bottom active:bg-bottom",
         ],
         [
           "font-neuehaas text-transparent",
