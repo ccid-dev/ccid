@@ -128,19 +128,13 @@ export default async function ResearchPage({
                   <li
                     key={keyword}
                     className={classNames(
-                      "p-px",
-                      "rounded-full bg-[linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)]",
+                      "inline-flex px-3 py-1",
+                      // 상자 하나 + 1px border: 안쪽은 바탕색, 테두리에만 그라데이션 (두께가 일정)
+                      "rounded-full border border-transparent [background:linear-gradient(var(--color-background),var(--color-background))_padding-box,linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)_border-box]",
+                      "font-neuehaas text-xs font-light",
                     )}
                   >
-                    <span
-                      className={classNames(
-                        "inline-flex px-3 py-1",
-                        "rounded-full bg-background",
-                        "font-neuehaas text-xs font-light",
-                      )}
-                    >
-                      {keyword}
-                    </span>
+                    {keyword}
                   </li>
                 ))}
               </ul>

@@ -14,7 +14,7 @@ type Common = {
  * 호버: 테두리에 있던 그라데이션이 안쪽 전체를 왼쪽에서 오른쪽으로 채우며 글이 흰색으로 바뀜.
  *
  * `href` 를 주면 링크(<a>), 안 주면 <button> 으로 그려집니다.
- * 바깥 상자의 p-px 가 테두리 두께(1px)입니다.
+ * 테두리 두께는 border(1px) 하나로 정해집니다.
  */
 export function MainButton(
   props: Common &
@@ -25,24 +25,17 @@ export function MainButton(
 ) {
   const { children, arrow = true, className, ...rest } = props;
   const classes = classNames(
-    // 바깥 = 그라데이션 테두리
-    "group inline-flex w-fit",
-    "p-px",
-    "rounded-full bg-[linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)]",
-    "transition active:scale-[0.97]",
+    "group relative isolate inline-flex w-fit items-center gap-2 overflow-hidden",
+    "px-5 py-2",
+    // 테두리: 상자 하나에 1px border 를 두고, 안쪽(padding-box)은 흰색 · 테두리(border-box)에만 그라데이션
+    //   (바깥 그라데이션 상자 + 안쪽 흰 상자를 겹치면 소수점 픽셀에서 두께가 들쭉날쭉해짐)
+    "rounded-full border border-transparent [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)_border-box]",
+    "text-lg leading-normal font-medium text-black",
+    "transition-[color,scale] duration-500 group-hover:text-white active:scale-[0.97]",
     className,
   );
   const inner = (
-    <span
-      className={classNames(
-        // 안쪽 = 흰 바탕 (넘치는 채움은 잘림)
-        "relative isolate inline-flex items-center gap-2 overflow-hidden",
-        "px-5 py-2",
-        "rounded-full bg-[#fff]",
-        "text-lg leading-normal font-medium text-black",
-        "transition-colors duration-500 group-hover:text-white",
-      )}
-    >
+    <>
       {/* 호버: 테두리와 같은 그라데이션이 왼쪽에서 채워짐 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
@@ -64,7 +57,7 @@ export function MainButton(
           ↗
         </span>
       ) : null}
-    </span>
+    </>
   );
 
   if (rest.href !== undefined) {
