@@ -333,8 +333,8 @@ function AgentModeBlob({
               ? // 홈 첫 화면: 보라를 빼고 더 밝게 + 둘레로 넓게 번지는 흰 역광(drop-shadow 두 겹)
                 "saturate(0.2) brightness(1.65) drop-shadow(0 0 10px rgb(255 255 255 / 0.85)) drop-shadow(0 0 28px rgb(255 255 255 / 0.55))"
               : overDark === "dark"
-                ? // 어두운 배경(리서치 상세 이미지 · 푸터): 밝은 구로만, 둘레 빛은 아주 옅게
-                  "saturate(0.2) brightness(1.45) drop-shadow(0 0 6px rgb(255 255 255 / 0.3))"
+                ? // 어두운 배경(리서치 상세 이미지 · 푸터): 보라만 빼고 살짝 밝게 — 더 밝히면 구 둘레의 옅은 번짐(haze)까지 커져 넓게 퍼져 보임
+                  "saturate(0.2) brightness(1.2)"
                 : undefined,
         }}
       >

@@ -9,8 +9,8 @@ import Logo from "@/public/img/logo.svg";
 
 /**
  * 공개 사이트 푸터 (헤더에서 #contact 로 이동)
- * 왼쪽 위: 글자 크기 로고(cciD.) + 아래 줄에 정식 명칭 / 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야)와 연락처,
- * 오른쪽 아래: 주소 · 저작권
+ * 왼쪽 위: 글자 크기 로고(cciD) + 아래 줄에 정식 명칭 / 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야)
+ * 오른쪽 아래(왼쪽 정렬, 위에서부터): 연락처(흰색) → 저작권 → 주소
  * 배경: 보라 기운이 도는 진회색 단색 (예전 셰이더 배경 FooterBackground · /footer-tune 은 지금 쓰지 않음)
  */
 export async function Footer() {
@@ -64,71 +64,65 @@ export async function Footer() {
       </div>
 
       <div className={classNames("flex flex-col justify-between gap-12")}>
-        {/* 링크 · 연락처: 넓은 화면에서만 나란히 (중간 화면은 오른쪽 칸이 좁아 아래로 쌓음) */}
-        <div
-          className={classNames(
-            "flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-10",
-          )}
-        >
-          <nav className={classNames("flex gap-12")}>
-            {groups.map((group) => (
-              <div
-                key={group.href}
-                className={classNames("flex flex-col gap-2")}
+        {/* 링크: People · Research 와 아래 묶음 */}
+        <nav className={classNames("flex gap-12")}>
+          {groups.map((group) => (
+            <div key={group.href} className={classNames("flex flex-col gap-2")}>
+              <Link
+                href={localePath(locale, group.href)}
+                className={classNames(
+                  "self-start",
+                  "transition",
+                  "text-sm font-medium hover:text-white/60",
+                )}
               >
-                <Link
-                  href={localePath(locale, group.href)}
-                  className={classNames(
-                    "self-start",
-                    "transition",
-                    "text-sm font-medium hover:text-white/60",
-                  )}
-                >
-                  {group.label}
-                </Link>
-                <ul className={classNames("text-sm leading-6 text-white/55")}>
-                  {group.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={localePath(locale, link.href)}
-                        className={classNames("transition", "hover:text-white")}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
+                {group.label}
+              </Link>
+              <ul className={classNames("text-sm leading-6 text-white/55")}>
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={localePath(locale, link.href)}
+                      className={classNames("transition", "hover:text-white")}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
+        {/* 아래 묶음 (왼쪽 정렬, 위에서부터): 연락처(흰색) → 저작권 → 주소 */}
+        <div className={classNames("flex flex-col gap-4")}>
           <div
-            className={classNames(
-              "flex flex-col gap-1 lg:items-end",
-              "text-sm text-white/55",
-            )}
+            className={classNames("flex flex-col gap-1", "text-sm text-white")}
           >
             <a
               href={`mailto:${APP_INFO.email}`}
-              className={classNames("transition", "hover:text-white")}
+              className={classNames(
+                "self-start",
+                "transition",
+                "hover:text-white/60",
+              )}
             >
               {APP_INFO.email}
             </a>
             <a
               href={`tel:${APP_INFO.phone.tel}`}
-              className={classNames("transition", "hover:text-white")}
+              className={classNames(
+                "self-start",
+                "transition",
+                "hover:text-white/60",
+              )}
             >
               {APP_INFO.phone.label}
             </a>
           </div>
-        </div>
-
-        {/* 주소 · 저작권: 넓은 화면에서만 한 줄로 (중간 화면은 오른쪽 칸이 좁아 아래로 쌓음) */}
-        <div
-          className={classNames(
-            "flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10",
-          )}
-        >
+          <p className={classNames("text-xs text-white/55")}>
+            © {new Date().getFullYear()} {APP_INFO.name}
+          </p>
           <address
             className={classNames("flex flex-col gap-2", "text-xs not-italic")}
           >
@@ -139,9 +133,6 @@ export async function Footer() {
               {APP_INFO.address.en}
             </p>
           </address>
-          <p className={classNames("shrink-0", "text-xs text-white/55")}>
-            © {new Date().getFullYear()} {APP_INFO.name}
-          </p>
         </div>
       </div>
     </footer>
