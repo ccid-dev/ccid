@@ -10,7 +10,7 @@ export type PersonCardData = {
   image: string | null;
   /** 이미지가 없을 때 회색 상자에 적을 글자 */
   imageFallback?: string;
-  /** wide(디렉터) 넓은 화면 사진: 정사각 사진을 넓은 카드 안에 양옆 여백을 두고 놓음 (배경 #ccc — 사진 배경도 #ccc 로 맞춰 둠). 없으면 빈 카드 */
+  /** wide(디렉터) 넓은 화면 사진: 정사각 사진을 넓은 카드 안에 양옆 여백을 두고 놓음 (배경 #ccc — 사진은 배경을 지운 투명 PNG). 없으면 빈 카드 */
   wideImage?: string | null;
 };
 
@@ -67,7 +67,7 @@ export function PersonCard({
           </div>
           {/*
             sm 이상: 비율 대신 오른쪽 글 단 높이에 맞춘 카드 (칸을 채우고 줄 높이는 글이 정함)
-            wideImage 가 있으면 정사각 사진을 카드 높이의 88% 로 아래에 붙이고, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓음. 나머지는 아래 인물 사진들과 같은 배경 회색(#ccc)
+            wideImage 가 있으면 정사각 사진을 카드 높이의 88% 로 아래에 붙이고, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓음. 사진은 배경 없는 투명 PNG 라 카드 바탕(아래 인물 사진들과 같은 회색 #ccc)이 그대로 보임
           */}
           <div className={classNames("hidden sm:relative sm:block")}>
             {person.wideImage ? (
