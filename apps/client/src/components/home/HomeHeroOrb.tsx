@@ -16,7 +16,7 @@ const FADE = {
 
 /**
  * 홈 첫 화면 글자 (Figma "Frame 222", 1440px 화면 기준).
- * 왼쪽에 큰 그라디언트 글자 "cciD.", 오른쪽에 정식 명칭 · 소개(흰 글자).
+ * 왼쪽에 큰 흰 글자 "cciD", 오른쪽에 정식 명칭 · 소개(흰 글자).
  * 배경(진보라 그라디언트 · 큰 원)은 About 까지 함께 덮는 HomeGradientLayer 에 있습니다.
  * - 크기 · 위치는 1440px 디자인 값을 화면 폭 비율(vw)로 바꿔 씁니다. (글자 170px ≈ 11.8vw)
  * - 좁은 화면: 글자 → 명칭 · 소개 순서로 쌓음
@@ -43,16 +43,16 @@ export function HomeHeroOrb({ description }: { description: string }) {
           "flex flex-col gap-6 md:flex-row md:items-center md:gap-[5vw]",
         )}
       >
-        {/* 큰 로고: 흰색 → 연하늘 → 하늘색 그라디언트 글자, 글자들이 차례로 떠오르며 선명해짐 */}
+        {/* 큰 로고: 흰 단색 글자, 글자들이 차례로 떠오르며 선명해짐 */}
         <HeroLogo
           text="cciD"
           className={classNames(
             "whitespace-nowrap",
             "font-neuehaas text-[22vw] leading-none md:text-[11.8vw]",
           )}
+          // 글자 안 그라디언트 없이 흰 단색 (가장자리만 옅게 빛나게)
           letterClassName={classNames(
-            "bg-linear-to-b from-white from-22% via-[#e3f0ff] via-70% to-[#5ea7ff] to-90% bg-clip-text",
-            "text-transparent text-shadow-[0_0_4px_rgb(255_255_255/0.25)]",
+            "text-white text-shadow-[0_0_4px_rgb(255_255_255/0.25)]",
           )}
         />
         <div className={classNames("max-w-100", "flex flex-col gap-3.5")}>
