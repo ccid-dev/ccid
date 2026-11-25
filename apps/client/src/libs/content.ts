@@ -17,12 +17,20 @@ import { getSupabase } from "./supabase/server";
 export type ProjectWithThemes = Project & {
   themes: Pick<
     Theme,
-    "number" | "slug" | "title_ko" | "title_en" | "summary_ko" | "summary_en"
+    | "number"
+    | "slug"
+    | "title_ko"
+    | "title_en"
+    | "summary_ko"
+    | "summary_en"
+    | "keywords_ko"
+    | "keywords_en"
+    | "images"
   >[];
 };
 
 const PROJECT_SELECT =
-  "*, project_themes(position, themes(number, slug, title_ko, title_en, summary_ko, summary_en))";
+  "*, project_themes(position, themes(number, slug, title_ko, title_en, summary_ko, summary_en, keywords_ko, keywords_en, images))";
 
 type ProjectRow = Project & {
   project_themes: {

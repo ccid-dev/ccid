@@ -1,17 +1,40 @@
 {
-  "colors": ["#dce2ff", "#c79eff", "#9b8cff", "#7db3ee", "#b9c4f7"],
+  "flow": {
+    "colorA": "#aac6f9",
+    "colorB": "#7753f5",
+    "colorC": "#be96f8",
+    "colorWarm": "#a28cf5",
+    "rim": "#eeb0e6",
+    "areaA": 0.76,
+    "areaB": 0.57,
+    "areaC": 0.42,
+    "areaWarm": 1,
+    "areaRim": 1,
+    "opacity": 0.92,
+    "flowSpeed": 0.32,
+    "style": "plasma"
+  },
   "panel": {
-    "noiseScale": 0.26,
-    "radius": 28
+    "radius": 28,
+    "fill": 1.15,
+    "veil": 0.25,
+    "fit": 1.2
   },
   "voice": {
     "levelScale": 0.12,
-    "levelGlow": 0.35,
-    "levelMorph": 1.4,
-    "levelBrightness": 0.12
+    "levelHaze": 0.35,
+    "levelBrightness": 0.12,
+    "levelIntensity": 0.4
   },
   "motion": {
     "ease": 4,
     "scaleEase": 9
+  },
+  "morph": {
+    "duration": 0.9,
+    "stretch": 0.1,
+    "wobble": 0.2,
+    "neck": 32,
+    "edge": 0.18
   }
 }

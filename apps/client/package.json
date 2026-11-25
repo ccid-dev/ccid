@@ -24,7 +24,8 @@
     "react-dom": "19.2.8",
     "react-type-animation": "3.2.0",
     "server-only": "0.0.1",
-    "swiper": "11.2.10"
+    "swiper": "11.2.10",
+    "three": "0.169.0"
   },
   "devDependencies": {
     "@svgr/webpack": "8.1.0",
@@ -32,6 +33,7 @@
     "@types/node": "26.4.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
+    "@types/three": "0.169.0",
     "eslint": "10.9.1",
     "postcss": "^8.5.29",
     "tailwindcss": "4.1.18",

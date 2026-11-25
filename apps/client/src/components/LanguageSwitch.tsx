@@ -23,8 +23,9 @@ export function LanguageSwitch({
       lang={target}
       aria-label={label}
       className={classNames(
-        "transition",
-        "text-sm font-medium text-sub hover:text-main",
+        "transition duration-300",
+        // 헤더 뒤가 진한 색이면 흰 글자 (HeaderTone 의 data-tone)
+        "text-sm font-medium text-main group-data-[tone=dark]/header:text-white",
       )}
     >
       {localeInfo[target].label}

@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useRef } from "react";
+import { MainButton } from "./MainButton";
 
 /**
  * Join 버튼. 모집 중이면 지원 링크(새 창), 아니면 누를 때 "모집 기간이 아닙니다" 안내 모달.
@@ -18,55 +19,29 @@ export function JoinButton({
   closed: { title: string; message: string; close: string };
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const arrow = (
-    <span
-      aria-hidden
-      className={classNames(
-        "transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
-      )}
-    >
-      ↗
-    </span>
-  );
-
   if (open && url)
     return (
-      <a
+      <MainButton
         href={url}
         target="_blank"
         rel="noreferrer"
         cursor-label="Apply"
-        className={classNames(
-          "h-11 shrink-0 self-start md:self-auto",
-          "group inline-flex items-center gap-2",
-          "px-6",
-          "rounded-full bg-black transition hover:bg-black/85",
-          "font-neuehaas text-sm font-medium text-white",
-        )}
+        className={classNames("shrink-0 self-start md:self-auto")}
       >
         {label}
-        {arrow}
-      </a>
+      </MainButton>
     );
 
   const close = () => dialogRef.current?.close();
   return (
     <>
-      <button
-        type="button"
+      <MainButton
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
-        className={classNames(
-          "h-11 shrink-0 self-start md:self-auto",
-          "group inline-flex items-center gap-2",
-          "px-6",
-          "rounded-full bg-white transition hover:bg-white/85",
-          "font-neuehaas text-sm font-medium text-black",
-        )}
+        className={classNames("shrink-0 self-start md:self-auto")}
       >
         {label}
-        {arrow}
-      </button>
+      </MainButton>
       <dialog
         ref={dialogRef}
         aria-labelledby="recruit-closed-title"
@@ -78,7 +53,7 @@ export function JoinButton({
           "m-auto",
           "p-0",
           [
-            "rounded-3xl bg-background shadow-2xl",
+            "rounded-3xl bg-[#fff] shadow-2xl",
             "transition-[opacity,translate] duration-300 starting:open:translate-y-4 starting:open:opacity-0",
             "backdrop:bg-black/30 backdrop:backdrop-blur-sm",
           ],

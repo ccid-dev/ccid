@@ -1,22 +1,37 @@
 "use client";
 
 import classNames from "classnames";
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
-import { type CSSProperties, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { CroppedImage } from "@repo/blocks";
-import { Pills, Reveal } from "@/components/content";
+import { Reveal } from "@/components/content";
 import { localePath, localized, type Dictionary, type Locale } from "@/i18n";
 import { mediaUrl } from "@/libs/media";
 import type { Theme } from "@/types";
 import { useScrollStep } from "./useScrollStep";
 
+/** 분야 번호 → 이미지 아래 그라데이션 색 (global.css 의 --color-theme-NN, 클래스는 통째로 적어야 Tailwind 가 만들어 줍니다) */
+const GRADIENT: Record<number, string> = {
+  1: "from-theme-01/90",
+  2: "from-theme-02/90",
+  3: "from-theme-03/90",
+  4: "from-theme-04/90",
+};
+
 /**
- * 홈 Research 쇼케이스: 왼쪽 분야 목록 · 오른쪽 큰 이미지 · 질문 · 키워드. 누르면 분야 페이지로.
- * - 넓은 화면(1024+): 스크롤하는 만큼 분야가 하나씩 넘어가고 오른쪽 이미지가 바뀝니다.
+ * 홈 Research 쇼케이스 (Figma "research" 프레임).
+ * - 넓은 화면(1024+): 분야 카드가 세로로 쌓여 롤링됩니다. 스크롤하는 만큼 한 칸씩 올라가고,
+ *   지금 분야는 화면 가운데 · 위에 하나(첫 분야일 땐 빈 자리) · 아래에 둘이 보입니다.
+ *   카드마다 이미지(자기 비율)와 오른쪽 글(번호 · 제목 · 질문 · 자세히 보기)이 한 줄로 붙어 있고,
+ *   글은 지금 카드일 때만 보입니다. (글 위치를 따로 찾지 않음)
+ *   크기 변화는 scale 로만 줘서 카드 높이가 변하지 않으므로, 가운데 맞춤 값은 잘 변하지 않습니다.
  *   (구역을 분야 수만큼 길게 + 안쪽 화면 고정)
- *   목록에 마우스를 올리면 오른쪽 이미지 · 질문이 그 분야로 미리 바뀌고, 마우스가 목록을 떠나면 스크롤 위치의 분야로 돌아갑니다.
- *   (목록의 강조 — 바탕 면 · 검은 화살표 — 는 스크롤로 고른 분야에만. 호버는 글이 살짝 밀리는 것으로만)
  * - 좁은 화면: 큰 이미지 위 · 글 아래 세로 카드
  */
 export function HomeResearch({
@@ -30,13 +45,38 @@ export function HomeResearch({
 }) {
   /** 스크롤로 고른 분야 */
   const [active, setActive] = useState(0);
-  /** 마우스를 올린 분야 (없으면 null) — 오른쪽 이미지 · 질문은 이게 우선 */
-  const [hovered, setHovered] = useState<number | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   useScrollStep(trackRef, themes.length, setActive);
-  const shown = hovered ?? active;
-  const current = themes[shown];
-  if (!current) return null;
+
+  // 롤링: 지금 카드가 칸 가운데에 오도록 목록을 올리는 값 (카드 레이아웃 높이만 보므로 움직이는 동안 변하지 않음)
+  const stageRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const [shift, setShift] = useState<number | null>(null);
+  const measure = useCallback(() => {
+    const stage = stageRef.current;
+    const item = itemRefs.current[active + 1]; // 0번은 맨 위 빈 자리
+    if (!stage || !item) return;
+    setShift(stage.clientHeight / 2 - (item.offsetTop + item.offsetHeight / 2));
+  }, [active]);
+  useLayoutEffect(() => {
+    measure();
+    // 이미지가 받아져 카드 높이가 생기거나 창 크기가 바뀔 때만 다시 잼
+    const observer = new ResizeObserver(measure);
+    if (stageRef.current) observer.observe(stageRef.current);
+    if (listRef.current) observer.observe(listRef.current);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  // 처음 자리를 잡는 동안에는 움직임 없이, 그다음부터 부드럽게
+  const [settled, setSettled] = useState(false);
+  useLayoutEffect(() => {
+    if (shift === null || settled) return;
+    const frame = requestAnimationFrame(() => setSettled(true));
+    return () => cancelAnimationFrame(frame);
+  }, [shift, settled]);
+
+  if (!themes[active]) return null;
   const href = (theme: Theme) => localePath(locale, `/research/${theme.slug}`);
 
   return (
@@ -51,181 +91,192 @@ export function HomeResearch({
           "lg:sticky lg:top-0 lg:flex lg:h-svh lg:items-center",
         )}
       >
-        {/* 넓은 화면: 내용 8칸 중 목록 4칸 · 이미지 4칸 */}
-        <div
-          className={classNames("grid w-full gap-8 lg:grid-cols-8 lg:gap-x-10")}
-        >
-          <div className={classNames("lg:col-span-4")}>
-            <ol
-              // 목록을 떠나면 스크롤 위치의 분야로
-              onMouseLeave={() => setHovered(null)}
-              className={classNames("flex flex-col gap-10 md:gap-6 lg:gap-1")}
-            >
-              {themes.map((theme, index) => {
-                const isActive = index === active;
-                const image = mediaUrl(theme.images[0]);
-                return (
-                  <li key={theme.id}>
-                    {/* 화면에 들어올 때 위에서부터 차례로 떠오름 */}
-                    <Reveal delay={index * 70}>
-                      <Link
-                        href={href(theme)}
-                        cursor-label="Open"
-                        // 올리면 오른쪽 이미지 · 질문만 미리 바뀜 (목록 강조는 스크롤로 고른 분야 그대로)
-                        onMouseEnter={() => setHovered(index)}
-                        onFocus={() => setActive(index)}
+        {/* 좁은 화면: 세로 카드 목록 */}
+        <ol className={classNames("flex flex-col gap-10 md:gap-8 lg:hidden")}>
+          {themes.map((theme, index) => {
+            const image = mediaUrl(theme.images[0]);
+            return (
+              <li key={theme.id}>
+                <Reveal delay={index * 70}>
+                  <Link
+                    href={href(theme)}
+                    className={classNames(
+                      "group flex flex-col gap-4",
+                      "transition duration-300 active:scale-[0.98]",
+                    )}
+                  >
+                    {image ? (
+                      <span
                         className={classNames(
-                          // 좁은 화면: 이미지 위 · 글 아래 세로 카드 (누를 때 살짝 작아짐) / 넓은 화면: 한 줄
-                          "group flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-5",
-                          "px-0 py-0 lg:px-6 lg:py-6",
-                          "transition duration-300 active:scale-[0.98] lg:active:scale-100",
-                          // 스크롤로 고른 것 = 바탕 면 + 검은 화살표 / 마우스만 올린 것 = 글 · 화살표가 오른쪽으로 살짝
-                          ["rounded-2xl", isActive && "lg:bg-sheet/60"],
+                          "aspect-thumbnail w-full",
+                          "relative overflow-hidden",
+                          "rounded-2xl bg-sheet",
+                          "[&_img]:transition-transform [&_img]:duration-700 group-active:[&_img]:scale-105",
                         )}
                       >
-                        {image ? (
-                          <span
-                            className={classNames(
-                              "aspect-thumbnail w-full shrink-0 lg:hidden",
-                              "relative overflow-hidden",
-                              "rounded-2xl bg-sheet",
-                              "[&_img]:transition-transform [&_img]:duration-700 group-hover:[&_img]:scale-105 group-active:[&_img]:scale-105",
-                            )}
-                          >
-                            <CroppedImage src={image} alt="" />
-                          </span>
-                        ) : null}
-                        <span
-                          className={classNames(
-                            "min-w-0 flex-1",
-                            "flex flex-col gap-1",
-                            "transition-[translate] duration-500 ease-[cubic-bezier(.22,1,.36,1)] lg:group-hover:translate-x-2",
-                          )}
-                        >
-                          <span
-                            className={classNames(
-                              "text-xl leading-snug break-keep md:text-2xl",
-                            )}
-                          >
-                            {localized(theme, "title", locale)}
-                          </span>
-                          {locale === "ko" && theme.title_en ? (
-                            <span
-                              className={classNames(
-                                "font-neuehaas text-sm text-sub",
-                              )}
-                            >
-                              {theme.title_en}
-                            </span>
-                          ) : null}
-                        </span>
-                        <span
-                          aria-hidden
-                          className={classNames(
-                            "size-9 shrink-0 self-center",
-                            // 좁은 화면은 카드 전체가 눌리는 걸로 충분해 화살표를 숨김
-                            "hidden items-center justify-center lg:flex",
-                            [
-                              "rounded-full transition-[color,background-color,translate] duration-500 ease-[cubic-bezier(.22,1,.36,1)] lg:group-hover:translate-x-1",
-                              isActive ? "bg-black text-white" : "bg-sheet/60",
-                            ],
-                            "font-neuehaas",
-                          )}
-                        >
-                          →
-                        </span>
-                      </Link>
-                    </Reveal>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
+                        <CroppedImage src={image} alt="" />
+                      </span>
+                    ) : null}
+                    <span className={classNames("flex flex-col gap-1")}>
+                      <span
+                        className={classNames(
+                          "text-xl leading-snug break-keep md:text-2xl",
+                        )}
+                      >
+                        {localized(theme, "title", locale)}
+                      </span>
+                      <span className={classNames("text-sm text-sub")}>
+                        {localized(theme, "question", locale)}
+                      </span>
+                    </span>
+                  </Link>
+                </Reveal>
+              </li>
+            );
+          })}
+        </ol>
 
-          <Link
-            href={href(current)}
-            tabIndex={-1}
-            aria-hidden
+        {/* 넓은 화면: 롤링 카드 (위아래 가장자리는 서서히 사라짐) */}
+        <div
+          ref={stageRef}
+          className={classNames(
+            "hidden lg:block lg:h-svh w-full",
+            "relative overflow-hidden",
+            "[mask-image:linear-gradient(to_bottom,transparent,black_14%,black_86%,transparent)]",
+          )}
+        >
+          <ol
+            ref={listRef}
+            // 올리는 값은 지금 카드를 가운데에 맞추려고 잰 값이라 inline style
+            style={{ translate: `0 ${shift ?? 0}px` }}
             className={classNames(
-              "aspect-thumbnail w-full lg:col-span-4",
-              "relative hidden overflow-hidden lg:block",
-              "rounded-3xl bg-sheet",
+              "flex flex-col",
+              shift === null ? "opacity-0" : "opacity-100",
+              settled &&
+                "transition-[translate] duration-700 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
             )}
           >
+            {/* 맨 위 빈 자리: 롤링 계산용 — 보이지 않고 공간만 차지 */}
+            <li
+              aria-hidden
+              ref={(el) => {
+                itemRefs.current[0] = el;
+              }}
+              className={classNames("invisible aspect-video w-1/2")}
+            />
             {themes.map((theme, index) => {
               const image = mediaUrl(theme.images[0]);
-              return image ? (
-                <span
+              const distance = index - active;
+              const isActive = distance === 0;
+              // 위 1장 · 아래 2장만 보임
+              const visible = distance >= -1 && distance <= 2;
+              const keywords = localized(theme, "keywords", locale).join(", ");
+              return (
+                <li
                   key={theme.id}
+                  ref={(el) => {
+                    itemRefs.current[index + 1] = el;
+                  }}
                   className={classNames(
-                    "absolute inset-0 overflow-hidden",
-                    "transition duration-700",
-                    index === shown
-                      ? "scale-100 opacity-100"
-                      : "scale-105 opacity-0",
+                    "relative w-full py-0",
+                    "transition-opacity duration-700",
+                    visible ? "opacity-100" : "pointer-events-none opacity-0",
                   )}
                 >
-                  <CroppedImage src={image} alt="" lazy={false} />
-                </span>
-              ) : null;
-            })}
-            {/* 분야가 바뀌면 상자는 새로 그리지 않고 크기만 이어서 바뀌고(morph), 글은 잠깐 흐려졌다 나타남 (blink)
-                움직임 줄이기 설정이면 크기는 바로 바뀌고 글만 흐려졌다 나타남 */}
-            <MotionConfig reducedMotion="user">
-              <motion.span
-                layout
-                transition={{
-                  layout: { type: "spring", duration: 0.5, bounce: 0.15 },
-                }}
-                // 모서리는 크기가 바뀌는 동안 찌그러지지 않게 style 로 (motion 이 보정, rounded-2xl 과 같은 값)
-                style={{ borderRadius: 16 }}
-                className={classNames(
-                  "max-w-md",
-                  "absolute bottom-5 left-5 flex flex-col",
-                  "p-5",
-                  // 유리 프로스트: 뒤 이미지가 흐리게 비치고, 위쪽 가장자리에 빛 한 줄
-                  "bg-white/45 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.7),0_8px_32px_-12px_rgb(0_0_0/0.25)] backdrop-blur-2xl backdrop-saturate-150",
-                )}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={current.id}
-                    layout="position"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{
-                      opacity: 1,
-                      filter: "blur(0px)",
-                      transition: { duration: 0.28, ease: [0.23, 1, 0.32, 1] },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      filter: "blur(4px)",
-                      transition: { duration: 0.14, ease: [0.23, 1, 0.32, 1] },
-                    }}
-                    className={classNames("flex flex-col gap-3")}
+                  {/* 이미지: 왼쪽 반. 지금 카드는 1, 나머지는 작게 (scale 이라 높이는 그대로) */}
+                  <Link
+                    href={href(theme)}
+                    cursor-label="Open"
+                    aria-label={localized(theme, "title", locale)}
+                    className={classNames(
+                      "group block w-1/2 origin-left",
+                      "relative min-h-32 overflow-hidden",
+                      "rounded-2xl bg-sheet",
+                      "transition-[scale,filter] duration-700 ease-[cubic-bezier(.22,1,.36,1)]",
+                      isActive
+                        ? "scale-100 blur-0"
+                        : "scale-[.92] blur-[2.5px] hover:blur-0",
+                    )}
+                  >
+                    {/* 이미지 자기 비율 그대로 */}
+                    {image ? (
+                      <img
+                        src={image.split("#")[0]}
+                        alt=""
+                        decoding="async"
+                        className={classNames("block h-auto w-full")}
+                      />
+                    ) : null}
+                    {/* 지금 분야: 아래에서 위로 분야 색 그라데이션 + 세부 분야 · 영문 제목 */}
+                    <span
+                      className={classNames(
+                        "absolute inset-x-0 bottom-0 flex flex-col gap-1",
+                        "px-7 pt-28 pb-6",
+                        "bg-linear-to-t to-transparent",
+                        GRADIENT[theme.number] ?? "from-black/70",
+                        "font-neuehaas font-light text-white",
+                        "transition-opacity duration-500",
+                        isActive ? "opacity-100" : "opacity-0",
+                      )}
+                    >
+                      {keywords ? (
+                        <span className={classNames("text-lg")}>
+                          {keywords}
+                        </span>
+                      ) : null}
+                      <span className={classNames("text-3xl")}>
+                        {theme.title_en || localized(theme, "title", locale)}
+                      </span>
+                    </span>
+                  </Link>
+
+                  {/* 글: 이 카드의 오른쪽에 붙어 있고 지금 카드일 때만 보임 */}
+                  <div
+                    aria-hidden={!isActive}
+                    className={classNames(
+                      "absolute top-0 left-[calc(50%+2.5rem)] w-[calc(50%-2.5rem)]",
+                      "flex max-w-md flex-col gap-2",
+                      "transition-[opacity,filter] duration-500",
+                      isActive
+                        ? "opacity-100 blur-0"
+                        : "pointer-events-none opacity-0 blur-sm",
+                    )}
                   >
                     <span
                       className={classNames(
-                        "text-lg leading-7 font-medium whitespace-pre-line break-keep",
+                        "font-neuehaas text-base font-medium text-sub",
                       )}
                     >
-                      {localized(current, "question", locale)}
+                      {String(theme.number).padStart(2, "0")}
                     </span>
-                    {localized(current, "keywords", locale).length ? (
-                      <Pills items={localized(current, "keywords", locale)} />
-                    ) : null}
+                    <span
+                      className={classNames("text-2xl leading-snug break-keep")}
+                    >
+                      {localized(theme, "title", locale)}
+                    </span>
                     <span
                       className={classNames(
-                        "font-neuehaas text-sm font-medium",
+                        "text-base leading-snug break-keep whitespace-pre-line text-sub",
+                      )}
+                    >
+                      {localized(theme, "question", locale)}
+                    </span>
+                    <Link
+                      href={href(theme)}
+                      tabIndex={isActive ? 0 : -1}
+                      cursor-label="Open"
+                      className={classNames(
+                        "mt-16 w-fit",
+                        "text-sm text-sub transition-colors duration-300 hover:text-black",
                       )}
                     >
                       {dict.research.more} →
-                    </span>
-                  </motion.span>
-                </AnimatePresence>
-              </motion.span>
-            </MotionConfig>
-          </Link>
+                    </Link>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     </div>

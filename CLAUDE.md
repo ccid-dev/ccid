@@ -64,15 +64,25 @@ yarn check-types
 
 ## 배경 그래픽 조절
 
-홈 히어로 · 푸터 배경은 WebGPU/WebGL 셰이더이고, 값은 JSON 파일에 있습니다. 숫자를 코드에서 직접 고치지 말고 조절 페이지를 씁니다.
+홈 히어로 · 푸터 배경은 WebGPU/WebGL 셰이더, 홈 Projects 배경은 CSS 그라디언트(`motion/react`)이고, 값은 JSON 파일에 있습니다. 숫자를 코드에서 직접 고치지 말고 조절 페이지를 씁니다.
 
-| 페이지 (dev)   | 값 파일                                                               |
-| -------------- | --------------------------------------------------------------------- |
-| `/hero-tune`   | `apps/client/src/components/home/hero-background.json`                |
-| `/footer-tune` | `apps/client/src/components/footer-background/footer-background.json` |
-| `/agent-tune`  | 에이전트 구 — `apps/client/src/components/agent-blob/README.md` 참고  |
+| 페이지 (dev)     | 값 파일                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| `/hero-tune`     | `apps/client/src/components/home/hero-background.json`                |
+| `/footer-tune`   | `apps/client/src/components/footer-background/footer-background.json` |
+| `/projects-tune` | `apps/client/src/components/home/projects-background.json`            |
+| `/agent-tune`    | 에이전트 구 — `apps/client/src/components/agent-blob/README.md` 참고  |
 
 패널(Leva)에서 조절한 뒤 'JSON 복사'로 값 파일에 통째로 붙여 넣습니다.
+
+## 보이스 에이전트 (대화)
+
+구조 · 파일은 `apps/client/src/components/agent-blob/README.md` "대화"에 있습니다.
+
+- 외부 API(OpenAI · ElevenLabs)를 부르는 것은 서버 `app/api/talk/*` 뿐입니다. 키는 `libs/talk/env.ts` 로만 읽고, 브라우저 코드로 옮기지 않습니다.
+- 돈이 드는 경로를 늘릴 때는 `guard()`(봇 · 통행증 · 횟수) 와 하루 한도(`libs/talk/usage.ts`)를 함께 거치게 합니다.
+- 에이전트가 아는 내용은 DB(admin)와 `talk/answers.ts`(정해 둔 대답) 뿐입니다. 사실을 프롬프트에 직접 적지 않습니다.
+- 화면만 고칠 때는 `.env.local` 에 `TALK_FAKE=1` 을 넣어 연습용 대답으로 확인합니다 (비용 0).
 
 ## 피드백 코멘트 반영
 

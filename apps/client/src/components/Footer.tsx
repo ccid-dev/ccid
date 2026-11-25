@@ -5,13 +5,11 @@ import { FOOTER_PEOPLE_GROUPS, ROUTES } from "@/constants";
 import { localePath } from "@/i18n";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { getThemes } from "@/libs/content";
-import Logo from "@/public/img/logo.svg";
+import { FooterBackground } from "./footer-background/FooterBackground";
 
 /**
  * 공개 사이트 푸터 (헤더에서 #contact 로 이동)
- * 왼쪽 위: 글자 크기 로고(cciD.) + 아래 줄에 정식 명칭 / 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야)와 연락처,
- * 오른쪽 아래: 주소 · 저작권
- * 배경: 보라 기운이 도는 진회색 단색 (예전 셰이더 배경 FooterBackground · /footer-tune 은 지금 쓰지 않음)
+ * 왼쪽: 정식 명칭 · 로고 / 오른쪽: People · Research 링크, 연락처, 주소, 저작권
  */
 export async function Footer() {
   const locale = await getLocale();
@@ -19,127 +17,121 @@ export async function Footer() {
     getDictionary(locale),
     getThemes(),
   ]);
-  const groups = [
-    {
-      href: ROUTES.people,
-      label: dict.footer.people,
-      links: FOOTER_PEOPLE_GROUPS.map((group) => ({
-        href: `${ROUTES.people}#${group}`,
-        label: dict.footer.peopleLinks[group],
-      })),
-    },
-    {
-      href: ROUTES.research,
-      label: dict.footer.research,
-      links: themes.map((theme) => ({
-        href: `/research/${theme.slug}`,
-        label: theme.title_en || theme.title_ko,
-      })),
-    },
-  ];
 
   return (
     <footer
       id="contact"
       className={classNames(
-        // 최소 높이 없이 내용만큼: 링크 · 연락처와 주소 사이가 gap-12(48px) 로 정해짐
+        "md:min-h-[500px]",
         "grid gap-12 md:grid-cols-[47fr_53fr] md:gap-x-0",
         "px-5 pt-20 pb-16 md:px-10 md:pt-14 md:pb-10",
-        "bg-[#24202e]",
-        "font-neuehaas text-white",
+        // 배경: 위는 흰 본문과 이어지고 아래로 갈수록 일렁이는 그라디언트 (FooterBackground)
+        "relative isolate overflow-hidden",
+        "font-neuehaas",
       )}
     >
-      {/* 로고는 글자 크기(대문자 높이)에 맞춤: text-base ≈ 12px · md:text-lg ≈ 13px */}
-      <div className={classNames("flex flex-col gap-2.5")}>
+      <FooterBackground />
+      {/* 로고: 아래쪽에 붙임. 글자색은 위 #180180 → 아래 #6339CE 세로 그라데이션 (로고 SVG 를 마스크로 써서 그 위에 그라데이션을 깖) */}
+      <div className={classNames("flex flex-col justify-end")}>
         <Link
           href={localePath(locale, ROUTES.home)}
           aria-label={APP_INFO.name}
           className={classNames("self-start")}
         >
-          <Logo aria-hidden className={classNames("h-3 w-auto md:h-[13px]")} />
+          <span
+            aria-hidden
+            className={classNames(
+              "block aspect-67/26 h-16 md:h-32",
+              "bg-linear-to-b from-[#180180] to-[#6339ce]",
+              "[mask-image:url(/img/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat]",
+            )}
+          />
         </Link>
-        <p className={classNames("text-base font-medium md:text-lg")}>
-          {APP_INFO.fullName}
-        </p>
       </div>
 
       <div className={classNames("flex flex-col justify-between gap-12")}>
-        {/* 링크 · 연락처: 넓은 화면에서만 나란히 (중간 화면은 오른쪽 칸이 좁아 아래로 쌓음) */}
         <div
           className={classNames(
-            "flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-10",
+            "flex flex-col gap-10 sm:flex-row sm:justify-between",
           )}
         >
-          <nav className={classNames("flex gap-12")}>
-            {groups.map((group) => (
-              <div
-                key={group.href}
-                className={classNames("flex flex-col gap-2")}
-              >
-                <Link
-                  href={localePath(locale, group.href)}
-                  className={classNames(
-                    "self-start",
-                    "transition",
-                    "text-sm font-medium hover:text-white/60",
-                  )}
-                >
-                  {group.label}
-                </Link>
-                <ul className={classNames("text-sm leading-6 text-white/55")}>
-                  {group.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={localePath(locale, link.href)}
-                        className={classNames("transition", "hover:text-white")}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <nav className={classNames("flex gap-10 sm:gap-0")}>
+            <div className={classNames("flex flex-col gap-2", "w-30 sm:w-50")}>
+              <p className={classNames("text-base leading-6 font-medium")}>
+                {dict.footer.people}
+              </p>
+              <ul className={classNames("text-base leading-7 text-sub")}>
+                {FOOTER_PEOPLE_GROUPS.map((group) => (
+                  <li key={group}>
+                    <Link
+                      href={localePath(locale, `${ROUTES.people}#${group}`)}
+                      className={classNames("transition", "hover:text-main")}
+                    >
+                      {dict.footer.peopleLinks[group]}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className={classNames("flex flex-col gap-2")}>
+              <p className={classNames("text-base leading-6 font-medium")}>
+                {dict.footer.research}
+              </p>
+              <ul className={classNames("text-base leading-7 text-sub")}>
+                {themes.map((theme) => (
+                  <li key={theme.id}>
+                    <Link
+                      href={localePath(locale, `/research/${theme.slug}`)}
+                      className={classNames("transition", "hover:text-main")}
+                    >
+                      {theme.title_en || theme.title_ko}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </nav>
 
           <div
             className={classNames(
-              "flex flex-col gap-1 lg:items-end",
-              "text-sm text-white/55",
+              "flex flex-col sm:items-end",
+              "text-base leading-6 text-sub",
             )}
           >
             <a
               href={`mailto:${APP_INFO.email}`}
-              className={classNames("transition", "hover:text-white")}
+              className={classNames("transition", "hover:text-main")}
             >
               {APP_INFO.email}
             </a>
             <a
               href={`tel:${APP_INFO.phone.tel}`}
-              className={classNames("transition", "hover:text-white")}
+              className={classNames("transition", "hover:text-main")}
             >
               {APP_INFO.phone.label}
             </a>
           </div>
         </div>
 
-        {/* 주소 · 저작권: 넓은 화면에서만 한 줄로 (중간 화면은 오른쪽 칸이 좁아 아래로 쌓음) */}
         <div
           className={classNames(
-            "flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-10",
+            "flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between",
           )}
         >
           <address
-            className={classNames("flex flex-col gap-2", "text-xs not-italic")}
+            className={classNames(
+              "flex flex-col gap-3",
+              "not-italic text-[14px]",
+            )}
           >
-            <p className={classNames("font-pretendard text-[13px]")}>
+            <p className={classNames("font-pretendard")}>
               {APP_INFO.address.ko}
             </p>
-            <p className={classNames("leading-[18px] text-white/55")}>
+            <p className={classNames("leading-[18px] text-sub")}>
               {APP_INFO.address.en}
             </p>
           </address>
-          <p className={classNames("shrink-0", "text-xs text-white/55")}>
+          <p className={classNames("text-[13px]")}>
             © {new Date().getFullYear()} {APP_INFO.name}
           </p>
         </div>

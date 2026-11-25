@@ -1,17 +1,13 @@
 {
-  "speed": 1.1,
-  "energy": 0.9,
-  "swirl": 0.9,
-  "colorOrbit": 0.35,
+  "spin": 2.0,
+  "boost": 1,
+  "intensity": 0.3,
+  "glow": 1.77,
+  "haze": 0.8,
+  "brightness": 1.05,
+  "softness": 0.36,
+  "colorRandom": 0.7,
+  "flowScale": 1.8,
   "scale": 1,
-  "breathe": 0.015,
-  "morph": 0.85,
-  "noiseScale": 0.6,
-  "warp1": 0.35,
-  "warp2": 0.25,
-  "bulge": 0.35,
-  "rim": 0.35,
-  "specular": 0.28,
-  "glow": 0.5,
-  "glowScale": 1.0
+  "breathe": 0.015
 }

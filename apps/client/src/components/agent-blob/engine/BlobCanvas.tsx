@@ -6,6 +6,7 @@ import {
   type ReactNode,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -17,7 +18,12 @@ import {
   type DeepPartial,
   mergeBlobConfig,
 } from "./config";
-import { type BlobFrameValues, BlobRenderer } from "./renderer";
+import {
+  type BlobFrameValues,
+  BlobRenderer,
+  type Morph,
+  type MorphRect,
+} from "./renderer";
 
 export interface BlobCanvasProps {
   /** 에이전트 상태. 바뀔 때 항상 부드럽게 옮겨 갑니다. */
@@ -27,11 +33,18 @@ export interface BlobCanvasProps {
    * 없으면 listening · speaking 에서 가짜 음성 곡선을 씁니다.
    */
   level?: number | (() => number);
-  /** true = 구가 납작한 그라데이션 패널로 녹아듭니다 (모달 배경). */
+  /** true = 구가 커지며 창(모달 배경)을 덮고, 창 모양으로 잘립니다. (상자 크기를 바깥에서 바꾸는 예전 방식) */
   expanded?: boolean;
+  /**
+   * 모핑: 구가 직접 창 모양으로 바뀝니다(스프링 · 끈적한 목 · 젤리). 이 상자가 무대가 되고,
+   * closed(닫힌 구 자리) · panel(열린 창 자리)은 이 상자 기준 px 입니다. 주면 expanded 대신 이것을 씁니다.
+   */
+  morph?: Morph | null;
+  /** 모핑이 멈췄을 때 (open = 열린 창에서) */
+  onMorphSettle?: (open: boolean) => void;
   /** 전체 또는 일부 설정. 없으면 presets/*.json */
   config?: DeepPartial<BlobConfig>;
-  /** 가장자리가 바깥으로 일렁일 수 있게 캔버스를 구보다 넓게 그리는 여백 (구 크기 대비 비율, 0.08 = 8%) */
+  /** 둘레 빛번짐이 잘리지 않게 캔버스를 구보다 넓게 그리는 여백 (구 크기 대비 비율, 0.5 = 양쪽 50%) */
   bleed?: number;
   /** 마우스 올림 · 누름에 반응할지 (기본 true) */
   interactive?: boolean;
@@ -61,13 +74,15 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       level,
       expanded = false,
       config,
-      bleed = 0.08,
+      bleed = 0.5,
       interactive = true,
       force,
       className,
       style,
       children,
       onFrame,
+      morph,
+      onMorphSettle,
     },
     ref,
   ) {
@@ -87,6 +102,9 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       [configKey],
     );
     const cfgRef = useRef(cfg);
+    // 모핑 (내용이 같으면 다시 넘기지 않음)
+    const morphKey = morph ? JSON.stringify(morph) : "";
+    const morphKeyRef = useRef(morphKey);
 
     useImperativeHandle(
       ref,
@@ -107,6 +125,9 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
         config: cfgRef.current,
       });
       rendererRef.current = r;
+      // 처음부터 모핑으로 그려지는 경우 (렌더러보다 아래 모핑 effect 가 먼저 돌아 놓친 값)
+      if (morphKeyRef.current)
+        r.setMorph(JSON.parse(morphKeyRef.current) as Morph);
       setSupported(r.supported);
       return () => {
         r.destroy();
@@ -132,6 +153,17 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       if (rendererRef.current) rendererRef.current.onFrame = onFrame;
     }, [onFrame]);
     useEffect(() => {
+      if (rendererRef.current)
+        rendererRef.current.onMorphSettle = onMorphSettle;
+    }, [onMorphSettle]);
+    // 무대 크기가 바뀌는 같은 그리기 전에 넘겨야 구가 튀지 않아 useLayoutEffect 로 넘깁니다.
+    useLayoutEffect(() => {
+      morphKeyRef.current = morphKey;
+      rendererRef.current?.setMorph(
+        morphKey ? (JSON.parse(morphKey) as Morph) : null,
+      );
+    }, [morphKey]);
+    useEffect(() => {
       const r = rendererRef.current;
       if (!r) return;
       r.hover = force === "hover" || force === "press";
@@ -142,8 +174,17 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
       if (rendererRef.current && interactive && !force)
         rendererRef.current[k] = v;
     };
-    const [c0 = "#fff", c1 = c0, c2 = c0, c3 = c0] = cfg.colors;
-    const radius = cfg.panel.radius;
+    const { colorA, colorB, colorC, colorWarm } = cfg.flow;
+    const { radius, veil } = cfg.panel;
+    const fallbackBackground = `radial-gradient(45% 40% at 50% 75%, ${colorB}, transparent 70%), radial-gradient(40% 40% at 75% 50%, ${colorWarm}, transparent 70%), radial-gradient(40% 45% at 25% 60%, ${colorC}, transparent 70%), ${colorA}`;
+    // 모핑이면 캔버스가 상자 전체를 덮고, 모양 · 흰 덮개 · 크기는 셰이더가 그립니다(아래 CSS 자르기 · 덮개는 끔).
+    // 두 방식을 오가도 같은 캔버스(WebGL)를 쓰도록 요소 구조는 하나로 둡니다.
+    const morphBox: MorphRect | null = morph
+      ? morph.open
+        ? morph.panel
+        : morph.closed
+      : null;
+    const clip = expanded && !morph;
 
     return (
       <div
@@ -153,8 +194,6 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
           position: "relative",
           width: "100%",
           height: "100%",
-          // 안쪽 번짐 빛 흐림을 블롭 크기 비율(cqw)로 쓰기 위해
-          containerType: "size",
           ...style,
         }}
         onPointerEnter={() => set("hover", true)}
@@ -167,45 +206,45 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
         onFocus={() => set("hover", true)}
         onBlur={() => set("hover", false)}
       >
-        {/* 바깥 번짐 빛 */}
+        {/* 구 · 펼치면 창 모양으로 잘림 */}
         <div
           aria-hidden
           style={{
             position: "absolute",
-            // 번짐 빛: 블롭 크기에 비례 (작은 블롭 · 큰 미리보기가 같은 비율로 보이도록)
-            inset: expanded ? -30 : "-7%",
-            borderRadius: expanded ? radius + 12 : "50%",
-            background: `radial-gradient(closest-side, ${c1}, ${c2} 45%, ${c3} 70%, transparent)`,
-            filter: expanded ? "blur(14px)" : "blur(7cqw)",
-            opacity: "var(--blob-glow, .35)",
-            transform: "scale(var(--blob-glow-scale, 1))",
-            transition: `inset .7s ${EASE}, border-radius .7s ${EASE}`,
-            pointerEvents: "none",
-          }}
-        />
-        {/* 그라데이션 면 */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: expanded ? 0 : `${-bleed * 100}%`,
-            borderRadius: expanded ? radius : 0,
-            overflow: expanded ? "hidden" : "visible",
-            transform: "scale(var(--blob-scale, 1))",
-            transition: `inset .7s ${EASE}, border-radius .7s ${EASE}`,
+            inset: clip || morph ? 0 : `${-bleed * 100}%`,
+            borderRadius: clip ? radius : 0,
+            overflow: clip ? "hidden" : "visible",
+            // 모핑 중 크기 배율은 렌더러가 구 지름에 넣습니다(무대 전체를 키우지 않게).
+            transform: morph ? "none" : "scale(var(--blob-scale, 1))",
+            transition: morph
+              ? "none"
+              : `inset .7s ${EASE}, border-radius .7s ${EASE}`,
             pointerEvents: "none",
           }}
         >
           {/* CSS 대체 화면: 첫 그리기(JS 전) · WebGL 이 안 되는 기기 */}
           {supported !== true && (
             <div
-              style={{
-                position: "absolute",
-                // 넓힌 면(1 + 2 × bleed) 안에서 원래 구 자리
-                inset: expanded ? 0 : `${(bleed / (1 + 2 * bleed)) * 100}%`,
-                borderRadius: expanded ? radius : "50%",
-                background: `radial-gradient(40% 45% at 30% 70%, ${c2}, transparent 70%), radial-gradient(35% 40% at 70% 30%, ${c1}, transparent 70%), radial-gradient(40% 40% at 78% 78%, ${c3}, transparent 70%), ${c0}`,
-              }}
+              style={
+                morphBox
+                  ? {
+                      position: "absolute",
+                      left: morphBox.x,
+                      top: morphBox.y,
+                      width: morphBox.width,
+                      height: morphBox.height,
+                      borderRadius: morph?.open ? radius : "50%",
+                      background: fallbackBackground,
+                      transition: `all .6s ${EASE}`,
+                    }
+                  : {
+                      position: "absolute",
+                      // 넓힌 면(1 + 2 × bleed) 안에서 원래 구 자리
+                      inset: clip ? 0 : `${(bleed / (1 + 2 * bleed)) * 100}%`,
+                      borderRadius: clip ? radius : "50%",
+                      background: fallbackBackground,
+                    }
+              }
             />
           )}
           <canvas
@@ -215,6 +254,16 @@ export const BlobCanvas = forwardRef<BlobCanvasHandle, BlobCanvasProps>(
               width: "100%",
               height: "100%",
               display: "block",
+            }}
+          />
+          {/* 펼친 창: 글자가 잘 보이도록 덮는 흰색 (모핑이면 셰이더가 그림) */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "#fff",
+              opacity: clip ? veil : 0,
+              transition: `opacity .5s ${EASE}`,
             }}
           />
         </div>

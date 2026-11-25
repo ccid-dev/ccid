@@ -1,7 +1,6 @@
-import classNames from "classnames";
 import type { Metadata } from "next";
 import { AgentTuner } from "./AgentTuner";
-import { hasLocale } from "@/i18n";
+import { hasLocale, localePath } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 
 /** 디자인 작업용 페이지 — 검색에 노출하지 않습니다. (sitemap 에도 넣지 않음) */
@@ -21,10 +20,6 @@ export default async function AgentTunePage({
   if (!hasLocale(lang)) return null;
   const dict = await getDictionary(lang);
 
-  // 사이트 헤더(화면 위 고정, 72px) 아래부터 화면 높이를 씁니다.
-  return (
-    <div className={classNames("pt-18")}>
-      <AgentTuner labels={dict.agent} />
-    </div>
-  );
+  // 튜닝 화면은 화면 전체를 덮습니다 (헤더 · 푸터 가림, 페이지 스크롤 없음).
+  return <AgentTuner labels={dict.agent} homeHref={localePath(lang, "/")} />;
 }

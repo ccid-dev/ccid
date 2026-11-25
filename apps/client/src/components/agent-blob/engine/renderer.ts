@@ -1,10 +1,11 @@
-// AgentBlob WebGL 렌더러 (프레임워크 무관, 의존성 없음).
-// 화면 전체 삼각형 하나에 프래그먼트 셰이더:
-//   도메인 워프 심플렉스 노이즈 → 팔레트 섞기 → 가짜 구 음영(z = sqrt(1 - r²): 볼록 · 테두리 빛 · 반사광)
-//   → 노이즈로 흔들리는 가장자리(덩어리 일렁임).
-// 상황(idle · hover · press · listening · thinking · speaking)마다 값 묶음이 있고,
-// JS 가 매 프레임 지금 값을 목표 값 쪽으로 부드럽게 옮기며 시간을 누적합니다(T += dt * speed).
-// 그래서 상황이 바뀌어도 튀지 않습니다. CSS 키프레임이나 time * speed 직접 계산으로 바꾸지 마세요.
+// AgentBlob 렌더러: 상황(idle · hover · press · listening · thinking · speaking)에 따라 값을 옮기고
+// flow 구(engine/flow-orb.ts)를 그립니다.
+// 상황마다 값 묶음이 있고, JS 가 매 프레임 지금 값을 목표 값 쪽으로 부드럽게 옮기며 시간을 누적합니다(T += dt × spin).
+// 그래서 상황이 바뀌어도 튀지 않습니다. CSS 키프레임이나 time × speed 직접 계산으로 바꾸지 마세요.
+// 대화 창으로 펼치는 방법은 두 가지입니다.
+// - expanded: 구가 창을 덮을 만큼 커지고, 상자(CSS) 모양으로 잘립니다. (튜닝 페이지 예전 방식)
+// - morph: 구가 직접 창 모양으로 바뀝니다. 위치 · 크기를 스프링으로 움직이고, 모양 셰이더(flow-orb.ts)가
+//   원 → 둥근 사각형 · 떠난 자리와 이어지는 끈적한 목 · 방향으로 늘어남 · 가장자리 출렁임을 그립니다.
 
 import {
   type BlobConfig,
@@ -14,88 +15,38 @@ import {
   BLOB_PRESET_KEYS,
   DEFAULT_BLOB_CONFIG,
 } from "./config";
+import { createFlowOrb, type FlowOrbDrawer } from "./flow-orb";
 
-const VERT = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
-
-const FRAG = `
-precision highp float;
-uniform vec2 uRes;
-uniform float uT,uPh,uEnergy,uBright,uSphere,uSwirl,uMorph,uR;
-uniform float uScale,uWarp1,uWarp2,uBulge,uRim,uSpec;
-uniform vec3 c0,c1,c2,c3,c4;
-vec3 permute(vec3 x){return mod(((x*34.0)+1.0)*x,289.0);}
-float sn(vec2 v){
-  const vec4 C=vec4(.211324865405187,.366025403784439,-.577350269189626,.024390243902439);
-  vec2 i=floor(v+dot(v,C.yy)); vec2 x0=v-i+dot(i,C.xx);
-  vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);
-  vec4 x12=x0.xyxy+C.xxzz; x12.xy-=i1; i=mod(i,289.);
-  vec3 p=permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
-  vec3 m=max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.); m=m*m; m=m*m;
-  vec3 x=2.*fract(p*C.www)-1.; vec3 h=abs(x)-.5; vec3 ox=floor(x+.5); vec3 a0=x-ox;
-  m*=1.79284291400159-.85373472095314*(a0*a0+h*h);
-  vec3 g; g.x=a0.x*x0.x+h.x*x0.y; g.yz=a0.yz*x12.xz+h.yz*x12.yw;
-  return 130.*dot(m,g);
+/** 캔버스 왼쪽 위 기준 상자 (CSS px) */
+export interface MorphRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
-float fbm(vec2 p){ return .78*sn(p)+.22*sn(p*1.9+3.1); }
-void main(){
-  vec2 uv=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);
-  vec2 s=uv*2./mix(1.,uR,uSphere);
-  float ang=atan(s.y,s.x); vec2 dir=vec2(cos(ang),sin(ang));
-  float wob=uMorph*(.045*sn(dir*1.1+vec2(uT*.9,-uT*.6))+.018*sn(dir*2.4-vec2(uT*1.4,uT*.3)));
-  float r=length(s)/(1.+wob);
-  float z=sqrt(max(0.,1.-r*r));
-  vec2 p=s*.5*uScale;
-  p/=mix(1.,.6+.4*z,uSphere*uBulge);
-  float a=uSwirl*(1.2-length(p))*1.6; p=mat2(cos(a),-sin(a),sin(a),cos(a))*p;
-  float t=uT;
-  vec2 q=vec2(fbm(p+vec2(0.,t)), fbm(p+vec2(5.2,1.3)-t*.8));
-  vec2 w=vec2(fbm(p+uWarp1*q+vec2(1.7,9.2)+t*.6), fbm(p+uWarp1*q+vec2(8.3,2.8)-t*.5));
-  float n=fbm(p+uWarp2*w)*.5+.5;
-  vec3 col=mix(c0,c4,smoothstep(.15,.55,n));
-  col=mix(col,c1,smoothstep(.0,.6,w.x+.15));
-  col=mix(col,c2,smoothstep(.15,.75,q.y+w.y*.6)*(.75+.25*uEnergy));
-  float ph=uPh;
-  col=mix(col,c3,smoothstep(.35,.9,w.y-q.x*.4+.35*(s.x*cos(ph)+s.y*sin(ph))));
-  col=mix(col,c1,.35*smoothstep(.4,1.,-s.x*sin(ph*.7)+s.y*cos(ph*.7)));
-  col+=uBright*vec3(.9,.85,1.);
-  float rim=pow(1.-z,2.5);
-  float spec=smoothstep(.42,.0,length(s-vec2(-.38,.42)));
-  float shade=mix(1.,.86+.14*smoothstep(-1.,.4,s.y),uSphere);
-  col=col*shade+uSphere*(rim*uRim*vec3(1.,.97,1.)+spec*uSpec);
-  float aa=2.5/(uR*min(uRes.x,uRes.y)*.5);
-float mask=mix(1.,smoothstep(1.,1.-aa,r),uSphere);
-  gl_FragColor=vec4(col*mask,mask);
-}`;
 
-const UNIFORMS = [
-  "uRes",
-  "uT",
-  "uPh",
-  "uEnergy",
-  "uBright",
-  "uSphere",
-  "uSwirl",
-  "uMorph",
-  "uR",
-  "uScale",
-  "uWarp1",
-  "uWarp2",
-  "uBulge",
-  "uRim",
-  "uSpec",
-  "c0",
-  "c1",
-  "c2",
-  "c3",
-  "c4",
-] as const;
-type UniformName = (typeof UNIFORMS)[number];
+/** 모핑: 닫힌 구 자리와 열린 창 자리 (둘 다 캔버스 기준). open 이 바뀌면 스프링으로 옮겨 갑니다. */
+export interface Morph {
+  open: boolean;
+  closed: MorphRect;
+  panel: MorphRect;
+}
+
+/** 스프링 하나 (값 · 속도) */
+interface Spring {
+  x: number;
+  v: number;
+}
+const spring = (x: number): Spring => ({ x, v: 0 });
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+/** 모양: 중심 · 반쪽 크기 스프링 */
+type MorphShape = { x: Spring; y: Spring; hw: Spring; hh: Spring };
 
 export interface BlobRendererOptions {
   canvas: HTMLCanvasElement;
-  /** 매 프레임 --blob-scale / --blob-glow / --blob-glow-scale CSS 변수를 받는 요소 */
+  /** 매 프레임 --blob-scale CSS 변수를 받는 요소 */
   host?: HTMLElement;
-  /** 보이는 구 지름의 기준 요소 (캔버스는 이보다 넓게 번질 수 있음). 기본은 host */
+  /** 보이는 구(또는 펼친 창) 크기의 기준 요소. 기본은 host */
   sizeRef?: HTMLElement;
   config?: BlobConfig;
   /** 움직임 줄이기 설정을 따를지 (기본 true) */
@@ -104,29 +55,12 @@ export interface BlobRendererOptions {
 
 export interface BlobFrameValues {
   scale: number;
-  glow: number;
-  glowScale: number;
+  haze: number;
   level: number;
 }
 
 /** 매 프레임 목표 쪽으로 옮겨 가는 값들 */
 type Animated = BlobPreset & { level: number; sphere: number };
-
-const hexToRgb = (h: string): [number, number, number] => {
-  const x = h.replace("#", "");
-  const v =
-    x.length === 3
-      ? x
-          .split("")
-          .map((c) => c + c)
-          .join("")
-      : x;
-  return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255) as [
-    number,
-    number,
-    number,
-  ];
-};
 
 /** 실제 음성 크기가 없을 때 쓰는 가짜 음성 곡선 */
 export function simulatedLevel(state: BlobState, t: number): number {
@@ -149,19 +83,18 @@ export class BlobRenderer {
   private canvas: HTMLCanvasElement;
   private host?: HTMLElement;
   private sizeRef?: HTMLElement;
-  private gl: WebGLRenderingContext | null = null;
-  private loc = {} as Record<UniformName, WebGLUniformLocation | null>;
+  private orb: FlowOrbDrawer | null;
   private cfg: BlobConfig;
   private reduce = false;
   private raf = 0;
   private last = 0;
   /** 누적 시간 (흐름) */
   private T = Math.random() * 100;
-  /** 누적 위상 (색 회전). colorOrbit 이 바뀌어도 튀지 않도록 따로 쌓습니다. */
-  private phase = Math.random() * Math.PI * 2;
   private visible = true;
-  private ro?: ResizeObserver;
   private io?: IntersectionObserver;
+  /** 구 크기를 잴 상자의 크기. 매 프레임 clientWidth 를 읽으면 그때마다 레이아웃이 강제로 돌아서, 크기가 바뀔 때만 ResizeObserver 로 갱신 */
+  private box = { w: 1, h: 1 };
+  private ro?: ResizeObserver;
   private mq?: MediaQueryList;
 
   state: BlobState = "idle";
@@ -172,6 +105,15 @@ export class BlobRenderer {
   level: number | (() => number) | null = null;
   /** 매 프레임 콜백 (host 밖의 무언가를 같이 움직일 때) */
   onFrame?: (v: BlobFrameValues) => void;
+  /** 모핑이 끝까지 옮겨 가 멈췄을 때 (open = 열린 창에서 멈춤) */
+  onMorphSettle?: (open: boolean) => void;
+
+  private morphTarget: Morph | null = null;
+  /** 모양 스프링: 중심 · 반쪽 크기 */
+  private shape: MorphShape | null = null;
+  private settled = true;
+  /** 열림 시간 u (선형 0 = 닫힌 구, 1 = 창). 곡선을 걸어 진행도로 바꿈 — 위치 · 크기를 한 몸으로 움직이는 기준 */
+  private progress = spring(0);
 
   private cur: Animated;
 
@@ -191,15 +133,18 @@ export class BlobRenderer {
       this.mq.addEventListener?.("change", this.onMq);
     }
 
-    this.supported = this.init();
-    this.canvas.addEventListener(
-      "webglcontextlost",
-      this.onLost as EventListener,
-    );
-    this.canvas.addEventListener("webglcontextrestored", this.onRestored);
+    const sizeBox = this.sizeRef ?? this.canvas;
+    const measure = () => {
+      this.box.w = sizeBox.clientWidth;
+      this.box.h = sizeBox.clientHeight;
+    };
+    measure();
+    this.ro = new ResizeObserver(measure);
+    this.ro.observe(sizeBox);
 
-    this.ro = new ResizeObserver(() => this.resize());
-    this.ro.observe(this.canvas);
+    this.orb = createFlowOrb(this.canvas, this.cfg.flow);
+    this.supported = this.orb !== null;
+
     this.io = new IntersectionObserver(([e]) => {
       if (!e) return;
       this.visible = e.isIntersecting;
@@ -210,9 +155,34 @@ export class BlobRenderer {
     this.start();
   }
 
+  /**
+   * 모핑 시작 · 목표 바꾸기. null 이면 모핑을 끕니다(닫힌 구로 돌아가 캔버스가 다시 작아졌을 때).
+   * 처음 켤 때는 닫힌 구 자리에서 시작합니다.
+   */
+  setMorph(morph: Morph | null) {
+    const prev = this.morphTarget;
+    this.morphTarget = morph;
+    if (!morph) {
+      this.shape = null;
+      return;
+    }
+    if (!this.shape) {
+      this.progress = spring(0);
+      const r = morph.closed;
+      this.shape = {
+        x: spring(r.x + r.width / 2),
+        y: spring(r.y + r.height / 2),
+        hw: spring(r.width / 2),
+        hh: spring(r.height / 2),
+      };
+    }
+    if (!prev || prev.open !== morph.open) this.settled = false;
+    this.expanded = morph.open;
+  }
+
   setConfig(cfg: BlobConfig) {
     this.cfg = cfg;
-    this.applyColors();
+    this.orb?.setLook(cfg.flow);
   }
   getConfig() {
     return this.cfg;
@@ -221,22 +191,12 @@ export class BlobRenderer {
   destroy() {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
-    this.ro?.disconnect();
     this.io?.disconnect();
+    this.ro?.disconnect();
     this.mq?.removeEventListener?.("change", this.onMq);
     document.removeEventListener("visibilitychange", this.onVis);
-    this.canvas.removeEventListener(
-      "webglcontextlost",
-      this.onLost as EventListener,
-    );
-    this.canvas.removeEventListener("webglcontextrestored", this.onRestored);
-    // GPU 컨텍스트는 캔버스가 실제로 화면에서 빠졌을 때만 바로 반납합니다.
-    // React StrictMode(dev)는 같은 캔버스로 정리 → 다시 마운트하는데, 이때 끊어 버리면
-    // getContext 가 끊긴 컨텍스트를 그대로 돌려줘 셰이더 컴파일이 실패합니다.
-    if (!this.canvas.isConnected) {
-      this.gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    }
-    this.gl = null;
+    this.orb?.destroy();
+    this.orb = null;
   }
 
   // ---------------------------------------------------------------- 내부
@@ -246,74 +206,6 @@ export class BlobRenderer {
   private onMq = (e: MediaQueryListEvent) => {
     this.reduce = e.matches;
   };
-  private onLost = (e: Event) => {
-    e.preventDefault();
-    cancelAnimationFrame(this.raf);
-    this.raf = 0;
-  };
-  private onRestored = () => {
-    this.init();
-    this.start();
-  };
-
-  private init(): boolean {
-    const gl = this.canvas.getContext("webgl", {
-      premultipliedAlpha: true,
-      antialias: false,
-      alpha: true,
-    });
-    if (!gl || gl.isContextLost()) return false;
-    this.gl = gl;
-    const sh = (type: number, src: string) => {
-      const s = gl.createShader(type)!;
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-        console.error("[AgentBlob]", gl.getShaderInfoLog(s));
-      return s;
-    };
-    const prog = gl.createProgram()!;
-    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
-    gl.useProgram(prog);
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW,
-    );
-    const ap = gl.getAttribLocation(prog, "p");
-    gl.enableVertexAttribArray(ap);
-    gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
-    for (const n of UNIFORMS) this.loc[n] = gl.getUniformLocation(prog, n);
-    this.applyColors();
-    return true;
-  }
-
-  private applyColors() {
-    const gl = this.gl;
-    if (!gl) return;
-    for (let i = 0; i < 5; i++) {
-      const color = this.cfg.colors[i] ?? this.cfg.colors[0] ?? "#ffffff";
-      gl.uniform3fv(this.loc[`c${i}` as UniformName], hexToRgb(color));
-    }
-  }
-
-  private resize() {
-    const gl = this.gl;
-    if (!gl) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const k = this.expanded ? 0.5 : dpr; // 펼친 패널 배경은 부드러워서 절반 해상도로 충분
-    const w = Math.max(1, Math.round(this.canvas.clientWidth * k));
-    const h = Math.max(1, Math.round(this.canvas.clientHeight * k));
-    if (this.canvas.width !== w || this.canvas.height !== h) {
-      this.canvas.width = w;
-      this.canvas.height = h;
-      gl.viewport(0, 0, w, h);
-    }
-  }
 
   private start() {
     if (!this.raf) {
@@ -331,9 +223,7 @@ export class BlobRenderer {
 
   private frame = (now: number) => {
     this.raf = 0;
-    if (!this.visible || document.hidden) {
-      return;
-    }
+    if (!this.visible || document.hidden) return;
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     const { situations, voice, motion, panel } = this.cfg;
@@ -352,70 +242,188 @@ export class BlobRenderer {
         : (src ?? simulatedLevel(this.state, now / 1000));
     ease("level", rawLevel, 14);
 
-    // 상황 값 → 지금 값 (모양 관련은 아래에서 따로)
+    // 상황 값 → 지금 값 (크기는 아래에서 따로)
     for (const k of BLOB_PRESET_KEYS) {
-      if (k === "scale" || k === "morph") continue;
-      const rate =
-        k === "swirl"
-          ? motion.ease * 0.75
-          : k === "glow" || k === "glowScale"
-            ? motion.ease * 1.5
-            : motion.ease;
-      const target = k === "speed" && this.reduce ? 0.04 : p[k];
-      ease(k, target, rate);
+      if (k === "scale") continue;
+      ease(k, p[k], k === "haze" ? motion.ease * 1.5 : motion.ease);
     }
     ease("sphere", this.expanded ? 0 : 1, 5);
-    ease(
-      "morph",
-      this.expanded
-        ? 0
-        : this.reduce
-          ? p.morph * 0.3
-          : p.morph + c.level * voice.levelMorph,
-      6,
-    );
     const breathe = this.reduce ? 0 : c.breathe * Math.sin((now / 1000) * 1.6);
     ease(
       "scale",
       this.expanded ? 1 : p.scale + breathe + c.level * voice.levelScale,
       key === "press" ? motion.scaleEase * 2.4 : motion.scaleEase,
     );
-    this.T += dt * c.speed;
-    this.phase += dt * c.speed * c.colorOrbit;
+    // 원본: 움직임 줄이기면 시간을 멈춤 → 아주 천천히만 흐르게
+    this.T += dt * c.spin * (this.reduce ? 0.05 : 1);
 
-    const glowScale = c.glowScale + c.level * voice.levelGlow;
-    if (this.host) {
-      this.host.style.setProperty("--blob-scale", c.scale.toFixed(4));
-      this.host.style.setProperty("--blob-glow", c.glow.toFixed(3));
-      this.host.style.setProperty("--blob-glow-scale", glowScale.toFixed(4));
-    }
-    this.onFrame?.({ scale: c.scale, glow: c.glow, glowScale, level: c.level });
+    const haze = (c.haze + c.level * voice.levelHaze) * c.sphere;
+    this.host?.style.setProperty("--blob-scale", c.scale.toFixed(4));
+    this.onFrame?.({ scale: c.scale, haze, level: c.level });
 
-    const gl = this.gl;
-    if (gl && !gl.isContextLost()) {
-      this.resize();
-      const L = this.loc;
-      const box = this.sizeRef?.clientWidth ?? this.canvas.clientWidth;
-      gl.uniform2f(L.uRes, this.canvas.width, this.canvas.height);
-      gl.uniform1f(L.uT, this.T);
-      gl.uniform1f(L.uPh, this.phase);
-      gl.uniform1f(L.uEnergy, c.energy);
-      gl.uniform1f(L.uBright, c.level * voice.levelBrightness);
-      gl.uniform1f(L.uSphere, c.sphere);
-      gl.uniform1f(L.uSwirl, c.swirl);
-      gl.uniform1f(L.uMorph, c.morph);
-      gl.uniform1f(L.uR, Math.min(1, box / (this.canvas.clientWidth || 1)));
-      gl.uniform1f(
-        L.uScale,
-        panel.noiseScale + (c.noiseScale - panel.noiseScale) * c.sphere,
-      );
-      gl.uniform1f(L.uWarp1, c.warp1);
-      gl.uniform1f(L.uWarp2, c.warp2);
-      gl.uniform1f(L.uBulge, c.bulge);
-      gl.uniform1f(L.uRim, c.rim);
-      gl.uniform1f(L.uSpec, c.specular);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    const look = {
+      time: this.T,
+      boost: c.boost,
+      intensity: Math.min(1, c.intensity + c.level * voice.levelIntensity),
+      glow: c.glow,
+      haze,
+      brightness: c.brightness + c.level * voice.levelBrightness,
+      softness: c.softness,
+      colorRandom: c.colorRandom,
+      flowScale: c.flowScale,
+    };
+
+    if (this.morphTarget && this.shape) {
+      this.drawMorph(look, dt, now, this.morphTarget, this.shape, c.scale);
+    } else {
+      // 구 지름: 닫힌 구 = 상자 크기 · 펼친 창 = 창 대각선 × fill
+      const { w, h } = this.box;
+      const closed = Math.min(w, h);
+      const open = Math.hypot(w, h) * panel.fill;
+      this.orb?.draw({ ...look, diameter: open + (closed - open) * c.sphere });
     }
     this.raf = requestAnimationFrame(this.frame);
   };
+
+  /** 모핑: 스프링으로 모양을 옮기고, 구 · 모양 셰이더를 그립니다. */
+  private drawMorph(
+    look: Omit<Parameters<FlowOrbDrawer["draw"]>[0], "diameter">,
+    dt: number,
+    now: number,
+    m: Morph,
+    sh: MorphShape,
+    scale: number,
+  ) {
+    const { morph, panel } = this.cfg;
+    const to = m.open ? m.panel : m.closed;
+    const tx = to.x + to.width / 2;
+    const ty = to.y + to.height / 2;
+    const thw = to.width / 2;
+    const thh = to.height / 2;
+
+    // 위치 · 가로 · 세로를 따로 움직이면 서로 속도가 달라, 닫힐 때 사각형이 길쭉하게 남은 채 구가 따로 자라나
+    // 둘이 겹쳤다 합쳐져 보임. 그래서 진행도 하나(0 = 닫힌 구, 1 = 창)로 위치 · 크기를 한 몸으로 움직임.
+    // 진행도는 "시간 u"(선형 0~1)에 앞뒤 대칭 곡선(ease-in-out)을 건 값: u 가 0 → 1 로 가면 열기, 1 → 0 으로 가면
+    // 닫기라 같은 곡선을 정확히 거꾸로 재생함. (스프링은 열 때도 닫을 때도 "빨리 시작 · 천천히 끝"이라 닫기가 거울이 아님)
+    // 중간에 다시 눌러도 u 가 있던 자리에서 곧장 반대로 가서 끊기지 않음.
+    const goal = m.open ? 1 : 0;
+    const clock = this.progress;
+    if (this.reduce) {
+      // 움직임 줄이기: 바로 그 자리로
+      clock.x = goal;
+    } else {
+      const du = dt / Math.max(0.1, morph.duration);
+      clock.x =
+        goal > clock.x
+          ? Math.min(goal, clock.x + du)
+          : Math.max(goal, clock.x - du);
+    }
+    clock.v = 0;
+    const u = clock.x;
+    // ease-in-out (2제곱, 앞뒤 대칭): 3제곱은 시작이 너무 느려 누른 뒤 0.2초 동안 안 움직이는 듯 보임
+    const t = u < 0.5 ? 2 * u ** 2 : 1 - (-2 * u + 2) ** 2 / 2;
+    const mix = (from: number, toward: number) => from + (toward - from) * t;
+    const nextX = mix(
+      m.closed.x + m.closed.width / 2,
+      m.panel.x + m.panel.width / 2,
+    );
+    const nextY = mix(
+      m.closed.y + m.closed.height / 2,
+      m.panel.y + m.panel.height / 2,
+    );
+    const nextHw = Math.max(1, mix(m.closed.width / 2, m.panel.width / 2));
+    const nextHh = Math.max(1, mix(m.closed.height / 2, m.panel.height / 2));
+    const inv = dt > 0 ? 1 / dt : 0;
+    sh.x.v = (nextX - sh.x.x) * inv;
+    sh.y.v = (nextY - sh.y.x) * inv;
+    sh.hw.v = (nextHw - sh.hw.x) * inv;
+    sh.hh.v = (nextHh - sh.hh.x) * inv;
+    sh.x.x = nextX;
+    sh.y.x = nextY;
+    sh.hw.x = nextHw;
+    sh.hh.x = nextHh;
+
+    // 다 옮겨 갔는지 (멈추면 딱 맞춰 두고 알림)
+    const off =
+      Math.abs(sh.x.x - tx) +
+      Math.abs(sh.y.x - ty) +
+      Math.abs(sh.hw.x - thw) +
+      Math.abs(sh.hh.x - thh);
+    const speed =
+      Math.abs(sh.x.v) +
+      Math.abs(sh.y.v) +
+      Math.abs(sh.hw.v) +
+      Math.abs(sh.hh.v);
+    if (!this.settled && off < 0.5 && speed < 4) {
+      this.settled = true;
+      this.onMorphSettle?.(m.open);
+    }
+
+    // 얼마나 열렸는지 (0 = 닫힌 구, 1 = 창). 출렁일 때 1 을 넘기도 합니다.
+    const rc = Math.min(m.closed.width, m.closed.height) / 2;
+    // 짧은 쪽 기준: 가로 + 세로 합으로 재면 세로로 긴 창(사이드바)에서는 폭이 이미 좁아졌는데도
+    // 세로 때문에 "아직 많이 열림"으로 계산되어, 마스크 없이 큰 구 본체가 창 옆에 반투명 원으로 드러남
+    const rp = Math.min(m.panel.width, m.panel.height) / 2;
+    const raw = (Math.min(sh.hw.x, sh.hh.x) - rc) / Math.max(1, rp - rc);
+    const prog = clamp01(raw);
+
+    // 구: 모양 중심에, 닫힌 구 지름 → 창 대각선 × fill
+    const closedD = 2 * rc * scale;
+    // 구 그림 펼치기: 구를 창을 덮을 만큼 키워 일부만 자르면 구의 무늬가 늘어나 뭉개지거나 다른 그림이 됨.
+    // 대신 구를 "한 장의 그림"으로 그려 두고(지름 = 창 긴 변 × fit), 창 모양에 맞춰 늘려 읽음.
+    // 창이 열릴수록(w) 닫힌 구 크기 · 화면 그대로 읽기 → 큰 구 그림 · 펼쳐 읽기로 바뀜.
+    const w = clamp01(raw * 3);
+    const fit = panel.fit;
+    const stillD = Math.max(sh.hw.x, sh.hh.x) * 2 * fit;
+    const diameter = Math.max(1, closedD + (stillD - closedD) * w);
+    // 창 반쪽 크기가 구 그림 반지름에 닿도록: 그림 반지름 / (fit × 창 반쪽)
+    const srcX = diameter / 2 / Math.max(1, fit * sh.hw.x);
+    const srcY = diameter / 2 / Math.max(1, fit * sh.hh.x);
+    const srcScale: [number, number] = [1 + (srcX - 1) * w, 1 + (srcY - 1) * w];
+
+    // 방향으로 늘어남: 빨리 움직일수록 (부피는 그대로)
+    const vx = sh.x.v;
+    const vy = sh.y.v;
+    const v = Math.hypot(vx, vy);
+    // 작은 물방울일 때만 크게 — 창이 될수록 빠르게 줄어듭니다 (큰 창이 비스듬히 늘어나면 유리판처럼 보임)
+    const stretch =
+      1 + Math.min(0.4, (v / 2400) * morph.stretch * 2) * (1 - prog) ** 2;
+    // 가장자리 출렁임: 크기가 빨리 바뀔수록
+    const sizeSpeed = Math.abs(sh.hw.v) + Math.abs(sh.hh.v);
+    const wobble = Math.min(28, sizeSpeed * 0.012 * morph.wobble);
+    // 떠난 자리의 물방울: 열릴수록 작아져 목이 가늘어지다 끊어집니다.
+    // 닫을 때는 만들지 않음: 닫히는 창이 돌아오는 자리에 이 물방울이 먼저 남아 있으면, 끈적한 목(neck)으로 이어져
+    // 창 옆에 큰 반투명 구가 부풀어 나왔다 사라져 보임 (열 때만 쓰는 연출)
+    const tail = morph.neck > 0 && m.open ? rc * scale * (1 - prog) ** 1.5 : 0;
+
+    this.orb?.draw({
+      ...look,
+      diameter,
+      // 화면 전체 무대라 그리는 양이 많아 해상도를 조금 낮춥니다 (흐린 그라데이션이라 차이가 거의 없음)
+      maxPixelRatio: 1.5,
+      center: [sh.x.x, sh.y.x],
+      mask: {
+        center: [sh.x.x, sh.y.x],
+        half: [Math.max(1, sh.hw.x), Math.max(1, sh.hh.x)],
+        // 닫힌 구는 원(반지름 = 반쪽 크기), 열릴수록 창 모서리로
+        radius: rc + (panel.radius - rc) * prog,
+        dir: v > 1 ? [vx / v, vy / v] : [1, 0],
+        stretch,
+        wobble,
+        phase: (now / 1000) * 9,
+        tail: [
+          m.closed.x + m.closed.width / 2,
+          m.closed.y + m.closed.height / 2,
+          tail,
+        ],
+        neck: morph.neck,
+        // 닫힌 구일 때는 자르지 않아 둘레 빛번짐이 그대로 보이고, 열리기 시작하면 바로 모양을 따릅니다.
+        // 거의 끝(구 크기)까지 모양을 따르다 마지막에만 풀림 — 일찍 풀리면 구 본체가 사각형 옆에 따로 보임
+        amount: clamp01(raw * 10),
+        srcScale,
+        veil: panel.veil * prog,
+        edge: morph.edge * prog,
+      },
+    });
+  }
 }

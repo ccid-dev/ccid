@@ -14,6 +14,7 @@ import { Reveal } from "./Reveal";
  * 넓은 화면에서는 제목이 스크롤을 따라옵니다.
  * 모션: 화면에 들어오면 제목이 떠오르고 → 내용이 조금 늦게 따라옵니다.
  * hold: 넓은 화면에서 구역이 화면에 꽉 찬 채 한 번 멈췄다가 내려갑니다. (내용이 한 화면에 들어가는 구역에만)
+ * closeBelow: 아래 여백만 줄임 (Research → Projects 처럼 바로 아래 구역이 가깝게 이어질 때)
  * tight: 아래 여백(+ 좁은 화면은 위 여백도)을 줄여 앞뒤 구역과 가깝게 (People 페이지처럼 같은 형식의 구역이 이어질 때)
  */
 export function Section({
@@ -22,7 +23,9 @@ export function Section({
   action,
   hold = false,
   tight = false,
+  closeBelow = false,
   children,
+  className,
 }: {
   id?: string;
   title: string;
@@ -32,7 +35,10 @@ export function Section({
   hold?: boolean;
   /** 아래 여백(+ 좁은 화면은 위 여백) 줄이기 */
   tight?: boolean;
+  /** 아래 여백만 줄이기 (바로 아래 구역이 가깝게 이어질 때. 위 여백은 그대로) */
+  closeBelow?: boolean;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <section
@@ -41,17 +47,28 @@ export function Section({
         "scroll-mt-20",
         "px-5 md:px-10",
         hold && "lg:h-[160svh]",
+        // 안쪽이 화면 가운데에 고정되는 구역(Research)은 끝날 때 아래에 "가운데 정렬 여유"가 남으므로 그만큼 다음 구역을 당겨 올림
+        closeBelow && "lg:-mb-[14svh]",
+        className,
       )}
     >
       <div
         className={classNames(
           "grid gap-y-8 lg:grid-cols-10 lg:gap-x-10",
-          tight ? "pt-16 pb-8 md:pt-40 md:pb-12" : "py-24 md:py-40",
+          tight
+            ? "pt-16 pb-8 md:pt-40 md:pb-12"
+            : closeBelow
+              ? "pt-24 pb-12 md:pt-40 md:pb-16"
+              : "py-24 md:py-40",
           hold
-            ? "lg:sticky lg:top-0 lg:min-h-svh lg:content-center lg:py-24"
-            : tight
-              ? "lg:pt-48 lg:pb-16"
-              : "lg:py-48",
+            ? // 멈춰 있는 동안 제목은 다른 구역의 sticky 제목과 같은 높이(위에서 96px = top-24)에 두고, 내용 칸은 화면 세로 가운데에 놓음 (행이 화면 높이만큼 늘어나고 내용 칸이 그 가운데)
+              "lg:sticky lg:top-0 lg:min-h-svh lg:content-stretch lg:py-24"
+            : closeBelow
+              ? // 아래 여백 = 당겨 올리는 만큼(14svh) + 16px: 위쪽 제목이 끝까지 붙어 있어서 이 여백이 모자라면 아래 구역 제목과 겹침. 화면 높이와 상관없이 제목 사이가 약 112px 로 일정
+                "lg:pt-48 lg:pb-[calc(14svh+16px)]"
+              : tight
+                ? "lg:pt-48 lg:pb-16"
+                : "lg:py-48",
         )}
       >
         <header
@@ -65,7 +82,12 @@ export function Section({
             </h2>
           </Reveal>
         </header>
-        <Reveal delay={120} className={classNames("min-w-0 lg:col-span-8")}>
+        <Reveal
+          delay={120}
+          className={classNames("min-w-0 lg:col-span-8", {
+            "lg:self-center": hold,
+          })}
+        >
           {children}
           {action ? (
             <div className={classNames("mt-12 md:mt-16")}>

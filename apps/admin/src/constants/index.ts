@@ -17,6 +17,7 @@ export const ROUTES = {
   recruit: "/recruit",
   notices: "/notices",
   system: "/system",
+  inquiries: "/inquiries",
 } as const;
 
 /** 사이드바 첫 메뉴 (연구실 공간) */
@@ -46,6 +47,7 @@ export const TOOL_NAV_ITEMS: NavItem[] = [
 
 /** 메인테이너에게만 보이는 메뉴 */
 export const MASTER_NAV_ITEMS: NavItem[] = [
+  { label: "Inquiries", href: ROUTES.inquiries },
   { label: "Lab Members", href: ROUTES.members },
   { label: "Recruit", href: ROUTES.recruit },
   { label: "System Check", href: ROUTES.system },

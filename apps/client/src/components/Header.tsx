@@ -5,6 +5,8 @@ import { NAV_EXTRA_ITEM, NAV_ITEMS, ROUTES } from "@/constants";
 import { localePath } from "@/i18n";
 import { getDictionary, getLocale } from "@/i18n/server";
 import Logo from "@/public/img/logo.svg";
+import { HeaderNavLink } from "./HeaderNavLink";
+import { HeaderTone } from "./HeaderTone";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { MobileMenu } from "./MobileMenu";
 
@@ -34,14 +36,17 @@ export async function Header() {
         흰색 → 아래로 갈수록 투명: 헤더보다 40px 아래까지 내려와 자연스럽게 사라집니다.
         (헤더 밖으로 나온 부분이 아래 내용 클릭을 막지 않도록 pointer-events-none)
       */}
+      {/* 진한 배경 위(data-tone=dark, HeaderTone)에서는 흰 흐림을 끄고 배경이 그대로 보이게 */}
       <div
         aria-hidden
         className={classNames(
-          "",
           "pointer-events-none absolute inset-x-0 top-0 -bottom-10 -z-10",
           "bg-linear-to-b from-background/95 via-background/50 to-transparent",
+          "transition-opacity duration-300 group-data-[tone=dark]/header:opacity-0",
         )}
       />
+      {/* 헤더 뒤가 진한 색인지 살펴 data-tone 을 붙임 (홈 첫 화면 보라 배경) */}
+      <HeaderTone />
       {/*
         모바일 메뉴가 열려 있으면 헤더도 메뉴 패널과 같은 바탕색으로 꽉 채움 (뒤 그라디언트가 비치지 않게)
         열림 여부는 햄버거 버튼(MobileMenu)의 aria-expanded 로 알아냄 · 패널과 같은 0.3초로 나타남
@@ -57,27 +62,22 @@ export async function Header() {
       <Link
         href={localePath(locale, ROUTES.home)}
         aria-label={APP_INFO.name}
-        className={classNames("justify-self-start")}
+        className={classNames(
+          "justify-self-start",
+          "transition-colors duration-300 group-data-[tone=dark]/header:text-white",
+        )}
       >
         <Logo aria-hidden className={classNames("h-[26px] w-auto")} />
       </Link>
 
       <nav className={classNames("hidden md:block", "min-w-0")}>
-        <div
-          className={classNames(
-            "flex items-center gap-6",
-            "font-neuehaas text-base whitespace-nowrap",
-          )}
-        >
+        <div className={classNames("flex items-center gap-6")}>
           <ul className={classNames("flex items-center gap-9")}>
             {NAV_ITEMS.map((item) => (
               <li key={item.key}>
-                <Link
-                  href={localePath(locale, item.href)}
-                  className={classNames("transition hover:opacity-60")}
-                >
+                <HeaderNavLink href={localePath(locale, item.href)}>
                   {dict.nav[item.key]}
-                </Link>
+                </HeaderNavLink>
               </li>
             ))}
           </ul>
@@ -85,14 +85,11 @@ export async function Header() {
             <>
               <span
                 aria-hidden
-                className={classNames("h-5 w-px", "bg-gray-500/50")}
+                className={classNames("h-5 w-px", "bg-[#CDDEFF] opacity-50")}
               />
-              <Link
-                href={localePath(locale, NAV_EXTRA_ITEM.href)}
-                className={classNames("transition hover:opacity-60")}
-              >
+              <HeaderNavLink href={localePath(locale, NAV_EXTRA_ITEM.href)}>
                 {dict.nav[NAV_EXTRA_ITEM.key]}
-              </Link>
+              </HeaderNavLink>
             </>
           )}
         </div>

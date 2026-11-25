@@ -1,10 +1,8 @@
 "use client";
 
 import classNames from "classnames";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { stripLocale } from "@/i18n";
+import { HeaderNavLink } from "./HeaderNavLink";
 
 export type MenuLink = { label: string; href: string };
 
@@ -22,7 +20,6 @@ export function MobileMenu({
   labels: { open: string; close: string };
 }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
   const menuId = useId();
 
   // 열려 있는 동안: 뒤 화면 스크롤 막기 · Esc 로 닫기
@@ -39,14 +36,6 @@ export function MobileMenu({
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
-
-  /** 지금 보고 있는 메뉴 (홈의 구역 링크는 제외). 언어 부분(/en · 내부 /ko)은 떼고 비교합니다. */
-  const current = stripLocale(pathname);
-  const isCurrent = (href: string) => {
-    if (href.includes("#")) return false;
-    const target = stripLocale(href);
-    return current === target || current.startsWith(`${target}/`);
-  };
 
   return (
     <div className={classNames("md:hidden")}>
@@ -67,7 +56,8 @@ export function MobileMenu({
           className={classNames(
             "h-[1.5px] w-5",
             "absolute",
-            "bg-black transition duration-300",
+            // 헤더 뒤가 진한 색이면 흰 줄 (HeaderTone 의 data-tone — 메뉴가 열리면 떼어짐)
+            "bg-black transition duration-300 group-data-[tone=dark]/header:bg-white",
             open ? "rotate-45" : "-translate-y-[4px]",
           )}
         />
@@ -76,7 +66,7 @@ export function MobileMenu({
           className={classNames(
             "h-[1.5px] w-5",
             "absolute",
-            "bg-black transition duration-300",
+            "bg-black transition duration-300 group-data-[tone=dark]/header:bg-white",
             open ? "-rotate-45" : "translate-y-[4px]",
           )}
         />
@@ -101,19 +91,14 @@ export function MobileMenu({
           <ul className={classNames("flex flex-col gap-1")}>
             {links.map((link) => (
               <li key={link.href}>
-                <Link
+                {/* 헤더 가운데 메뉴와 같은 그라디언트 호버 · 현재 위치 표시 (HeaderNavLink) */}
+                <HeaderNavLink
                   href={link.href}
+                  variant="menu"
                   onClick={() => setOpen(false)}
-                  aria-current={isCurrent(link.href) ? "page" : undefined}
-                  className={classNames(
-                    "block",
-                    "py-1",
-                    "font-neuehaas text-5xl leading-tight",
-                    isCurrent(link.href) ? "text-main" : "text-gray-300",
-                  )}
                 >
                   {link.label}
-                </Link>
+                </HeaderNavLink>
               </li>
             ))}
           </ul>

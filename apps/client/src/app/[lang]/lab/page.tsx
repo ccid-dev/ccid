@@ -1,9 +1,8 @@
 import classNames from "classnames";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { HeroBackground } from "@/components/home";
 import { ROUTES } from "@/constants";
-import { hasLocale, localePath } from "@/i18n";
+import { hasLocale } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { localeAlternates } from "@/libs/seo";
 
@@ -20,13 +19,6 @@ export async function generateMetadata({
   };
 }
 
-/** 텍스트 버튼: 마우스를 올리면 밑줄 · 화살표가 밀림 (홈 '전체 보기' 와 같은 모양) */
-const textLink = classNames(
-  "group inline-flex items-center gap-1.5",
-  "font-neuehaas text-sm font-medium",
-  "underline-offset-4 hover:underline",
-);
-
 /**
  * Lab — 곧 공개 대문.
  * 홈 첫 화면과 같은 틀: 움직이는 그라디언트 배경 위, 아래에 큰 "Lab" (홈 "cciD" 와 같은 크기),
@@ -41,7 +33,7 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
     <div
       className={classNames(
         "relative isolate min-h-[100svh]",
-        "flex flex-col justify-end",
+        "flex flex-col justify-center",
         "px-5 md:px-10",
         "pt-24 pb-14 md:pb-20",
       )}
@@ -50,13 +42,13 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
       <div
         className={classNames(
           // 좁은 화면: 설명 → 글자 / 넓은 화면: 큰 "Lab" 바로 오른쪽 글자 윗선에 설명
-          "flex flex-col-reverse gap-8",
-          "md:flex-row md:items-start md:gap-12",
+          "flex flex-col gap-8",
+          "md:flex-row items-center justify-center md:gap-12",
         )}
       >
         <h1
           className={classNames(
-            "font-neuehaas text-[20vw] leading-[0.8] whitespace-nowrap md:text-[18vw]",
+            "font-neuehaas text-[20vw] leading-none  md:text-[7vw]",
           )}
         >
           {dict.lab.title}
@@ -65,8 +57,8 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
         <div
           className={classNames(
             // 예전 Coming soon 한 줄(20px) + 간격(12px) 자리를 비워 두어 첫 문장 높이를 그대로 유지
-            "max-w-md md:pt-[calc(1.5vw+32px)]",
-            "flex flex-col gap-3",
+            "max-w-md ",
+            "flex flex-col gap-3 ",
           )}
         >
           <p
@@ -82,29 +74,6 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
           >
             {dict.lab.description}
           </p>
-          <div className={classNames("mt-4 flex flex-wrap gap-x-6 gap-y-2")}>
-            <Link
-              href={localePath(lang, ROUTES.research)}
-              cursor-label="Open"
-              className={textLink}
-            >
-              {dict.lab.research}
-              <span
-                aria-hidden
-                className={classNames(
-                  "transition-transform duration-300 group-hover:translate-x-1",
-                )}
-              >
-                →
-              </span>
-            </Link>
-            <Link
-              href={localePath(lang, ROUTES.home)}
-              className={classNames(textLink, "text-sub hover:text-main")}
-            >
-              {dict.notFound.home}
-            </Link>
-          </div>
         </div>
       </div>
     </div>

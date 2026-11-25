@@ -1,5 +1,9 @@
 export { PersonCard, type PersonCardData } from "./PersonCard";
-export { ProjectCard, type ProjectCardData } from "./ProjectCard";
+export {
+  ProjectCard,
+  themeGlow,
+  type ProjectCardData,
+} from "./ProjectCard";
 export {
   ProjectDetail,
   type ProjectDetailData,
