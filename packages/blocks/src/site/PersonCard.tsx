@@ -10,6 +10,8 @@ export type PersonCardData = {
   image: string | null;
   /** 이미지가 없을 때 회색 상자에 적을 글자 */
   imageFallback?: string;
+  /** wide(디렉터) 넓은 화면 사진: 정사각 사진을 넓은 카드 안에 양옆 여백을 두고 놓음 (배경 #f5f5f5). 없으면 빈 카드 */
+  wideImage?: string | null;
 };
 
 /**
@@ -63,15 +65,39 @@ export function PersonCard({
               imageClassName={classNames("grayscale")}
             />
           </div>
-          {/* sm 이상: 다른 사진을 넣을 자리로 빈 카드만 둠 — 비율 대신 오른쪽 글 단 높이에 맞춤 (칸을 채우고 줄 높이는 글이 정함) */}
+          {/*
+            sm 이상: 비율 대신 오른쪽 글 단 높이에 맞춘 카드 (칸을 채우고 줄 높이는 글이 정함)
+            wideImage 가 있으면 정사각 사진을 카드 높이에 맞춰, 사진 가운데가 카드 폭의 1/3 지점에 오게 놓고 양옆은 사진 배경색(#f5f5f5)으로 채움
+          */}
           <div className={classNames("hidden sm:relative sm:block")}>
-            <SiteImage
-              src={null}
-              alt=""
-              ratio="banner"
-              fallback=""
-              className={classNames("absolute inset-0 aspect-auto")}
-            />
+            {person.wideImage ? (
+              <div
+                className={classNames(
+                  "absolute inset-0",
+                  "overflow-hidden",
+                  "rounded-2xl bg-[#f5f5f5]",
+                )}
+              >
+                <img
+                  src={person.wideImage}
+                  alt={person.name}
+                  decoding="async"
+                  className={classNames(
+                    "aspect-square h-full",
+                    "absolute bottom-0 left-1/3 -translate-x-1/2",
+                    "object-cover grayscale",
+                  )}
+                />
+              </div>
+            ) : (
+              <SiteImage
+                src={null}
+                alt=""
+                ratio="banner"
+                fallback=""
+                className={classNames("absolute inset-0 aspect-auto")}
+              />
+            )}
           </div>
         </>
       ) : (

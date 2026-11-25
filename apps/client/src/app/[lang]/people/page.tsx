@@ -87,6 +87,11 @@ export default async function PeoplePage({
                     profile: localized(person, "profile", lang),
                     image: mediaUrl(person.image),
                     imageFallback: person.image || "no image",
+                    // 디렉터 넓은 화면 사진 (public/img/people)
+                    wideImage:
+                      group.category === "director"
+                        ? "/img/people/director-wide.webp"
+                        : null,
                   }}
                 />
               </RevealItem>

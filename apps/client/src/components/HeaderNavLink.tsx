@@ -8,7 +8,7 @@ import { stripLocale } from "@/i18n";
 
 /**
  * 헤더 메뉴 링크 (가운데 메뉴 · 모바일 메뉴 공용).
- * 마우스를 올리면 글자색이 저채도 연보라(#8e84c4)로 서서히 바뀝니다. (아래에서 차오르는 모션 없이 색만)
+ * 마우스를 올리면 글자가 연보라(#8e84c4) + 예전 보라 그라데이션 30% 로 서서히 바뀝니다. (아래에서 차오르는 모션 없이 색만)
  * 지금 보고 있는 곳의 메뉴는 연보라로 고정됩니다. (aria-current)
  * - 페이지 링크(/research 등): 그 페이지 · 하위 페이지에 있을 때
  * - 구역 링크(/#about): 그 페이지에서 해당 구역이 화면 가운데를 지나는 동안
@@ -53,10 +53,12 @@ export function HeaderNavLink({
             : // 평소 검정, 헤더 뒤가 진한 색이면(HeaderTone 의 data-tone) 흰색
               //   (--header-ink 는 global.css 에서 색으로 등록해 두어 바뀔 때 서서히 넘어감)
               "[--header-ink:var(--color-black)] group-data-[tone=dark]/header:[--header-ink:var(--color-white)]",
-          // 호버 · 지금 메뉴: 글자색만 연보라로 서서히 바뀜 (아래에서 차오르지 않음)
+          // 호버 · 지금 메뉴: 연보라(#8e84c4)에 예전 그라데이션(#2000D4 → #CB63FF)을 30% 섞은 글자로 서서히 바뀜 (아래에서 차오르지 않음)
+          //   글자 뒤에 그라데이션을 늘 깔아 두고(bg-clip-text), 글자색이 투명해지면서 드러나게 함
+          "bg-[linear-gradient(180deg,color-mix(in_srgb,#8e84c4_70%,#2000d4),color-mix(in_srgb,#8e84c4_70%,#cb63ff))] bg-clip-text",
           isCurrent
-            ? "text-[#8e84c4]"
-            : "text-(--header-ink) hover:text-[#8e84c4]",
+            ? "text-transparent"
+            : "text-(--header-ink) hover:text-transparent",
           "transition-[color,--header-ink] duration-300 ease-out motion-reduce:transition-none",
         ],
         [
