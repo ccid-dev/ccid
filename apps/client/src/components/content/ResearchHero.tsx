@@ -22,7 +22,7 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
  * - 아래에서 위로 분야 색 그라데이션 + 왼쪽 아래에 세부 분야(작게) · 영문 제목(크게)
  * - 이미지는 Swiper 로 가로로 넘어갑니다: 드래그 · 스와이프 · 트랙패드 가로 스크롤(휠) · ← → 키 · 오른쪽 아래 이전 · 01 / 15 · 다음
  *   (세로 스크롤은 페이지 스크롤에 양보 · 끝 장에서 더 밀면 페이지가 계속 움직임)
- * - 헤더는 이미지 위에 겹쳐 어두운 글자 그대로 (위쪽에 옅은 흰 번짐을 깔아 읽히게)
+ * - 헤더는 이미지 위에 겹치고, 위쪽에 진보라 그라데이션을 깔아 헤더 글자를 흰색으로 바꿈 (data-header-tone="dark")
  */
 export function ResearchHero({
   images,
@@ -117,11 +117,15 @@ export function ResearchHero({
           </SwiperSlide>
         ))}
       </Swiper>
+      {/*
+        위쪽: 푸터처럼 진보라(#24202e) 그라데이션을 깔고, 헤더(메뉴 · 로고 · 언어)를 흰 글자로 바꾸는 구역 (HeaderTone 이 data-header-tone 을 봄)
+      */}
       <div
         aria-hidden
+        data-header-tone="dark"
         className={classNames(
-          "pointer-events-none absolute inset-x-0 top-0 z-10 h-36",
-          "bg-linear-to-b from-white/50 to-transparent",
+          "pointer-events-none absolute inset-x-0 top-0 z-10 h-44",
+          "bg-linear-to-b from-[#24202e]/80 to-transparent",
         )}
       />
       <div
