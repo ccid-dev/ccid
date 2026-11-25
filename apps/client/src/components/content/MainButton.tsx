@@ -11,7 +11,7 @@ type Common = {
 /**
  * 메인 버튼 (Figma "참여 및 채용 안내 ↗").
  * 평소: Figma 와 같은 그라데이션 테두리(보라 → 파랑 → 보라 → 연분홍) + 흰 바탕 + 어두운 글.
- * 호버: 연회색(sheet)이 안쪽 전체를 왼쪽에서 오른쪽으로 채움 (글은 그대로 검정).
+ * 호버: 밝은 라벤더(#ECE8F7)가 안쪽 전체를 왼쪽에서 오른쪽으로 채움 (글은 그대로 검정).
  *
  * `href` 를 주면 링크(<a>), 안 주면 <button> 으로 그려집니다.
  * 테두리 두께는 border(1px) 하나로 정해집니다.
@@ -36,13 +36,13 @@ export function MainButton(
   );
   const inner = (
     <>
-      {/* 호버: 연회색이 왼쪽에서 채워짐 — 색이 들어가면 너무 셈 (움직임 줄이기 설정이면 바로 바뀜) */}
+      {/* 호버: 밝은 라벤더가 왼쪽에서 채워짐 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
         className={classNames(
           "absolute inset-0 -z-10",
           "origin-left scale-x-0 group-hover:scale-x-100",
-          "bg-sheet",
+          "bg-[#ece8f7]",
           "transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
         )}
       />
