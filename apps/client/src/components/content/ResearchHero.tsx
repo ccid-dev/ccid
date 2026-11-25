@@ -86,6 +86,8 @@ export function ResearchHero({
   return (
     <section
       aria-label={label}
+      // 헤더가 이 히어로 위에 있는 동안 흰 글자 · 본문(밝은 바탕)으로 넘어가면 원래 색으로 (HeaderTone)
+      data-header-tone="dark"
       className={classNames(
         "h-[62svh] min-h-96 md:h-[min(calc(100vw*912/1440),100svh)]",
         "relative overflow-hidden",
@@ -118,11 +120,10 @@ export function ResearchHero({
         ))}
       </Swiper>
       {/*
-        위쪽: 푸터처럼 진보라(#24202e) 그라데이션을 깔고, 헤더(메뉴 · 로고 · 언어)를 흰 글자로 바꾸는 구역 (HeaderTone 이 data-header-tone 을 봄)
+        위쪽: 푸터처럼 진보라(#24202e) 그라데이션 — 흰 헤더 글자가 읽히게
       */}
       <div
         aria-hidden
-        data-header-tone="dark"
         className={classNames(
           "pointer-events-none absolute inset-x-0 top-0 z-10 h-44",
           "bg-linear-to-b from-[#24202e]/80 to-transparent",

@@ -53,12 +53,13 @@ export function HeaderNavLink({
           variant === "menu"
             ? "bg-[linear-gradient(180deg,var(--color-gray-300)_50%,#8e84c4_50%,#8e84c4_100%)]"
             : [
-                "bg-[linear-gradient(180deg,var(--color-black)_50%,#8e84c4_50%,#8e84c4_100%)]",
-                // 헤더 뒤가 진한 색이면(HeaderTone 의 data-tone) 위 절반을 흰색으로
-                "group-data-[tone=dark]/header:bg-[linear-gradient(180deg,var(--color-white)_50%,#8e84c4_50%,#8e84c4_100%)]",
+                // 위 절반 색 = --header-ink: 평소 검정, 헤더 뒤가 진한 색이면(HeaderTone 의 data-tone) 흰색
+                //   (global.css 에서 색으로 등록해 두어 바뀔 때 서서히 넘어감 — 그라디언트 자체는 transition 이 안 됨)
+                "bg-[linear-gradient(180deg,var(--header-ink)_50%,#8e84c4_50%,#8e84c4_100%)]",
+                "[--header-ink:var(--color-black)] group-data-[tone=dark]/header:[--header-ink:var(--color-white)]",
               ],
           "bg-clip-text",
-          "transition-[background-position] duration-500 ease-out motion-reduce:transition-none",
+          "transition-[background-position,--header-ink] duration-500 ease-out motion-reduce:transition-none",
           isCurrent ? "bg-bottom" : "bg-top hover:bg-bottom",
         ],
         [

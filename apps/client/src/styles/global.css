@@ -90,6 +90,13 @@
  * 사이트 전체 기본값이라 요소마다 break-keep 을 달지 않아도 됩니다.
  * (overflow-wrap: break-word 는 넣지 않습니다 — 칸보다 살짝 긴 큰 제목 "Projects" 가 "Project / s" 로 끊김)
  */
+/* 헤더 메뉴 글자 윗색 (HeaderNavLink): 색으로 등록해야 흰색 ↔ 검정 전환이 애니메이션 됨 */
+@property --header-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #141414;
+}
+
 @layer base {
   body {
     word-break: keep-all;
