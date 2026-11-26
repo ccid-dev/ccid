@@ -92,6 +92,11 @@ export default async function PeoplePage({
                       group.category === "director"
                         ? "/img/people/director-wide.png"
                         : null,
+                    // 디렉터 이름 옆 LinkedIn 아이콘
+                    linkedin:
+                      group.category === "director"
+                        ? "https://www.linkedin.com/in/qshim/"
+                        : null,
                   }}
                 />
               </RevealItem>

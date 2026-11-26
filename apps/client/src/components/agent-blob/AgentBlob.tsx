@@ -379,7 +379,7 @@ function AgentModeBlob({
               ref={dialogRef}
               role="dialog"
               aria-modal="true"
-              aria-labelledby="agent-blob-title"
+              aria-label={labels.title}
               className={classNames(
                 "absolute",
                 "flex flex-col gap-3 p-4",
@@ -411,18 +411,13 @@ function AgentModeBlob({
                   : { opacity: 0, y: 8, transition: { duration: 0.18 } }
               }
             >
+              {/* 위: 닫기만 오른쪽에 (제목은 화면에 쓰지 않고 창 이름으로만 — aria-label) */}
               <header
                 className={classNames(
-                  "flex items-center justify-between",
+                  "flex items-center justify-end",
                   "text-primary",
                 )}
               >
-                <h2
-                  id="agent-blob-title"
-                  className={classNames("font-neuehaas text-lg font-medium")}
-                >
-                  {labels.title}
-                </h2>
                 <button
                   ref={closeButtonRef}
                   type="button"

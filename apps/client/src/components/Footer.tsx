@@ -9,8 +9,9 @@ import Logo from "@/public/img/logo.svg";
 
 /**
  * 공개 사이트 푸터 (헤더에서 #contact 로 이동)
- * 왼쪽: 글자 크기 로고(cciD) → 정식 명칭 → 저작권 → 이메일 · 전화(흰색)
+ * 왼쪽 위: 글자 크기 로고(cciD) → 정식 명칭 / 왼쪽 아래: 저작권 (오른쪽 영문 주소와 같은 줄 높이 · 아래끝이라 베이스라인이 맞음)
  * 오른쪽 위: People · Research 링크(+ 아래에 People 그룹 · Research 분야) / 오른쪽 아래: 주소
+ * 좁은 화면은 한 줄로 쌓고 저작권이 맨 아래
  * 배경: 보라 기운이 도는 진회색 단색 (예전 셰이더 배경 FooterBackground · /footer-tune 은 지금 쓰지 않음)
  */
 export async function Footer() {
@@ -50,7 +51,12 @@ export async function Footer() {
       )}
     >
       {/* 로고는 글자 크기(대문자 높이)에 맞춤: text-base ≈ 12px · md:text-lg ≈ 13px */}
-      <div className={classNames("flex flex-col gap-2.5")}>
+      <div
+        className={classNames(
+          "md:col-start-1 md:row-start-1",
+          "flex flex-col gap-2.5",
+        )}
+      >
         <Link
           href={localePath(locale, ROUTES.home)}
           aria-label={APP_INFO.name}
@@ -61,35 +67,14 @@ export async function Footer() {
         <p className={classNames("text-base md:text-lg")}>
           {APP_INFO.fullName}
         </p>
-        {/* 로고 · 정식 명칭 아래: 저작권 → 이메일 · 전화 (흰색) */}
-        <div className={classNames("flex flex-col gap-1", "mt-4", "text-sm")}>
-          <p className={classNames("text-white/55")}>
-            © {new Date().getFullYear()} {APP_INFO.name}
-          </p>
-          <a
-            href={`mailto:${APP_INFO.email}`}
-            className={classNames(
-              "self-start",
-              "transition",
-              "text-white hover:text-white/60",
-            )}
-          >
-            {APP_INFO.email}
-          </a>
-          <a
-            href={`tel:${APP_INFO.phone.tel}`}
-            className={classNames(
-              "self-start",
-              "transition",
-              "text-white hover:text-white/60",
-            )}
-          >
-            {APP_INFO.phone.label}
-          </a>
-        </div>
       </div>
 
-      <div className={classNames("flex flex-col justify-between gap-12")}>
+      <div
+        className={classNames(
+          "md:col-start-2 md:row-span-2 md:row-start-1",
+          "flex flex-col justify-between gap-12",
+        )}
+      >
         {/* 링크: People · Research 와 아래 묶음 */}
         <nav className={classNames("flex gap-12")}>
           {groups.map((group) => (
@@ -132,6 +117,16 @@ export async function Footer() {
           </p>
         </address>
       </div>
+
+      {/* 저작권: 영문 주소와 같은 글자 크기 · 줄 높이(text-xs · 18px)로 칸 아래끝에 붙여 베이스라인을 맞춤 */}
+      <p
+        className={classNames(
+          "md:col-start-1 md:row-start-2 md:self-end",
+          "text-xs leading-[18px] text-white/55",
+        )}
+      >
+        {new Date().getFullYear()} © {APP_INFO.name}. All rights reserved.
+      </p>
     </footer>
   );
 }
