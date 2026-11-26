@@ -17,10 +17,8 @@ export type MoreResearchItem = {
   number: number;
   href: string;
   title: string;
-  /** 영문 제목 (이미지 위 큰 글) */
+  /** 영문 제목 (이미지 위 글 — 세부 분야 같은 작은 글은 두지 않음) */
   titleEn: string;
-  /** 세부 분야 (쉼표로 이은 글, 이미지 위 작은 글) */
-  keywords: string;
   question: string;
   image: string | null;
   imageAlt: string;
@@ -96,11 +94,6 @@ export function MoreResearch({
                   isActive ? "opacity-100" : "lg:opacity-0",
                 )}
               >
-                {item.keywords ? (
-                  <span className={classNames("text-sm md:text-lg")}>
-                    {item.keywords}
-                  </span>
-                ) : null}
                 <span className={classNames("text-xl md:text-3xl")}>
                   {item.titleEn || item.title}
                 </span>

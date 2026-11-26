@@ -203,7 +203,6 @@ export default async function ResearchPage({
               href: localePath(lang, `/research/${other.slug}`),
               title: localized(other, "title", lang),
               titleEn: other.title_en,
-              keywords: localized(other, "keywords", lang).join(", "),
               question: localized(other, "question", lang),
               image: mediaUrl(other.images[0]),
               imageAlt: localized(other, "image_alt", lang),
