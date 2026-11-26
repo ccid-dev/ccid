@@ -22,6 +22,7 @@ export function HeroLogo({
   text,
   className,
   letterClassName,
+  shadowClassName,
 }: {
   text: string;
   className?: string;
@@ -30,6 +31,10 @@ export function HeroLogo({
    * 글자마다 따로 움직이는 상자라 부모에 건 bg-clip-text 는 잘 안 잡히므로 여기에 겁니다.
    */
   letterClassName?: string;
+  /**
+   * 글자마다 뒤에 깔 그림자 글자 클래스 (예: 사선으로 비껴 앉은 흐린 그라디언트 글자). 주면 같은 글자를 하나 더 뒤에 그립니다.
+   */
+  shadowClassName?: string;
 }) {
   const reduce = useReducedMotion();
   return (
@@ -40,21 +45,34 @@ export function HeroLogo({
           <motion.span
             // 글자는 바뀌지 않으므로 순서를 키로 씀
             key={index}
-            className={classNames("inline-block", letterClassName)}
-            // initial 은 서버 · 브라우저가 같아야 해서(hydration) 그대로 두고, 움직임 줄이기면 바로 보이게
-            initial={{ opacity: 0, y: "35%", filter: "blur(16px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={
-              reduce
-                ? { duration: 0 }
-                : {
-                    duration: LOGO_MOTION.durationS,
-                    delay: LOGO_MOTION.startS + index * LOGO_MOTION.staggerS,
-                    ease: [0.16, 1, 0.3, 1],
-                  }
+            className={classNames(
+              "inline-block",
+              shadowClassName && "relative isolate",
+              letterClassName,
+            )}
+            initial={
+              reduce ? false : { opacity: 0, y: "35%", filter: "blur(16px)" }
             }
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              duration: LOGO_MOTION.durationS,
+              delay: LOGO_MOTION.startS + index * LOGO_MOTION.staggerS,
+              ease: [0.16, 1, 0.3, 1],
+            }}
           >
             {letter}
+            {shadowClassName ? (
+              <span
+                aria-hidden
+                className={classNames(
+                  "absolute inset-0 -z-10",
+                  "pointer-events-none select-none",
+                  shadowClassName,
+                )}
+              >
+                {letter}
+              </span>
+            ) : null}
           </motion.span>
         ))}
       </span>

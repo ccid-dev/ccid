@@ -5,6 +5,15 @@
 @source "../../../../packages/blocks/src";
 
 /* 홈 하단 협업 기관 로고 띠: 같은 목록을 두 번 이어 붙여 절반만큼 흘립니다. (animate-marquee · 반대 방향 animate-marquee-reverse) */
+/*
+ * 사이트 바탕색: 예전 공통값(#FBFBFB)과 #F7F6F3 의 중간 밝기에, 색조만 살짝 보라 쪽으로 (#F9F8FB, HSB 260 · 1.2 · 98)
+ *   흰 카드(#fff)와 겨우 구분될 만큼만 옅게
+ * (admin 은 공통값 그대로)
+ */
+@theme {
+  --color-background: #f9f8fb;
+}
+
 @theme {
   --animate-marquee: marquee 100s linear infinite;
   --animate-marquee-reverse: marquee 100s linear infinite reverse;
@@ -90,6 +99,13 @@
  * 사이트 전체 기본값이라 요소마다 break-keep 을 달지 않아도 됩니다.
  * (overflow-wrap: break-word 는 넣지 않습니다 — 칸보다 살짝 긴 큰 제목 "Projects" 가 "Project / s" 로 끊김)
  */
+/* 헤더 메뉴 글자 윗색 (HeaderNavLink): 색으로 등록해야 흰색 ↔ 검정 전환이 애니메이션 됨 */
+@property --header-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #141414;
+}
+
 @layer base {
   body {
     word-break: keep-all;

@@ -24,15 +24,10 @@ export function RevealItem({
   return (
     <motion.li
       className={className}
-      // initial 은 서버 · 브라우저가 같아야 해서(hydration) 그대로 두고, 움직임 줄이기면 바로 보이게
-      initial={{ opacity: 0, y: 16 }}
+      initial={reduce ? false : { opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-      transition={
-        reduce
-          ? { duration: 0 }
-          : { duration: 1.5, delay, ease: [0.22, 1, 0.36, 1] }
-      }
+      transition={{ duration: 1.5, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.li>

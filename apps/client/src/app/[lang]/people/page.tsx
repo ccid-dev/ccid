@@ -54,10 +54,17 @@ export default async function PeoplePage({
           {/*
             좁은 화면은 한 줄에 한 사람: 디렉터는 사진 위 · 글 아래로 화면 폭 전체, 나머지는 작은 사진 옆에 글
             디렉터는 넓은 화면에서도 한 줄 전체를 씀 (사진 · 글 2단)
+            넓은 화면 한 줄 인원: 자문(Advisory Board · Former Advisors) 6명 · 학생(연구원 · 인턴 · 졸업생) 8명
           */}
           <ul
             className={classNames(
-              "grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-y-10 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6",
+              "grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-y-10",
+              group.category === "advisory_board" ||
+                group.category === "former_advisor"
+                ? "md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+                : group.category === "director"
+                  ? "md:grid-cols-4"
+                  : "md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8",
             )}
           >
             {/* 카드마다 제각각 스르륵 (RevealItem) */}
@@ -80,6 +87,16 @@ export default async function PeoplePage({
                     profile: localized(person, "profile", lang),
                     image: mediaUrl(person.image),
                     imageFallback: person.image || "no image",
+                    // 디렉터 넓은 화면 사진 (public/img/people)
+                    wideImage:
+                      group.category === "director"
+                        ? "/img/people/director-wide.png"
+                        : null,
+                    // 디렉터 이름 옆 LinkedIn 아이콘
+                    linkedin:
+                      group.category === "director"
+                        ? "https://www.linkedin.com/in/qshim/"
+                        : null,
                   }}
                 />
               </RevealItem>

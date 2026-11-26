@@ -22,8 +22,7 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
  * - 아래에서 위로 분야 색 그라데이션 + 왼쪽 아래에 세부 분야(작게) · 영문 제목(크게)
  * - 이미지는 Swiper 로 가로로 넘어갑니다: 드래그 · 스와이프 · 트랙패드 가로 스크롤(휠) · ← → 키 · 오른쪽 아래 이전 · 01 / 15 · 다음
  *   (세로 스크롤은 페이지 스크롤에 양보 · 끝 장에서 더 밀면 페이지가 계속 움직임)
- * - 헤더는 이미지 위에 겹쳐 어두운 글자 그대로 (위쪽에 옅은 흰 번짐을 깔아 읽히게)
- * - 좁은 화면: 글이 폭을 다 쓰고, 이전 · 다음은 그 아래 오른쪽 (한 줄에 두면 글이 한 단어씩 줄바꿈됨)
+ * - 헤더는 이미지 위에 겹치고, 위쪽에 진보라 그라데이션을 깔아 헤더 글자를 흰색으로 바꿈 (data-header-tone="dark")
  */
 export function ResearchHero({
   images,
@@ -65,7 +64,7 @@ export function ResearchHero({
       className={classNames(
         "group size-10",
         "flex items-center justify-center",
-        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white active:bg-white",
+        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white",
         "disabled:pointer-events-none disabled:opacity-30",
         "font-neuehaas",
       )}
@@ -75,8 +74,8 @@ export function ResearchHero({
         className={classNames(
           "transition-transform duration-300",
           by === -1
-            ? "group-hover:-translate-x-0.5 group-active:-translate-x-0.5"
-            : "group-hover:translate-x-0.5 group-active:translate-x-0.5",
+            ? "group-hover:-translate-x-0.5"
+            : "group-hover:translate-x-0.5",
         )}
       >
         {by === -1 ? "←" : "→"}
@@ -87,6 +86,8 @@ export function ResearchHero({
   return (
     <section
       aria-label={label}
+      // 헤더가 이 히어로 위에 있는 동안 흰 글자 · 본문(밝은 바탕)으로 넘어가면 원래 색으로 (HeaderTone)
+      data-header-tone="dark"
       className={classNames(
         "h-[62svh] min-h-96 md:h-[min(calc(100vw*912/1440),100svh)]",
         "relative overflow-hidden",
@@ -118,19 +119,23 @@ export function ResearchHero({
           </SwiperSlide>
         ))}
       </Swiper>
+      {/*
+        위쪽: 푸터처럼 진보라(#24202e) 그라데이션 — 흰 헤더 글자가 읽히게
+      */}
       <div
         aria-hidden
         className={classNames(
-          "pointer-events-none absolute inset-x-0 top-0 z-10 h-36",
-          "bg-linear-to-b from-white/50 to-transparent",
+          "pointer-events-none absolute inset-x-0 top-0 z-10 h-44",
+          "bg-linear-to-b from-[#24202e]/80 to-transparent",
         )}
       />
       <div
         className={classNames(
           // 글 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
           "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-          "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6",
-          "px-5 pt-40 pb-6 md:px-20 md:pb-10",
+          "flex items-end justify-between gap-6",
+          // 오른쪽: 화면 오른쪽 아래 에이전트 구(56px, 오른쪽 20 · 32px)와 겹치지 않게 여백을 더 둠
+          "pt-40 pr-24 pb-6 pl-5 md:pr-32 md:pb-10 md:pl-20",
           "bg-linear-to-t to-transparent",
           GRADIENT[number] ?? "from-black/70",
           "text-white",
@@ -140,7 +145,7 @@ export function ResearchHero({
           {keywords ? (
             <p
               className={classNames(
-                "font-neuehaas text-base font-light md:text-3xl lg:text-5xl",
+                "font-neuehaas text-lg font-light md:text-3xl lg:text-5xl",
               )}
             >
               {keywords}
@@ -157,7 +162,7 @@ export function ResearchHero({
         {count > 1 ? (
           <div
             className={classNames(
-              "pointer-events-auto flex shrink-0 items-center gap-3 self-end md:self-auto",
+              "pointer-events-auto flex shrink-0 items-center gap-3",
             )}
           >
             {arrow(-1)}

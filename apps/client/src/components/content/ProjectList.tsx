@@ -30,12 +30,15 @@ export function ProjectList({
   locale,
   dict,
   groupByYear = false,
+  hideClient = false,
 }: {
   projects: ProjectWithThemes[];
   locale: Locale;
   dict: Dictionary;
   /** 연도별로 묶기 (왼쪽 2칸에 연도, 카드에는 연도를 빼고 2단 격자로) */
   groupByYear?: boolean;
+  /** 회사 · 그룹명(client)을 카드와 모달에서 숨김 (Research 페이지 — NDA) */
+  hideClient?: boolean;
 }) {
   const [index, setIndex] = useState<number | null>(null);
 
@@ -96,7 +99,7 @@ export function ProjectList({
         project={{
           year: projectYear(project),
           title: localized(project, "title", locale),
-          client: localized(project, "client", locale),
+          client: hideClient ? "" : localized(project, "client", locale),
           description: localized(project, "description", locale),
           nda: project.is_nda,
           themes: project.themes.map((theme) => theme.number),
@@ -157,6 +160,7 @@ export function ProjectList({
         onNavigate={() => {
           navigatingRef.current = true;
         }}
+        hideClient={hideClient}
       />
     </>
   );
@@ -179,6 +183,7 @@ function ProjectDialog({
   dict,
   onClose,
   onNavigate,
+  hideClient,
 }: {
   projects: ProjectWithThemes[];
   /** 지금 프로젝트 (null = 닫힘) */
@@ -190,6 +195,8 @@ function ProjectDialog({
   onClose: () => void;
   /** 관련 리서치로 이동하기 직전 */
   onNavigate: () => void;
+  /** 회사 · 그룹명 숨김 (ProjectList 와 같음) */
+  hideClient: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const swiperRef = useRef<SwiperInstance | null>(null);
@@ -263,7 +270,7 @@ function ProjectDialog({
       className={classNames(
         "group size-10",
         "flex items-center justify-center",
-        "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black active:bg-white active:text-black",
+        "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black",
         "disabled:pointer-events-none disabled:opacity-30",
         "font-neuehaas",
       )}
@@ -273,8 +280,8 @@ function ProjectDialog({
         className={classNames(
           "transition-transform duration-300",
           by === -1
-            ? "group-hover:-translate-x-0.5 group-active:-translate-x-0.5"
-            : "group-hover:translate-x-0.5 group-active:translate-x-0.5",
+            ? "group-hover:-translate-x-0.5"
+            : "group-hover:translate-x-0.5",
         )}
       >
         {by === -1 ? "←" : "→"}
@@ -351,7 +358,7 @@ function ProjectDialog({
           className={classNames(
             "pointer-events-auto size-10",
             "flex items-center justify-center",
-            "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black active:bg-white active:text-black",
+            "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black",
           )}
         >
           <svg
@@ -404,10 +411,8 @@ function ProjectDialog({
                 )}
               >
                 {/*
-                  모든 카드가 같은 크기 (내용이 짧으면 아래가 여백). 관련 리서치 2개 + 긴 설명까지 스크롤 없이 들어가는 높이로 맞춤
-                  (2026-11 실제 데이터로 잰 값: 폰 706px · 1024 폭 459px · 64rem 폭 529px 필요)
-                  좁은 화면: 칸 높이를 거의 다 쓰는 세로 카드(최대 48rem) / 중간 화면: 3:2 / 넓은 화면: 1024:540 — 칸 안에 들어가는 가장 큰 크기
-                  화면이 정말 낮으면 카드 안에서 스크롤되지만 스크롤바는 숨김
+                  모든 카드가 같은 가로세로비 (내용이 짧으면 아래가 여백, 길면 카드 안에서 스크롤)
+                  좁은 화면: 칸을 꽉 채우는 세로 카드 / 중간 화면부터: 4:3 — 칸 안에 들어가는 가장 큰 크기
                 */}
                 <div
                   data-project-card
@@ -421,8 +426,8 @@ function ProjectDialog({
                   }
                   className={classNames(
                     "w-full",
-                    "h-[min(100cqh,48rem)] md:aspect-[3/2] md:h-auto md:w-[min(100cqw,calc(100cqh*3/2))] lg:aspect-[1024/540] lg:w-[min(100cqw,calc(100cqh*1024/540))]",
-                    "overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                    "aspect-[3/5] md:aspect-[5/3] lg:aspect-[1038/500] h-auto md:w-[min(100cqw,calc(100cqh*5/3))] lg:w-[min(100cqw,calc(100cqh*1038/500))]",
+                    "overflow-y-auto overscroll-contain",
                     "rounded-3xl bg-[#fff] text-main shadow-2xl",
                     // 지금 카드: 크게 · 선명하게 / 이전 · 다음: 작게 · 흐리게 (누르면 그쪽으로)
                     "transition-[scale,opacity,translate] motion-reduce:transition-none",
@@ -454,13 +459,15 @@ function ProjectDialog({
                         nda: dict.project.nda,
                         ndaNote: dict.project.ndaNote,
                         research: dict.project.research,
-                        more: dict.project.researchMore,
+                        more: dict.research.more,
                         close: dict.project.close,
                       }}
                       project={{
                         year: projectYear(project),
                         title: localized(project, "title", locale),
-                        client: localized(project, "client", locale),
+                        client: hideClient
+                          ? ""
+                          : localized(project, "client", locale),
                         description: localized(project, "description", locale),
                         tags: localized(project, "tags", locale),
                         nda: project.is_nda,

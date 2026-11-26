@@ -23,7 +23,6 @@ export function MobileMenu({
   const menuId = useId();
 
   // 열려 있는 동안: 뒤 화면 스크롤 막기 · Esc 로 닫기
-  // 열린 채로 화면이 넓어지면(태블릿 돌림 등) 메뉴는 숨지만 스크롤 막힘이 남으므로 닫음
   useEffect(() => {
     if (!open) return;
     const overflow = document.documentElement.style.overflow;
@@ -31,16 +30,10 @@ export function MobileMenu({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
-    const wide = window.matchMedia("(min-width: 768px)");
-    const onWide = () => {
-      if (wide.matches) setOpen(false);
-    };
     window.addEventListener("keydown", onKeyDown);
-    wide.addEventListener("change", onWide);
     return () => {
       document.documentElement.style.overflow = overflow;
       window.removeEventListener("keydown", onKeyDown);
-      wide.removeEventListener("change", onWide);
     };
   }, [open]);
 
@@ -116,19 +109,8 @@ export function MobileMenu({
             "font-neuehaas text-base text-sub",
           )}
         >
-          {/* 누르기 쉽게 위아래로 넓힌 영역 (보이는 간격은 그대로) */}
-          <a
-            href={`mailto:${contact.email}`}
-            className={classNames("-my-1.5 w-fit py-1.5 active:text-main")}
-          >
-            {contact.email}
-          </a>
-          <a
-            href={`tel:${contact.phone.tel}`}
-            className={classNames("-my-1.5 w-fit py-1.5 active:text-main")}
-          >
-            {contact.phone.label}
-          </a>
+          <a href={`mailto:${contact.email}`}>{contact.email}</a>
+          <a href={`tel:${contact.phone.tel}`}>{contact.phone.label}</a>
         </div>
       </div>
     </div>

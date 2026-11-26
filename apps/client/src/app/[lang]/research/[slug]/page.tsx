@@ -18,7 +18,6 @@ import { localeAlternates } from "@/libs/seo";
 
 export const revalidate = 60;
 
-
 /** 공개된 분야 × 언어를 빌드 때 미리 만듭니다. 새 분야는 처음 요청 때 만들어집니다. */
 export async function generateStaticParams() {
   const themes = await getThemes();
@@ -111,8 +110,7 @@ export default async function ResearchPage({
                   "font-neuehaas text-sm font-medium text-gray-500",
                 )}
               >
-                {String(theme.number).padStart(2, "0")}
-                {theme.title_en ? ` · ${theme.title_en}` : null}
+                {theme.title_en}
               </p>
               <h1
                 className={classNames(
@@ -192,7 +190,8 @@ export default async function ResearchPage({
           label: dict.home.viewAll,
         }}
       >
-        <ProjectList projects={projects} locale={lang} dict={dict} />
+        {/* NDA: Research 페이지에서는 회사 · 그룹명을 보이지 않음 */}
+        <ProjectList projects={projects} locale={lang} dict={dict} hideClient />
       </Section>
 
       {others.length ? (
