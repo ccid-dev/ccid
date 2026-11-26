@@ -71,7 +71,7 @@ export async function Header() {
       </Link>
 
       <nav className={classNames("hidden md:block", "min-w-0")}>
-        <div className={classNames("flex items-center gap-6")}>
+        <div className={classNames("flex items-center gap-9")}>
           <ul className={classNames("flex items-center gap-9")}>
             {NAV_ITEMS.map((item) => (
               <li key={item.key}>
@@ -81,16 +81,11 @@ export async function Header() {
               </li>
             ))}
           </ul>
+          {/* 추가 메뉴: 앞 메뉴들과 세로 구분선 없이 이어서 (간격은 메뉴 사이와 같게) */}
           {NAV_EXTRA_ITEM.isVisible && (
-            <>
-              <span
-                aria-hidden
-                className={classNames("h-5 w-px", "bg-[#CDDEFF] opacity-50")}
-              />
-              <HeaderNavLink href={localePath(locale, NAV_EXTRA_ITEM.href)}>
-                {dict.nav[NAV_EXTRA_ITEM.key]}
-              </HeaderNavLink>
-            </>
+            <HeaderNavLink href={localePath(locale, NAV_EXTRA_ITEM.href)}>
+              {dict.nav[NAV_EXTRA_ITEM.key]}
+            </HeaderNavLink>
           )}
         </div>
       </nav>

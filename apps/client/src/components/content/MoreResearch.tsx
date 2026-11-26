@@ -117,13 +117,6 @@ export function MoreResearch({
               <span className={classNames("flex flex-col gap-1")}>
                 <span
                   className={classNames(
-                    "font-neuehaas text-[15px] font-medium text-gray-500",
-                  )}
-                >
-                  {String(item.number).padStart(2, "0")}
-                </span>
-                <span
-                  className={classNames(
                     "text-2xl leading-snug font-medium break-keep",
                   )}
                 >

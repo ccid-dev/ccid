@@ -86,8 +86,10 @@ const CIRCLE_GLOW = {
   },
 } as const;
 
-/** About 하늘색 채도: 스크롤 전(About 이 화면 아래쪽)엔 이만큼 낮췄다가, 화면 한 장만큼 스크롤하면(About 이 화면 위쪽) 원래대로 */
-const SKY_SATURATION_START = 0.45;
+/**
+ * 하늘색 채도: 첫 화면(스크롤 전)엔 이만큼 낮췄다가, 화면 한 장만큼 스크롤하는 동안 점점 원래대로 (피드백 #159: 0.45 → 0.25)
+ */
+const SKY_SATURATION_START = 0.25;
 
 /**
  * 광원 움직임 (피드백 #89): 보라 · 흰 층이 한 광원을 따라 함께 밀리는 느낌.
@@ -251,8 +253,10 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
             ))}
           </div>
           {/*
-            ④ 아래쪽 하늘색 채도 (스크롤 연동): 원 아래쪽(하늘색 → 흰색)만 backdrop-filter 로 채도를 낮췄다가
+            ④ 하늘색 채도 (스크롤 연동): 원의 하늘색 쪽만 backdrop-filter 로 채도를 낮췄다가
             스크롤하며 About 이 화면 위쪽으로 오면 원래 채도로. 위쪽 보라는 마스크로 빼서 그대로 둠.
+            마스크는 원 상자 높이의 24% → 36% 에서 차오름: 첫 화면(1440×900 기준 원 윗선에서 38% 까지 보임) 아래쪽 하늘색 띠도 덮이게
+            (예전 30% → 46% 는 첫 화면에서 반쯤만 덮여 하늘색이 그대로 진했음)
             움직임 줄이기 설정이면 처음부터 원래 채도
           */}
           <motion.div
@@ -260,7 +264,7 @@ export function HomeGradientLayer({ children }: { children: ReactNode }) {
             className={classNames(
               "absolute inset-0 rounded-full",
               "pointer-events-none",
-              "[mask-image:linear-gradient(to_bottom,transparent_30%,black_46%)]",
+              "[mask-image:linear-gradient(to_bottom,transparent_24%,black_36%)]",
             )}
             style={{
               backdropFilter: skySaturate,

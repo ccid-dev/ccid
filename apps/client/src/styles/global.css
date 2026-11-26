@@ -87,6 +87,10 @@
   .font-neuehaas {
     --letter-spacing: var(--letter-spacing-neuehaas);
   }
+  /* Neue Haas Light (이미지 위 큰 영문 제목): 큰 글자도 0.02em 은 벌림 — 작은 글자는 위 기본값이 더 커서 그대로 (피드백 #161) */
+  .font-neuehaas.font-light {
+    --letter-spacing: max(0.02em, var(--letter-spacing-neuehaas));
+  }
   *,
   ::before,
   ::after {

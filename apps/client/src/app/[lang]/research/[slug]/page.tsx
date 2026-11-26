@@ -63,13 +63,11 @@ export default async function ResearchPage({
 
   return (
     <>
-      {/* 맨 위 히어로: 화면 끝까지 큰 이미지 + 분야 색 그라데이션 · 세부 분야 · 영문 제목 */}
+      {/* 맨 위 히어로: 화면 끝까지 큰 이미지 (이미지 위에는 글을 두지 않음) */}
       {heroImages.length ? (
         <ResearchHero
           images={heroImages}
           alt={alt}
-          keywords={keywords.join(", ")}
-          title={theme.title_en || localized(theme, "title", lang)}
           number={theme.number}
           label={dict.research.images}
           prevLabel={dict.research.prevImage}

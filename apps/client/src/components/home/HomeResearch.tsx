@@ -162,7 +162,6 @@ export function HomeResearch({
               const isActive = distance === 0;
               // 위 1장 · 아래 2장만 보임
               const visible = distance >= -1 && distance <= 2;
-              const keywords = localized(theme, "keywords", locale).join(", ");
               return (
                 <li
                   key={theme.id}
@@ -199,7 +198,7 @@ export function HomeResearch({
                         className={classNames("block h-auto w-full")}
                       />
                     ) : null}
-                    {/* 지금 분야: 세부 분야 · 영문 제목 (분야 색 그라데이션은 뺌) */}
+                    {/* 지금 분야: 영문 제목만 (세부 분야 작은 글 · 분야 색 그라데이션은 뺌) */}
                     <span
                       className={classNames(
                         "absolute inset-x-0 bottom-0 flex flex-col gap-1",
@@ -209,11 +208,6 @@ export function HomeResearch({
                         isActive ? "opacity-100" : "opacity-0",
                       )}
                     >
-                      {keywords ? (
-                        <span className={classNames("text-lg")}>
-                          {keywords}
-                        </span>
-                      ) : null}
                       <span className={classNames("text-3xl")}>
                         {theme.title_en || localized(theme, "title", locale)}
                       </span>

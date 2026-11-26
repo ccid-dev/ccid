@@ -31,7 +31,7 @@
     "scaleEase": 9
   },
   "morph": {
-    "duration": 0.9,
+    "duration": 0.6,
     "stretch": 0.1,
     "wobble": 0.2,
     "neck": 32,

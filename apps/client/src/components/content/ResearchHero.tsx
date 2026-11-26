@@ -19,7 +19,7 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
 
 /**
  * 리서치 상세 맨 위 히어로: 화면 끝까지 닿는 큰 이미지. (Figma 비율 1440:912, 단 높이는 화면 높이(svh)를 넘지 않고 넘치는 이미지는 잘림 — object-cover)
- * - 아래에서 위로 분야 색 그라데이션 + 왼쪽 아래에 세부 분야(작게) · 영문 제목(크게)
+ * - 이미지 위에는 제목 · 세부 분야 글을 두지 않음 (제목은 아래 본문 머리말에). 여러 장이면 아래에 옅은 그라데이션 + 이전 · 다음
  * - 이미지는 Swiper 로 가로로 넘어갑니다: 드래그 · 스와이프 · 트랙패드 가로 스크롤(휠) · ← → 키 · 오른쪽 아래 이전 · 01 / 15 · 다음
  *   (세로 스크롤은 페이지 스크롤에 양보 · 끝 장에서 더 밀면 페이지가 계속 움직임)
  * - 헤더는 이미지 위에 겹치고, 위쪽에 진보라 그라데이션을 깔아 헤더 글자를 흰색으로 바꿈 (data-header-tone="dark")
@@ -27,8 +27,6 @@ const twoDigits = (n: number) => String(n).padStart(2, "0");
 export function ResearchHero({
   images,
   alt,
-  keywords,
-  title,
   number,
   label,
   prevLabel,
@@ -36,10 +34,6 @@ export function ResearchHero({
 }: {
   images: string[];
   alt: string;
-  /** 세부 분야 (쉼표로 이은 글) */
-  keywords: string;
-  /** 영문 제목 */
-  title: string;
   /** 분야 번호 (그라데이션 색) */
   number: number;
   /** 이미지 묶음 이름 (스크린리더용) */
@@ -129,50 +123,32 @@ export function ResearchHero({
           "bg-linear-to-b from-[#24202e]/80 to-transparent",
         )}
       />
-      <div
-        className={classNames(
-          // 글 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
-          "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-          // 좁은 화면: 글이 폭을 다 쓰고 이전 · 다음은 그 아래 오른쪽 (한 줄에 두면 제목이 단어 중간에서 끊김)
-          "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6",
-          // 좌우: 사이트 바깥 여백(헤더 로고 · 아래 본문과 같은 세로줄) — 좁은 20px · 중간부터 40px
-          "px-5 pt-40 pb-6 md:px-10 md:pb-10",
-          // 이전 · 다음이 화면 오른쪽 아래 에이전트 구를 피함 — 단, 배너가 화면 아래 끝까지 차서 구와 만날 때만
-          //   (세로로 긴 태블릿 · 폰은 배너가 화면 중간에서 끝나 구가 배너 아래에 있으므로 비우지 않음 → 오른쪽이 휑하지 않게)
-          // 중간 화면부터: 배너 높이 = min(화면 폭 × 912/1440, 화면 높이). 화면이 가로 7 : 세로 5 보다 넓으면 배너 아래 끝이
-          //   구 높이(아래 88px) 안까지 내려옴 → 구 오른쪽 위치 32 + 구 56 + 바깥 여백 40 = 128px (pr-32)
-          //   (구 위치 · 크기는 Layout.tsx 의 AgentBlob: right-5 · md:right-8, size 56)
-          "md:[@media(min-aspect-ratio:7/5)]:pr-32",
-          "bg-linear-to-t to-transparent",
-          GRADIENT[number] ?? "from-black/70",
-          "text-white",
-        )}
-      >
-        <div className={classNames("flex min-w-0 flex-col gap-1")}>
-          {keywords ? (
-            <p
-              className={classNames(
-                "font-neuehaas text-base font-light md:text-3xl lg:text-5xl",
-              )}
-            >
-              {keywords}
-            </p>
-          ) : null}
-          <p
-            className={classNames(
-              "font-neuehaas text-4xl leading-tight font-light break-words md:text-6xl lg:text-[85px]",
-            )}
-          >
-            {title}
-          </p>
-        </div>
-        {count > 1 ? (
+      {count > 1 ? (
+        <div
+          className={classNames(
+            // 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
+            "pointer-events-none absolute inset-x-0 bottom-0 z-10",
+            "flex items-end justify-end",
+            // 좌우: 사이트 바깥 여백(헤더 로고 · 아래 본문과 같은 세로줄) — 좁은 20px · 중간부터 40px
+            "px-5 pt-24 pb-6 md:px-10 md:pb-10",
+            // 이전 · 다음이 화면 오른쪽 아래 에이전트 구를 피함 — 단, 배너가 화면 아래 끝까지 차서 구와 만날 때만
+            //   (세로로 긴 태블릿 · 폰은 배너가 화면 중간에서 끝나 구가 배너 아래에 있으므로 비우지 않음 → 오른쪽이 휑하지 않게)
+            // 중간 화면부터: 배너 높이 = min(화면 폭 × 912/1440, 화면 높이). 화면이 가로 7 : 세로 5 보다 넓으면 배너 아래 끝이
+            //   구 높이(아래 88px) 안까지 내려옴 → 구 오른쪽 위치 32 + 구 56 + 바깥 여백 40 = 128px (pr-32)
+            //   (구 위치 · 크기는 Layout.tsx 의 AgentBlob: right-5 · md:right-8, size 56)
+            "md:[@media(min-aspect-ratio:7/5)]:pr-32",
+            // 흰 쪽수(01 / 15)가 읽히도록 아래에만 옅게
+            "bg-linear-to-t to-transparent",
+            GRADIENT[number] ?? "from-black/70",
+            "text-white",
+          )}
+        >
           <div
             className={classNames(
-              "pointer-events-auto flex shrink-0 items-center gap-3 self-end md:self-auto",
+              "pointer-events-auto flex shrink-0 items-center gap-3",
               // 좁은 화면: 배너가 화면 62% 높이(최소 384px)라 보통은 구와 만나지 않음.
               //   화면 높이가 460px 이하(작은 폰을 가로로)일 때만 배너 아래 끝이 구 높이(아래 76px) 안까지 내려오므로 구를 피함
-              //   구 오른쪽 위치 20 + 구 56 + 바깥 여백 20 = 96px → 상자 여백 20 에 76px 더 (mr-19). 글은 폭을 다 씀
+              //   구 오른쪽 위치 20 + 구 56 + 바깥 여백 20 = 96px → 상자 여백 20 에 76px 더 (mr-19)
               "max-md:[@media(max-height:28.75rem)]:mr-19",
             )}
           >
@@ -188,8 +164,8 @@ export function ResearchHero({
             </p>
             {arrow(1)}
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </section>
   );
 }

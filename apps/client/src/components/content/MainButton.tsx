@@ -11,7 +11,7 @@ type Common = {
 /**
  * 메인 버튼 (Figma "참여 및 채용 안내 ↗").
  * 평소: Figma 와 같은 그라데이션 테두리(보라 → 파랑 → 보라 → 연분홍) + 흰 바탕 + 어두운 글.
- * 호버 · 누름: 테두리 선이 사라지고 바탕은 검정, 글 · 화살표는 흰색으로 바로 바뀜 (색 전환 애니메이션 없음).
+ * 호버 · 누름: 테두리 선이 사라지고 바탕은 바로 검정, 글 · 화살표는 0.8초 동안 검정 → 흰색으로 바뀜.
  *
  * `href` 를 주면 링크(<a>), 안 주면 <button> 으로 그려집니다.
  * 테두리 두께는 border(1px) 하나로 정해집니다.
@@ -33,7 +33,8 @@ export function MainButton(
     // 호버 · 누름: 바탕 전체(테두리 칸 포함)를 검정 한 색으로 덮어 그라데이션 선이 사라짐
     "hover:[background:var(--color-black)] active:[background:var(--color-black)]",
     "text-lg leading-normal font-medium text-black hover:text-white active:text-white",
-    "transition-[scale] duration-500 active:scale-[0.97]",
+    // 누름 크기는 0.5초 · 글 색은 0.8초 (바탕은 전환 없이 바로)
+    "[transition:scale_0.5s,color_0.8s] active:scale-[0.97]",
     className,
   );
   const inner = (

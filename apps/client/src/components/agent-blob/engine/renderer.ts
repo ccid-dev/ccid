@@ -39,6 +39,27 @@ interface Spring {
 }
 const spring = (x: number): Spring => ({ x, v: 0 });
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+/**
+ * CSS "ease" 곡선 = cubic-bezier(0.25, 0.1, 0.25, 1): 누르자마자 빠르게 붙어 가속이 느껴지고 끝에서 부드럽게 멈춤.
+ * 시간 u(0~1) 에 맞는 곡선 위 점을 뉴턴법으로 찾아 진행도를 돌려줌.
+ */
+function cssEase(u: number) {
+  // 0 · 1 끝점은 고정인 3차 베지어 한 축: 3a·s(1-s)² + 3b·s²(1-s) + s³
+  const curve = (s: number, a: number, b: number) =>
+    3 * a * s * (1 - s) ** 2 + 3 * b * s ** 2 * (1 - s) + s ** 3;
+  const slope = (s: number, a: number, b: number) =>
+    3 * a * (1 - s) ** 2 + 6 * (b - a) * s * (1 - s) + 3 * (1 - b) * s ** 2;
+  let s = u;
+  for (let i = 0; i < 6; i++) {
+    const dx = curve(s, 0.25, 0.25) - u;
+    const d = slope(s, 0.25, 0.25);
+    if (Math.abs(dx) < 1e-5 || d === 0) break;
+    s = clamp01(s - dx / d);
+  }
+  return curve(s, 0.1, 1);
+}
+
 /** 모양: 중심 · 반쪽 크기 스프링 */
 type MorphShape = { x: Spring; y: Spring; hw: Spring; hh: Spring };
 
@@ -303,8 +324,8 @@ export class BlobRenderer {
 
     // 위치 · 가로 · 세로를 따로 움직이면 서로 속도가 달라, 닫힐 때 사각형이 길쭉하게 남은 채 구가 따로 자라나
     // 둘이 겹쳤다 합쳐져 보임. 그래서 진행도 하나(0 = 닫힌 구, 1 = 창)로 위치 · 크기를 한 몸으로 움직임.
-    // 진행도는 "시간 u"(선형 0~1)에 앞뒤 대칭 곡선(ease-in-out)을 건 값: u 가 0 → 1 로 가면 열기, 1 → 0 으로 가면
-    // 닫기라 같은 곡선을 정확히 거꾸로 재생함. (스프링은 열 때도 닫을 때도 "빨리 시작 · 천천히 끝"이라 닫기가 거울이 아님)
+    // 진행도는 "시간 u"(선형 0~1)에 CSS "ease" 곡선을 건 값: u 가 0 → 1 로 가면 열기(빨리 시작 · 천천히 끝),
+    // 1 → 0 으로 가면 닫기라 같은 곡선을 정확히 거꾸로 재생함 (천천히 시작 · 빨리 끝).
     // 중간에 다시 눌러도 u 가 있던 자리에서 곧장 반대로 가서 끊기지 않음.
     const goal = m.open ? 1 : 0;
     const clock = this.progress;
@@ -320,8 +341,8 @@ export class BlobRenderer {
     }
     clock.v = 0;
     const u = clock.x;
-    // ease-in-out (2제곱, 앞뒤 대칭): 3제곱은 시작이 너무 느려 누른 뒤 0.2초 동안 안 움직이는 듯 보임
-    const t = u < 0.5 ? 2 * u ** 2 : 1 - (-2 * u + 2) ** 2 / 2;
+    // 예전 앞뒤 대칭 ease-in-out 은 시작이 느려 열리는 게 굼떠 보였음 (피드백 #153)
+    const t = cssEase(u);
     const mix = (from: number, toward: number) => from + (toward - from) * t;
     const nextX = mix(
       m.closed.x + m.closed.width / 2,

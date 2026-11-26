@@ -321,10 +321,10 @@ function AgentModeBlob({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            // 모핑과 같은 시간 · 같은 곡선(ease-in-out): 사각형이 줄어드는 동안 따로 남지 않게
+            // 모핑과 같은 시간 · 같은 곡선(CSS ease, renderer.ts 의 cssEase): 사각형이 줄어드는 동안 따로 남지 않게
             transition={{
               duration: morphSeconds,
-              ease: [0.45, 0, 0.55, 1],
+              ease: [0.25, 0.1, 0.25, 1],
             }}
           />
         )}
@@ -404,7 +404,8 @@ function AgentModeBlob({
                       opacity: 1,
                       y: 0,
                       transition: {
-                        delay: morphSeconds * 0.62,
+                        // ease 곡선에서 시간 42% ≈ 창이 70% 쯤 퍼진 때
+                        delay: morphSeconds * 0.42,
                         duration: 0.3,
                       },
                     }
