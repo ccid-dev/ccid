@@ -167,7 +167,8 @@ export function PersonForm({
           name="profile"
           multiline
           rows={8}
-          hint="있으면 '약력 전체 보기'로 펼쳐집니다. 문단은 빈 줄로 나눕니다."
+          // 디렉터는 큰 가로 카드에 짧은 약력이 다 보여서 사이트에 '약력 전체 보기'가 없음 (blocks PersonCard 의 !wide)
+          hint="있으면 '약력 전체 보기'로 펼쳐집니다. 문단은 빈 줄로 나눕니다. 디렉터는 사이트에 표시되지 않습니다."
           defaults={pair(person.profile_ko, person.profile_en)}
         />
       </EditorSection>

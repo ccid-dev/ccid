@@ -177,6 +177,7 @@ export const en: Dictionary = {
     prev: "Previous project",
     next: "Next project",
     research: "Related research",
+    researchMore: "Explore research",
     ndaNote: "This project is under NDA, so only basic details are shown.",
   },
   people: {

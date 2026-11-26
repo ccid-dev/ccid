@@ -50,7 +50,7 @@ export function themeGlow(themes: number[]) {
  * - 한 줄 카드(기본, 리서치 상세의 Projects): 바탕 없이 글만. 왼쪽 연도 → 제목(+ 같은 줄 회사명) → 설명 / 오른쪽 위 ⋯
  * - tile: 2단 격자의 흰 카드 (Projects 페이지) — 위에 제목 · 설명, 아래 왼쪽 회사명 · 오른쪽 ⋯
  * NDA 프로젝트는 흐리게 보입니다.
- * 모션: 마우스를 올리면 ⋯ 버튼이 검정으로 바뀌며 살짝 커집니다. (분야 색 그라데이션은 뺌 — themeGlow 는 홈 프로젝트에서만 씀)
+ * 모션: 마우스를 올리면 ⋯ 버튼이 검정으로 바뀌며 살짝 커집니다. 터치 화면은 누르는 동안 같은 모습 + 카드가 살짝 눌림. (분야 색 그라데이션은 뺌 — themeGlow 는 홈 프로젝트에서만 씀)
  */
 export function ProjectCard({
   project,
@@ -78,7 +78,7 @@ export function ProjectCard({
         className={classNames(
           "size-7 shrink-0",
           "flex items-center justify-center gap-[3px]",
-          "rounded-full bg-white transition duration-300 group-hover:scale-110 group-hover:bg-black group-hover:text-white",
+          "rounded-full bg-white transition duration-300 group-hover:scale-110 group-hover:bg-black group-hover:text-white group-active:scale-110 group-active:bg-black group-active:text-white",
         )}
       >
         <span className={classNames("size-[3px]", "rounded-full bg-current")} />
@@ -108,7 +108,8 @@ export function ProjectCard({
           : "flex flex-col gap-4 md:min-h-45",
         tile ? "px-8 py-7 md:px-9 md:py-8" : "px-6 py-6 md:px-8 md:py-7",
         project.nda && "opacity-50",
-        onClick && "cursor-pointer",
+        onClick &&
+          "cursor-pointer transition-[scale] duration-300 active:scale-[0.98]",
       )}
     >
       {tile ? (

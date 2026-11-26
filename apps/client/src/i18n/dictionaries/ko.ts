@@ -178,7 +178,9 @@ export const ko = {
     close: "닫기",
     prev: "이전 프로젝트",
     next: "다음 프로젝트",
+    /** 프로젝트 모달: 리서치 카드 위 제목 · 카드 안 버튼 */
     research: "Related research",
+    researchMore: "리서치 자세히 보기",
     ndaNote: "NDA 프로젝트라 기본 정보만 공개합니다.",
   },
   people: {

@@ -64,7 +64,7 @@ export function ResearchHero({
       className={classNames(
         "group size-10",
         "flex items-center justify-center",
-        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white",
+        "rounded-full bg-[#ebebeb]/60 text-black backdrop-blur transition duration-300 hover:bg-white active:bg-white",
         "disabled:pointer-events-none disabled:opacity-30",
         "font-neuehaas",
       )}
@@ -74,8 +74,8 @@ export function ResearchHero({
         className={classNames(
           "transition-transform duration-300",
           by === -1
-            ? "group-hover:-translate-x-0.5"
-            : "group-hover:translate-x-0.5",
+            ? "group-hover:-translate-x-0.5 group-active:-translate-x-0.5"
+            : "group-hover:translate-x-0.5 group-active:translate-x-0.5",
         )}
       >
         {by === -1 ? "←" : "→"}
@@ -133,9 +133,16 @@ export function ResearchHero({
         className={classNames(
           // 글 층은 드래그를 막지 않고(pointer-events-none), 버튼만 눌림
           "pointer-events-none absolute inset-x-0 bottom-0 z-10",
-          "flex items-end justify-between gap-6",
-          // 오른쪽: 화면 오른쪽 아래 에이전트 구(56px, 오른쪽 20 · 32px)와 겹치지 않게 여백을 더 둠
-          "pt-40 pr-24 pb-6 pl-5 md:pr-32 md:pb-10 md:pl-20",
+          // 좁은 화면: 글이 폭을 다 쓰고 이전 · 다음은 그 아래 오른쪽 (한 줄에 두면 제목이 단어 중간에서 끊김)
+          "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6",
+          // 좌우: 사이트 바깥 여백(헤더 로고 · 아래 본문과 같은 세로줄) — 좁은 20px · 중간부터 40px
+          "px-5 pt-40 pb-6 md:px-10 md:pb-10",
+          // 이전 · 다음이 화면 오른쪽 아래 에이전트 구를 피함 — 단, 배너가 화면 아래 끝까지 차서 구와 만날 때만
+          //   (세로로 긴 태블릿 · 폰은 배너가 화면 중간에서 끝나 구가 배너 아래에 있으므로 비우지 않음 → 오른쪽이 휑하지 않게)
+          // 중간 화면부터: 배너 높이 = min(화면 폭 × 912/1440, 화면 높이). 화면이 가로 7 : 세로 5 보다 넓으면 배너 아래 끝이
+          //   구 높이(아래 88px) 안까지 내려옴 → 구 오른쪽 위치 32 + 구 56 + 바깥 여백 40 = 128px (pr-32)
+          //   (구 위치 · 크기는 Layout.tsx 의 AgentBlob: right-5 · md:right-8, size 56)
+          "md:[@media(min-aspect-ratio:7/5)]:pr-32",
           "bg-linear-to-t to-transparent",
           GRADIENT[number] ?? "from-black/70",
           "text-white",
@@ -145,7 +152,7 @@ export function ResearchHero({
           {keywords ? (
             <p
               className={classNames(
-                "font-neuehaas text-lg font-light md:text-3xl lg:text-5xl",
+                "font-neuehaas text-base font-light md:text-3xl lg:text-5xl",
               )}
             >
               {keywords}
@@ -162,7 +169,11 @@ export function ResearchHero({
         {count > 1 ? (
           <div
             className={classNames(
-              "pointer-events-auto flex shrink-0 items-center gap-3",
+              "pointer-events-auto flex shrink-0 items-center gap-3 self-end md:self-auto",
+              // 좁은 화면: 배너가 화면 62% 높이(최소 384px)라 보통은 구와 만나지 않음.
+              //   화면 높이가 460px 이하(작은 폰을 가로로)일 때만 배너 아래 끝이 구 높이(아래 76px) 안까지 내려오므로 구를 피함
+              //   구 오른쪽 위치 20 + 구 56 + 바깥 여백 20 = 96px → 상자 여백 20 에 76px 더 (mr-19). 글은 폭을 다 씀
+              "max-md:[@media(max-height:28.75rem)]:mr-19",
             )}
           >
             {arrow(-1)}

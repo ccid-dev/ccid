@@ -37,13 +37,13 @@ export function MainButton(
   );
   const inner = (
     <>
-      {/* 호버: 테두리 그라데이션이 왼쪽에서 채워지며 투명 → 20% 로 올라옴 (움직임 줄이기 설정이면 바로 바뀜) */}
+      {/* 호버 · 누름: 테두리 그라데이션이 왼쪽에서 채워지며 투명 → 20% 로 올라옴 (움직임 줄이기 설정이면 바로 바뀜) */}
       <span
         aria-hidden
         className={classNames(
           "absolute inset-0 -z-10",
-          "origin-left scale-x-0 group-hover:scale-x-100",
-          "bg-[linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)] opacity-0 group-hover:opacity-20",
+          "origin-left scale-x-0 group-hover:scale-x-100 group-active:scale-x-100",
+          "bg-[linear-gradient(to_right,#9e70ff_0%,#4fa7ff_35%,#9f72fd_68%,#f0a6ff_100%)] opacity-0 group-hover:opacity-20 group-active:opacity-20",
           "transition-[scale,opacity] duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none",
         )}
       />

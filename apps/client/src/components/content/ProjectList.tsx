@@ -230,6 +230,35 @@ function ProjectDialog({
     };
   }, [isOpen]);
 
+  // 스크롤 넛지: 카드마다 아래에 내용이 더 남아 있으면 data-more 를 붙임 (스크롤 · 크기 변화 · 이미지 로딩 때 다시 잼)
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog || !shown) return;
+    const cards = [
+      ...dialog.querySelectorAll<HTMLElement>("[data-project-card]"),
+    ];
+    const update = (card: Element | null) => {
+      if (!(card instanceof HTMLElement)) return;
+      const rest = card.scrollHeight - card.scrollTop - card.clientHeight;
+      card.toggleAttribute("data-more", rest > 8);
+    };
+    const onScroll = (event: Event) => update(event.currentTarget as Element);
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries)
+        update(entry.target.closest("[data-project-card]"));
+    });
+    for (const card of cards) {
+      update(card);
+      card.addEventListener("scroll", onScroll, { passive: true });
+      observer.observe(card);
+      if (card.firstElementChild) observer.observe(card.firstElementChild);
+    }
+    return () => {
+      observer.disconnect();
+      for (const card of cards) card.removeEventListener("scroll", onScroll);
+    };
+  }, [shown, projects]);
+
   // 바깥(주소 #slug 등)에서 index 가 바뀌면 그 카드로
   useEffect(() => {
     const swiper = swiperRef.current;
@@ -270,7 +299,7 @@ function ProjectDialog({
       className={classNames(
         "group size-10",
         "flex items-center justify-center",
-        "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black",
+        "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black active:bg-white active:text-black",
         "disabled:pointer-events-none disabled:opacity-30",
         "font-neuehaas",
       )}
@@ -280,8 +309,8 @@ function ProjectDialog({
         className={classNames(
           "transition-transform duration-300",
           by === -1
-            ? "group-hover:-translate-x-0.5"
-            : "group-hover:translate-x-0.5",
+            ? "group-hover:-translate-x-0.5 group-active:-translate-x-0.5"
+            : "group-hover:translate-x-0.5 group-active:translate-x-0.5",
         )}
       >
         {by === -1 ? "←" : "→"}
@@ -358,7 +387,7 @@ function ProjectDialog({
           className={classNames(
             "pointer-events-auto size-10",
             "flex items-center justify-center",
-            "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black",
+            "rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 hover:bg-white hover:text-black active:bg-white active:text-black",
           )}
         >
           <svg
@@ -404,18 +433,25 @@ function ProjectDialog({
               <SwiperSlide
                 key={project.id}
                 className={classNames(
-                  "flex! h-full! w-[min(64rem,86vw)]! items-center justify-center",
-                  "pt-20 pb-6 md:pt-24 md:pb-10",
+                  // 모달 둘레(딤) 여백: 화면이 좁을수록 줄여 모달 폭을 확보
+                  //   좁은 화면 20px · 중간 40px (사이트 여백, 위쪽 버튼 줄과 같은 선) · 880px(55rem)부터 화면 폭의 5% (최대 폭 64rem)
+                  //   위는 버튼 줄(위 20 + 높이 40) 아래 12px
+                  "flex! h-full! w-[calc(100vw-2.5rem)]! items-center justify-center md:w-[calc(100vw-5rem)]! min-[55rem]:w-[min(64rem,90vw)]!",
+                  "pt-18 pb-5 md:pt-24 md:pb-10",
                   // 카드 크기를 이 칸의 너비 · 높이(cqw · cqh)로 정하려고
                   "[container-type:size]",
                 )}
               >
                 {/*
-                  모든 카드가 같은 가로세로비 (내용이 짧으면 아래가 여백, 길면 카드 안에서 스크롤)
-                  좁은 화면: 칸을 꽉 채우는 세로 카드 / 중간 화면부터: 4:3 — 칸 안에 들어가는 가장 큰 크기
+                  모든 카드가 같은 크기 (내용이 짧으면 아래가 여백). 관련 리서치 2개 + 긴 설명까지 스크롤 없이 들어가는 높이로 맞춤
+                  (2026-11 실제 데이터로 잰 값: 폰 706px · 1024 폭 459px · 64rem 폭 529px 필요)
+                  한 줄(모바일 모양, 880px 미만): 칸 높이를 거의 다 쓰는 세로 카드 (폰 최대 48rem · 태블릿 칸 높이 전체)
+                  두 칸(880px~): 3:2 / 1280px~ (두 칸 사이가 넓어지는 곳): 1024:540 — 칸 안에 들어가는 가장 큰 크기
+                  화면이 정말 낮으면 카드 안에서 스크롤되지만 스크롤바는 숨김
                 */}
                 <div
                   data-project-card
+                  // data-more: 아래에 내용이 더 있음 (스크롤 넛지 그라데이션, 아래 useEffect 가 붙였다 뗌)
                   // 옆 카드에 올리면 커서에 넘기는 방향 안내
                   cursor-label={
                     i < index
@@ -426,9 +462,9 @@ function ProjectDialog({
                   }
                   className={classNames(
                     "w-full",
-                    "aspect-[3/5] md:aspect-[5/3] lg:aspect-[1038/500] h-auto md:w-[min(100cqw,calc(100cqh*5/3))] lg:w-[min(100cqw,calc(100cqh*1038/500))]",
-                    "overflow-y-auto overscroll-contain",
-                    "rounded-3xl bg-[#fff] text-main shadow-2xl",
+                    "h-[min(100cqh,48rem)] md:h-full min-[55rem]:aspect-[3/2] min-[55rem]:h-auto min-[55rem]:w-[min(100cqw,calc(100cqh*3/2))] xl:aspect-[1024/540] xl:w-[min(100cqw,calc(100cqh*1024/540))]",
+                    "overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                    "group/card rounded-3xl bg-[#fff] text-main shadow-2xl",
                     // 지금 카드: 크게 · 선명하게 / 이전 · 다음: 작게 · 흐리게 (누르면 그쪽으로)
                     "transition-[scale,opacity,translate] motion-reduce:transition-none",
                     motion,
@@ -447,7 +483,14 @@ function ProjectDialog({
                   )}
                 >
                   {/* 옆 카드 안의 링크 · 버튼은 누를 수 없게 (카드를 누르면 그쪽으로 넘어감) */}
-                  <div inert={!active}>
+                  {/*
+                    min-h-full · 세로 flex: 안쪽 내용(ProjectDetail)이 카드 높이를 채워 태그가 카드 아래에 붙도록.
+                    내용이 더 길면 이 상자가 같이 길어져 카드 안에서 스크롤 (아래 그라데이션이 끝까지 따라붙음)
+                  */}
+                  <div
+                    inert={!active}
+                    className={classNames("flex min-h-full flex-col")}
+                  >
                     <ProjectDetail
                       titleId={active ? "project-dialog-title" : undefined}
                       onNavigate={() => {
@@ -459,7 +502,7 @@ function ProjectDialog({
                         nda: dict.project.nda,
                         ndaNote: dict.project.ndaNote,
                         research: dict.project.research,
-                        more: dict.research.more,
+                        more: dict.project.researchMore,
                         close: dict.project.close,
                       }}
                       project={{
@@ -485,6 +528,15 @@ function ProjectDialog({
                       }}
                     />
                   </div>
+                  {/* 스크롤 넛지: 아래에 내용이 더 있으면 카드 아래쪽이 흰색으로 서서히 사라짐 (끝까지 내리면 사라짐) */}
+                  <div
+                    aria-hidden
+                    className={classNames(
+                      "pointer-events-none sticky bottom-0 -mt-20 h-20",
+                      "bg-linear-to-t from-[#fff] to-transparent",
+                      "opacity-0 transition-opacity duration-300 group-data-[more]/card:opacity-100 motion-reduce:transition-none",
+                    )}
+                  />
                 </div>
               </SwiperSlide>
             );
