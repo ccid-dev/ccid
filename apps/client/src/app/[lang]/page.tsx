@@ -27,7 +27,9 @@ export async function generateMetadata({
   params,
 }: PageProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
-  return hasLocale(lang) ? { alternates: localeAlternates(lang) } : {};
+  if (!hasLocale(lang)) return {};
+  // 홈: 제목 · 설명 · 공유 미리보기는 레이아웃 기본값 그대로, 주소(canonical · hreflang)만
+  return { alternates: localeAlternates(lang) };
 }
 
 export default async function Home({ params }: PageProps<"/[lang]">) {

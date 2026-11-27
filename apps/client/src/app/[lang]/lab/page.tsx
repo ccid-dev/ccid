@@ -4,7 +4,7 @@ import { HeroBackground } from "@/components/home";
 import { ROUTES } from "@/constants";
 import { hasLocale } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
-import { localeAlternates } from "@/libs/seo";
+import { pageMetadata } from "@/libs/seo";
 
 export async function generateMetadata({
   params,
@@ -12,11 +12,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  return {
+  return pageMetadata(lang, dict, {
+    path: ROUTES.lab,
     title: dict.lab.title,
     description: dict.lab.description,
-    alternates: localeAlternates(lang, ROUTES.lab),
-  };
+  });
 }
 
 /**

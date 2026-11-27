@@ -14,7 +14,7 @@ import { hasLocale, localePath, localized, locales } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { getProjectsByTheme, getThemeBySlug, getThemes } from "@/libs/content";
 import { mediaUrl } from "@/libs/media";
-import { localeAlternates } from "@/libs/seo";
+import { pageMetadata } from "@/libs/seo";
 
 export const revalidate = 60;
 
@@ -33,11 +33,12 @@ export async function generateMetadata({
   if (!hasLocale(lang)) return {};
   const theme = await getThemeBySlug(slug);
   if (!theme) return {};
-  return {
+  const dict = await getDictionary(lang);
+  return pageMetadata(lang, dict, {
+    path: `/research/${slug}`,
     title: localized(theme, "title", lang),
-    description: localized(theme, "summary", lang),
-    alternates: localeAlternates(lang, `/research/${slug}`),
-  };
+    description: localized(theme, "summary", lang) || undefined,
+  });
 }
 
 export default async function ResearchPage({

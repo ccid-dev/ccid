@@ -7,7 +7,7 @@ import { hasLocale, localePath, localized } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { getThemes } from "@/libs/content";
 import { mediaUrl } from "@/libs/media";
-import { localeAlternates } from "@/libs/seo";
+import { pageMetadata } from "@/libs/seo";
 
 export const revalidate = 60;
 
@@ -25,11 +25,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  return {
+  return pageMetadata(lang, dict, {
+    path: ROUTES.research,
     title: dict.research.title,
     description: dict.research.description,
-    alternates: localeAlternates(lang, ROUTES.research),
-  };
+  });
 }
 
 /** 리서치 분야 전체: 분야마다 한 줄 (번호 · 질문 · 요약 · 대표 이미지) — 줄 사이는 넓은 여백으로 */

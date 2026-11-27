@@ -12,7 +12,7 @@ import { hasLocale, localized } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { getPeopleGroups, getRecruit } from "@/libs/content";
 import { mediaUrl } from "@/libs/media";
-import { localeAlternates } from "@/libs/seo";
+import { pageMetadata } from "@/libs/seo";
 
 export const revalidate = 60;
 
@@ -22,10 +22,10 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  return {
+  return pageMetadata(lang, dict, {
+    path: ROUTES.people,
     title: dict.people.title,
-    alternates: localeAlternates(lang, ROUTES.people),
-  };
+  });
 }
 
 export default async function PeoplePage({

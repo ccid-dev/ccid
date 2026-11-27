@@ -2,14 +2,14 @@ import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import { APP_INFO } from "@/config";
+import { APP_INFO, config } from "@/config";
 import { ADOBE_FONTS_URL } from "@repo/styles";
 import { colors, fontVariables } from "@/theme";
 import "@/styles/global.css";
 import { Layout } from "@/components";
-import { hasLocale, localeInfo, locales } from "@/i18n";
+import { hasLocale, locales } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
-import { localeAlternates } from "@/libs/seo";
+import { shareMetadata } from "@/libs/seo";
 
 const primaryAuthor = APP_INFO.authors[0];
 
@@ -49,12 +49,12 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <Layout>{children}</Layout>
       </body>
-      {/* ID가 없으면 빈 id로 스크립트를 요청해 400이 나므로, 환경변수가 있을 때만 붙인다 */}
-      {process.env.NEXT_PUBLIC_GTM_ID ? (
-        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      {/* 방문 통계: 운영 배포에서만 (config.analytics). ID 가 없으면 빈 id 로 스크립트를 요청해 400 이 나므로 있을 때만 */}
+      {config.analytics.gtmId ? (
+        <GoogleTagManager gtmId={config.analytics.gtmId} />
       ) : null}
-      {process.env.NEXT_PUBLIC_GA_ID ? (
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      {config.analytics.gaId ? (
+        <GoogleAnalytics gaId={config.analytics.gaId} />
       ) : null}
     </html>
   );
@@ -92,27 +92,8 @@ export async function generateMetadata({
       address: false,
       telephone: false,
     },
-    openGraph: {
-      type: "website",
-      siteName: APP_INFO.name,
-      title: APP_INFO.title,
-      description: dict.meta.description,
-      locale: localeInfo[lang].ogLocale,
-      alternateLocale: locales
-        .filter((locale) => locale !== lang)
-        .map((locale) => localeInfo[locale].ogLocale),
-      url: localeAlternates(lang).canonical,
-      images: {
-        url: APP_INFO.ogImage,
-      },
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: APP_INFO.title,
-      description: dict.meta.description,
-      creator: APP_INFO.twitterCreator,
-      images: [APP_INFO.ogImage],
-    },
+    // 공유 미리보기 기본값 (홈) — 하위 페이지는 pageMetadata 로 제목 · 설명 · 주소를 바꿈
+    ...shareMetadata(lang, { description: dict.meta.description }),
     verification: {
       google: APP_INFO.google_site_verification,
       other: APP_INFO.naver_site_verification

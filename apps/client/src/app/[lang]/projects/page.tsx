@@ -5,7 +5,7 @@ import { ROUTES } from "@/constants";
 import { hasLocale } from "@/i18n";
 import { getDictionary } from "@/i18n/server";
 import { getProjects, getThemes } from "@/libs/content";
-import { localeAlternates } from "@/libs/seo";
+import { pageMetadata } from "@/libs/seo";
 
 export const revalidate = 60;
 
@@ -15,11 +15,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  return {
+  return pageMetadata(lang, dict, {
+    path: ROUTES.projects,
     title: dict.projects.title,
     description: dict.projects.description,
-    alternates: localeAlternates(lang, ROUTES.projects),
-  };
+  });
 }
 
 /** 프로젝트 전체: 리서치 분야로 거르기 + 연도별 묶음 */
